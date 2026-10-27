@@ -28,28 +28,23 @@
         ⇄
       </button>
 
-      <!-- Верхний блок профиля в золотом кольце -->
-      <div class="sidebar-profile" onclick="openAuthModal('login')" title="Открыть профиль УрФУ ID">
+      <!-- Верхний блок профиля в золотом кольце (По умолчанию: Гость / Абитуриент) -->
+      <div class="sidebar-profile" onclick="handleProfileClick()" title="Авторизация / Профиль УрФУ ID">
         <div class="avatar-ring">
-          <div class="avatar-circle" id="sidebar-avatar-initials">ЭЭ</div>
-          <span class="online-dot"></span>
+          <div class="avatar-circle" id="sidebar-avatar-initials">АБ</div>
+          <span class="online-dot" id="sidebar-status-dot" style="background:#C6A75E;"></span>
         </div>
         <div class="profile-meta">
-          <div class="profile-name" id="sidebar-user-name">Эльдар Эльдаров</div>
-          <div class="profile-mail" id="sidebar-user-mail">proverka@urfu.ru • РИ-160033</div>
+          <div class="profile-name" id="sidebar-user-name">Режим Абитуриента</div>
+          <div class="profile-mail" id="sidebar-user-mail">Гость • Нажмите для входа в УрФУ ID</div>
         </div>
       </div>
 
-      <!-- Список всех 11 разделов с плавным бежевым вырезом активного пункта -->
+      <!-- Список всех 11 разделов (1–6 открыты абитуриенту, 7–11 требуют входа Студента/Педагога) -->
       <nav class="sidebar-menu" aria-label="Основная навигация по 11 страницам">
         <button class="nav-item active" data-screen="home" onclick="navigateTo('home', this)">
           <span class="nav-icon">🏛️</span>
-          <span class="nav-text">Главная + Карта</span>
-        </button>
-
-        <button class="nav-item" data-screen="homework" onclick="navigateTo('homework', this)">
-          <span class="nav-icon">📚</span>
-          <span class="nav-text">Домашние задания</span>
+          <span class="nav-text">Главная витрина</span>
         </button>
 
         <button class="nav-item" data-screen="programs" onclick="navigateTo('programs', this)">
@@ -62,45 +57,51 @@
           <span class="nav-text">Программа «ИИ»</span>
         </button>
 
-        <button class="nav-item" data-screen="dashboard" onclick="navigateTo('dashboard', this)">
-          <span class="nav-icon">⚡</span>
-          <span class="nav-text">Дашборд студента</span>
-        </button>
-
-        <button class="nav-item" data-screen="teamup" onclick="navigateTo('teamup', this)">
-          <span class="nav-icon">🤝</span>
-          <span class="nav-text">UrFU TeamUp (ИИ)</span>
-        </button>
-
-        <button class="nav-item" data-screen="mentors" onclick="navigateTo('mentors', this)">
-          <span class="nav-icon">👨‍🏫</span>
-          <span class="nav-text">Менторы и педагоги</span>
-        </button>
-
-        <button class="nav-item" data-screen="events" onclick="navigateTo('events', this)">
-          <span class="nav-icon">📅</span>
-          <span class="nav-text">Афиша событий</span>
-        </button>
-
-        <button class="nav-item" data-screen="about" onclick="navigateTo('about', this)">
-          <span class="nav-icon">📖</span>
-          <span class="nav-text">Об УрФУ и сленг</span>
-        </button>
-
         <button class="nav-item" data-screen="campus-map" onclick="navigateTo('campus-map', this)">
           <span class="nav-icon">🗺️</span>
           <span class="nav-text">Карта корпуса 3D</span>
         </button>
 
-        <button class="nav-item" data-screen="auth-profile" onclick="navigateTo('auth-profile', this)">
-          <span class="nav-icon">⚙️</span>
-          <span class="nav-text">Профиль УрФУ ID</span>
+        <button class="nav-item" data-screen="events" onclick="navigateTo('events', this)">
+          <span class="nav-icon">📅</span>
+          <span class="nav-text">Дни открытых дверей</span>
+        </button>
+
+        <button class="nav-item" data-screen="about" onclick="navigateTo('about', this)">
+          <span class="nav-icon">📖</span>
+          <span class="nav-text">Об УрФУ и кампусе</span>
+        </button>
+
+        <!-- Внутренние разделы вуза (защищены авторизацией УрФУ ID) -->
+        <button class="nav-item protected-nav" data-screen="schedule" data-protected="true" onclick="navigateTo('schedule', this)">
+          <span class="nav-icon">🗓️</span>
+          <span class="nav-text">Расписание недели <em class="lock-tag">🔒</em></span>
+        </button>
+
+        <button class="nav-item protected-nav" data-screen="homework" data-protected="true" onclick="navigateTo('homework', this)">
+          <span class="nav-icon">📚</span>
+          <span class="nav-text">Домашние задания <em class="lock-tag">🔒</em></span>
+        </button>
+
+        <button class="nav-item protected-nav" data-screen="dashboard" data-protected="true" onclick="navigateTo('dashboard', this)">
+          <span class="nav-icon">⚡</span>
+          <span class="nav-text">Дашборд и БРС <em class="lock-tag">🔒</em></span>
+        </button>
+
+        <button class="nav-item protected-nav" data-screen="teamup" data-protected="true" onclick="navigateTo('teamup', this)">
+          <span class="nav-icon">🤝</span>
+          <span class="nav-text">UrFU TeamUp (ИИ) <em class="lock-tag">🔒</em></span>
+        </button>
+
+        <button class="nav-item protected-nav" data-screen="mentors" data-protected="true" onclick="navigateTo('mentors', this)">
+          <span class="nav-icon">👨‍🏫</span>
+          <span class="nav-text">Менторы и профиль <em class="lock-tag">🔒</em></span>
         </button>
       </nav>
 
       <!-- Нижний блок сайдбара: Активные пользователи (+70) и мини-карта связей кампуса -->
       <div class="sidebar-footer-widgets">
-        <div class="active-users-label">АКТИВНЫЕ В КАМПУСЕ</div>
+        <div class="active-users-label">СЕЙЧАС В КАМПУСЕ ОНЛАЙН</div>
         <div class="active-users-row" onclick="navigateTo('mentors', document.querySelector('[data-screen=mentors]'))">
           <div class="mini-ava" style="background:#2C3B5E;">АК</div>
           <div class="mini-ava" style="background:#3D517D;">МВ</div>
@@ -143,31 +144,33 @@
           </svg>
           <div>
             <span class="brand-compact-title">УрФУ</span>
-            <span class="brand-compact-tag">Campus Connect</span>
+            <span class="brand-compact-tag" id="topbar-role-indicator">Приёмная кампания</span>
           </div>
         </div>
 
         <div class="topbar-search">
           <span>🔍</span>
-          <input type="text" id="Quick-search-input" placeholder="Поиск по кампусу: аудитория, ДЗ, программа ЕГЭ, преподаватель..." onkeydown="if(event.key==='Enter') handleQuickSearch(this.value)" />
+          <input type="text" id="Quick-search-input" placeholder="Поиск по кампусу: направление ЕГЭ, аудитория, расписание, преподаватель..." onkeydown="if(event.key==='Enter') handleQuickSearch(this.value)" />
           <kbd>⌘K</kbd>
         </div>
 
         <div class="topbar-controls">
-          <div class="role-pills" title="Адаптировать интерфейс под роль">
-            <button class="role-pill-btn active" id="role-btn-student" onclick="setGlobalRole('student')">Студенту</button>
-            <button class="role-pill-btn" id="role-btn-teacher" onclick="setGlobalRole('teacher')">Педагогу</button>
-            <button class="role-pill-btn" id="role-btn-abit" onclick="setGlobalRole('abit')">Абитуриенту</button>
+          <!-- По умолчанию активна роль «Абитуриенту». Переход в «Студенту» или «Педагогу» требует входа! -->
+          <div class="role-pills" title="Для перехода в режим Студента или Педагога потребуется авторизация">
+            <button class="role-pill-btn active" id="role-btn-abit" onclick="requestRoleSwitch('abit')">Абитуриенту</button>
+            <button class="role-pill-btn" id="role-btn-student" onclick="requestRoleSwitch('student')">🔒 Студенту</button>
+            <button class="role-pill-btn" id="role-btn-teacher" onclick="requestRoleSwitch('teacher')">🔒 Педагогу</button>
           </div>
           <button class="btn-gold" id="header-auth-btn" onclick="openAuthModal('login')">Войти через УрФУ</button>
+          <button class="btn-glass" id="header-logout-btn" style="display:none; padding:8px 14px; font-size:12px;" onclick="logoutToAbiturient()" title="Выйти в режим Абитуриента">Выйти ✕</button>
         </div>
       </header>
 
-      <!-- КОНТЕЙНЕР БЕСШОВНОГО ПЕРЕКРЫТИЯ ЭКРАНОВ (ДЛЯ ПЛАВНОГО TRANSITION КАК НА ВИДЕО) -->
+      <!-- КОНТЕЙНЕР БЕСШОВНОГО ПЕРЕКРЫТИЯ ЭКРАНОВ -->
       <div class="screens-viewport" id="screens-viewport">
 
         <!-- ===============================================================
-             ЭКРАН 1: ГЛАВНАЯ СТРАНИЦА (ФАСАД + КАРТА КОРПУСА + ДОМАШНИЕ ЗАДАНИЯ)
+             ЭКРАН 1: ГЛАВНАЯ СТРАНИЦА (АДАПТИРУЕТСЯ ПОД РОЛЬ: АБИТУРИЕНТ / СТУДЕНТ / ПЕДАГОГ)
              =============================================================== -->
         <section id="screen-home" class="screen active visible">
           <!-- HERO-БЛОК С КИНЕМАТОГРАФИЧНЫМ ПЕРЕХОДОМ ТИПОГРАФИКИ И ФОНА -->
@@ -175,22 +178,23 @@
             <div class="hero-ambient-bg" id="hero-ambient-bg"></div>
 
             <div class="hero-content-left" id="hero-editorial-text">
-              <div class="pill-badge" id="hero-role-badge">✨ Пространство света, стекла и технологий • Новокольцовский</div>
+              <div class="pill-badge" id="hero-role-badge">🎓 Абитуриенту 2026 • 9 600+ бюджетных мест в УрФУ</div>
               <h1 class="hero-title morph-headline" id="hero-main-heading">
-                Добро пожаловать в <span class="gold-highlight">сообщество</span> нового кампуса!
+                Поступай в <span class="gold-highlight">главный</span> кампус Урала!
               </h1>
               <p class="hero-desc" id="hero-main-desc">
-                Люди. Идеи. События. В одном кампусе. Наводи курсор на левую панель для плавного перехода по 11 разделам экосистемы, сдавай домашние задания в БРС и строй маршруты по стеклянным атриумам.
+                Выбери свою индивидуальную траекторию из 350+ программ, рассчитай шансы по баллам ЕГЭ и познакомься с новым стеклянным кампусом в Новокольцовском. Для доступа к расписанию, ДЗ и БРС войди как студент или педагог.
               </p>
 
-              <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-                <button class="btn-primary" onclick="openAuthModal('login')">🔐 Войти через УрФУ</button>
-                <button class="btn-gold" onclick="document.getElementById('main-homework-block').scrollIntoView({behavior:'smooth'})">📚 Домашние задания</button>
-                <button class="btn-glass" onclick="document.getElementById('main-navigator-block').scrollIntoView({behavior:'smooth'})">🗺️ Навигатор корпуса (85%)</button>
+              <!-- Кнопки действий в Hero для Абитуриента (меняются при входе Студента/Педагога) -->
+              <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;" id="hero-cta-group">
+                <button class="btn-gold" onclick="navigateTo('programs', document.querySelector('[data-screen=programs]'))">🧮 Калькулятор ЕГЭ и программы</button>
+                <button class="btn-primary" onclick="document.getElementById('abiturient-steps-block').scrollIntoView({behavior:'smooth'})">🚀 Как поступить в 4 шага</button>
+                <button class="btn-glass" onclick="document.getElementById('main-navigator-block').scrollIntoView({behavior:'smooth'})">🗺️ Карта корпуса (85%)</button>
               </div>
             </div>
 
-            <!-- Правая витрина с оптическим расфокус-переходом и круглой золотой кнопкой как на видео -->
+            <!-- Правая витрина с оптическим расфокус-переходом и круглой золотой кнопкой -->
             <div class="hero-photo-showcase">
               <img id="hero-showcase-img" class="hero-main-img" src="src/oblozhka.jpg" alt="Новый кампус УрФУ" />
               <div class="hero-img-overlay"></div>
@@ -201,7 +205,6 @@
                   <span id="hero-photo-label">ИРИТ-РтФ • Зеркальные стелы и фасад нового кампуса</span>
                 </div>
 
-                <!-- Круглая золотая кнопка переключения сцены (точно как в видео-референсе) -->
                 <button class="editorial-next-circle" onclick="cycleHeroEditorialSlide()" title="Следующая панорама кампуса (плавный переход)">
                   →
                 </button>
@@ -210,16 +213,16 @@
               <div class="hero-bottom-glass-card">
                 <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px;">
                   <div>
-                    <strong class="display-font" style="font-size:19px; color:var(--navy);">38 000+</strong>
-                    <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Студентов УрФУ</div>
+                    <strong class="display-font" style="font-size:19px; color:var(--navy);">9 600+</strong>
+                    <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Бюджетных мест</div>
                   </div>
                   <div style="border-left:1.5px solid rgba(31,42,68,0.15); padding-left:12px;">
                     <strong class="display-font" style="font-size:19px; color:var(--navy);">100 000 м²</strong>
                     <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Света и стекла</div>
                   </div>
                   <div style="border-left:1.5px solid rgba(31,42,68,0.15); padding-left:12px;">
-                    <strong class="display-font" style="font-size:19px; color:var(--gold);">96%</strong>
-                    <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Трудоустройство</div>
+                    <strong class="display-font" style="font-size:19px; color:var(--gold);">до 30 000 ₽</strong>
+                    <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Стипендия 1 курса</div>
                   </div>
                 </div>
 
@@ -244,17 +247,171 @@
             </div>
           </div>
 
-          <!-- ПАНЕЛЬ БЫСТРОГО ДОСТУПА ДЛЯ ПЕДАГОГА -->
+          <!-- =============================================================
+               БЛОК 1 (ТОЛЬКО ДЛЯ АБИТУРИЕНТА): ТРЕКЕР ПОСТУПЛЕНИЯ И СТИПЕНДИЙ
+               (У абитуриента нет ДЗ и БРС — вместо них навигатор поступления!)
+               ============================================================= -->
+          <div id="abiturient-steps-block" class="role-exclusive-abit parallax-layer" data-depth="2">
+            <div class="section-head">
+              <div>
+                <h2>🎯 Трекер абитуриента: поступление в УрФУ без стресса</h2>
+                <p class="section-sub">Всё, что нужно будущему первокурснику: от подбора направлений по ЕГЭ до заселения в кампус Новокольцовский</p>
+              </div>
+              <button class="btn-primary" onclick="navigateTo('programs', document.querySelector('[data-screen=programs]'))">Подобрать программу по ЕГЭ →</button>
+            </div>
+
+            <div class="grid-4">
+              <div class="glass-card">
+                <span class="badge-gold">ШАГ 01 • ДО 20 ИЮНЯ</span>
+                <h3 style="font-size:17px; margin:10px 0 6px;">Выбери до 5 направлений</h3>
+                <p style="font-size:13px; color:var(--text-muted);">Используй интерактивный калькулятор ЕГЭ и сравни проходные баллы в 12 институтах УрФУ.</p>
+              </div>
+              <div class="glass-card">
+                <span class="badge-soft">ШАГ 02 • 20 ИЮНЯ – 25 ИЮЛЯ</span>
+                <h3 style="font-size:17px; margin:10px 0 6px;">Подай документы онлайн</h3>
+                <p style="font-size:13px; color:var(--text-muted);">Через кабинет абитуриента УрФУ или Госуслуги без очередей и бумажных копий.</p>
+              </div>
+              <div class="glass-card">
+                <span class="badge-soft">ШАГ 03 • АВГУСТ</span>
+                <h3 style="font-size:17px; margin:10px 0 6px;">Оригиналы и приказ</h3>
+                <p style="font-size:13px; color:var(--text-muted);">Отслеживай свое место в живых конкурсных списках и получай гарантированное общежитие.</p>
+              </div>
+              <div class="glass-card-beige">
+                <span class="badge-gold">БОНУС ВЫСОКОБАЛЛЬНИКАМ</span>
+                <h3 style="font-size:17px; margin:10px 0 6px;">Стипендия до 30 000 ₽/мес</h3>
+                <p style="font-size:13px; color:var(--text-muted);">Призеры олимпиад и абитуриенты с суммой ЕГЭ от 270 баллов получают повышенный грант с 1 сентября.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- =============================================================
+               БЛОК 2 (ТОЛЬКО ДЛЯ ПЕДАГОГА ПОСЛЕ АВТОРИЗАЦИИ): ПАНЕЛЬ ПРЕПОДАВАТЕЛЯ
+               ============================================================= -->
           <div id="teacher-quick-ribbon" class="glass-card-navy parallax-layer" data-depth="2" style="margin-top:22px; display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
               <div>
                 <span class="badge-gold">РАБОЧЕЕ МЕСТО ПРЕПОДАВАТЕЛЯ УрФУ</span>
-                <h3 style="font-size:20px; margin-top:8px;">Управление курсами, проверка ДЗ и ведомость БРС</h3>
-                <p style="font-size:13.5px; color:var(--beige);">На проверке 4 лабораторные работы группы РИ-160033 • Ближайшая лекция: Стеклянный атриум А-101 (14:15)</p>
+                <h3 style="font-size:20px; margin-top:8px;">Управление курсами, расписанием потоков и ведомостью БРС</h3>
+                <p style="font-size:13.5px; color:var(--beige);">Вы вошли как: <strong>доц. Соколов Алексей Викторович (ИРИТ-РтФ)</strong> • На проверке 4 работы группы РИ-160033</p>
               </div>
               <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn-gold" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))">Проверить ДЗ студентов (4)</button>
-                <button class="btn-glass" style="background:rgba(255,255,255,0.14); color:var(--cream); border-color:var(--gold);" onclick="showToast('Ведомость БРС синхронизирована с личным кабинетом преподавателя ✓')">Выгрузить ведомость БРС</button>
+                <button class="btn-gold" onclick="navigateTo('schedule', document.querySelector('[data-screen=schedule]'))">🗓️ Мои пары на неделе</button>
+                <button class="btn-glass" style="background:rgba(255,255,255,0.14); color:var(--cream); border-color:var(--gold);" onclick="showToast('Ведомость БРС выгружена в формате XLSX ✓')">Выгрузить ведомость БРС</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- =============================================================
+               БЛОК 3 (ТОЛЬКО ДЛЯ АВТОРИЗОВАННЫХ СТУДЕНТОВ И ПЕДАГОГОВ):
+               ДОМАШНИЕ ЗАДАНИЯ И ТРЕКЕР СЕМЕСТРА (СКРЫТ У АБИТУРИЕНТА!)
+               ============================================================= -->
+          <div id="authenticated-homework-section" style="display:none;">
+            <div id="main-homework-block" class="section-head parallax-layer" data-depth="2">
+              <div>
+                <h2 id="home-hw-section-title">📚 Мои домашние задания и трекер семестра</h2>
+                <p class="section-sub" id="home-hw-section-sub">Сдавай лабораторные и проекты в один клик — баллы БРС начисляются автоматически после проверки педагогом</p>
+              </div>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <button class="btn-gold" onclick="navigateTo('schedule', document.querySelector('[data-screen=schedule]'))">🗓️ Расписание недели →</button>
+                <button class="btn-primary" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))">Все задания →</button>
+              </div>
+            </div>
+
+            <div class="hw-wrapper parallax-layer" data-depth="3">
+              <div class="hw-top-bar">
+                <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
+                  <div>
+                    <div style="font-size:12px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Прогресс семестра • Группа РИ-160033</div>
+                    <div style="display:flex; align-items:baseline; gap:10px; margin-top:2px;">
+                      <span class="display-font" style="font-size:24px; color:var(--navy);" id="hw-progress-label">78% выполнено</span>
+                      <span class="badge-gold" id="hw-brs-bonus">+24.5 балла в БРС</span>
+                    </div>
+                  </div>
+                  <div style="width:220px;">
+                    <div class="progress-track">
+                      <div class="progress-fill" id="hw-progress-bar" style="width: 78%;"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="filter-pills">
+                  <button class="pill-btn active" onclick="filterHomework('all', this)">Все (4)</button>
+                  <button class="pill-btn" onclick="filterHomework('urgent', this)">Горит дедлайн</button>
+                  <button class="pill-btn" onclick="filterHomework('review', this)">На проверке</button>
+                  <button class="pill-btn" onclick="filterHomework('done', this)">Сдано</button>
+                </div>
+              </div>
+
+              <div class="grid-2" id="main-hw-grid">
+                <div class="hw-card hw-item" data-status="urgent">
+                  <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                      <span class="badge-soft">Прикладной ИИ и ML • ИРИТ-РтФ</span>
+                      <span class="hw-status urgent" id="hw-st-1">🔥 До 30 октября, 23:59</span>
+                    </div>
+                    <h3 style="font-size:17px; margin-bottom:6px;">Лабораторная №4: Обучение сверточной нейросети и деплой на FastAPI</h3>
+                    <p style="font-size:13px; color:var(--text-muted);">
+                      Преподаватель: доц. Соколов А. В. • Прикрепите ссылку на GitHub-репозиторий и отчет в PDF. Максимум: <strong>+8 баллов БРС</strong>.
+                    </p>
+                  </div>
+                  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
+                    <input type="text" id="hw-link-1" class="form-input" style="flex:1; padding:8px 12px; font-size:13px;" value="https://github.com/urfu-ai/cnn-fastapi-lab4" />
+                    <button class="btn-primary student-submit-btn" style="padding:9px 16px; font-size:12.5px;" onclick="submitHomework(1)">Сдать работу ✓</button>
+                    <button class="btn-gold teacher-grade-btn" style="display:none; padding:9px 14px; font-size:12px;" onclick="gradeHomework(1, '+8.0 БРС')">Оценить: 8/8 БРС</button>
+                  </div>
+                </div>
+
+                <div class="hw-card hw-item" data-status="urgent">
+                  <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                      <span class="badge-soft">Проектный практикум • Команда</span>
+                      <span class="hw-status urgent" id="hw-st-2">⏳ До 1 ноября, 18:00</span>
+                    </div>
+                    <h3 style="font-size:17px; margin-bottom:6px;">Спринт 2: Интерактивный прототип и дизайн-система фасада УрФУ</h3>
+                    <p style="font-size:13px; color:var(--text-muted);">
+                      Куратор: В. В. Виткин • Загрузите ссылку на макеты в Figma и проведите тестирование сценариев. <strong>+12 баллов БРС</strong>.
+                    </p>
+                  </div>
+                  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
+                    <input type="text" id="hw-link-2" class="form-input" style="flex:1; padding:8px 12px; font-size:13px;" value="https://figma.com/file/urfu-glass-redesign" />
+                    <button class="btn-primary student-submit-btn" style="padding:9px 16px; font-size:12.5px;" onclick="submitHomework(2)">Сдать работу ✓</button>
+                    <button class="btn-gold teacher-grade-btn" style="display:none; padding:9px 14px; font-size:12px;" onclick="gradeHomework(2, '+12.0 БРС')">Оценить: 12/12 БРС</button>
+                  </div>
+                </div>
+
+                <div class="hw-card hw-item" data-status="review">
+                  <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                      <span class="badge-soft">Алгоритмы и структуры данных</span>
+                      <span class="hw-status review" id="hw-st-3">👀 На проверке у педагога</span>
+                    </div>
+                    <h3 style="font-size:17px; margin-bottom:6px;">Домашнее задание №3: Поиск кратчайшего пути в графе корпусов</h3>
+                    <p style="font-size:13px; color:var(--text-muted);">
+                      Отправлено 24 октября • Автотесты пройдены (18/18). Ожидается подтверждение преподавателя.
+                    </p>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
+                    <span style="font-size:12.5px; font-weight:700; color:var(--navy);">📎 graph_dijkstra_urfu.py</span>
+                    <button class="btn-gold teacher-grade-btn" style="display:none; padding:8px 14px; font-size:12px;" onclick="gradeHomework(3, '+6.0 БРС')">Выставить 6/6 в БРС</button>
+                  </div>
+                </div>
+
+                <div class="hw-card hw-item" data-status="done">
+                  <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                      <span class="badge-soft">Базы данных и SQL</span>
+                      <span class="hw-status done" id="hw-st-4">✅ Проверено • +10.0 БРС</span>
+                    </div>
+                    <h3 style="font-size:17px; margin-bottom:6px;">Проектирование схемы БД для сервиса менторов Campus Connect</h3>
+                    <p style="font-size:13px; color:var(--text-muted);">
+                      Комментарий педагога: «Отличная нормализация таблиц и индексов, баллы зачислены в итоговый рейтинг семестра».
+                    </p>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
+                    <span style="font-size:12.5px; color:var(--success); font-weight:700;">В ведомости БРС: 10 из 10</span>
+                    <span class="badge-gold">Зачтено</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -291,10 +448,10 @@
 
             <div class="navigator-route-pills">
               <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button class="route-chip active" onclick="highlightCampusRoute('Стеклянный атриум (1 этаж) • Главный лекторий А-101', this)">✨ Стеклянный атриум</button>
+                <button class="route-chip active" onclick="highlightCampusRoute('Стеклянный атриум (1 этаж) • Главный лекторий А-101', this)">✨ Стеклянный атриум А-101</button>
                 <button class="route-chip" onclick="highlightCampusRoute('Панорамный коворкинг (3 этаж, крыло Б) • Зона TeamUp', this)">💻 Коворкинг 3 этаж</button>
-                <button class="route-chip" onclick="highlightCampusRoute('Деканат ИРИТ-РтФ и преподавательская (2 этаж, И-204)', this)">🏛️ Деканат и Педагоги</button>
-                <button class="route-chip" onclick="highlightCampusRoute('Лаборатория Прикладного ИИ и робототехники (Крыло В)', this)">🔬 Лаборатория ИИ</button>
+                <button class="route-chip" onclick="highlightCampusRoute('Деканат ИРИТ-РтФ и преподавательская (2 этаж, И-204)', this)">🏛️ Деканат И-204</button>
+                <button class="route-chip" onclick="highlightCampusRoute('Лаборатория Прикладного ИИ и робототехники (ауд. И-420)', this)">🔬 Лаборатория И-420</button>
               </div>
               <span class="badge-gold">Живая 2D/3D навигация</span>
             </div>
@@ -312,117 +469,7 @@
 
               <div class="map-floating-status" id="map-route-status">
                 <span>🧭</span>
-                <span id="map-route-text">Активная локация: Стеклянный атриум (масштаб 85% для полного обзора крыльев корпуса)</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- ОТДЕЛЬНЫЙ БЛОК С ДОМАШНИМ ЗАДАНИЕМ СТУДЕНТА И ПРОВЕРКОЙ ПЕДАГОГА -->
-          <div id="main-homework-block" class="section-head parallax-layer" data-depth="2">
-            <div>
-              <h2>📚 Домашние задания и трекер семестра</h2>
-              <p class="section-sub">Сдавай лабораторные и проекты в один клик — баллы БРС начисляются автоматически после проверки педагогом</p>
-            </div>
-            <div style="display:flex; gap:10px; align-items:center;">
-              <button class="pill-btn" id="hw-mode-toggle-btn" onclick="toggleTeacherHwMode()">👩‍🏫 Режим проверки (Педагогу)</button>
-              <button class="btn-primary" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))">Все задания и ведомость →</button>
-            </div>
-          </div>
-
-          <div class="hw-wrapper parallax-layer" data-depth="3">
-            <div class="hw-top-bar">
-              <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
-                <div>
-                  <div style="font-size:12px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Прогресс сдачи ДЗ за семестр</div>
-                  <div style="display:flex; align-items:baseline; gap:10px; margin-top:2px;">
-                    <span class="display-font" style="font-size:24px; color:var(--navy);" id="hw-progress-label">78% выполнено</span>
-                    <span class="badge-gold" id="hw-brs-bonus">+24.5 балла в БРС</span>
-                  </div>
-                </div>
-                <div style="width:220px;">
-                  <div class="progress-track">
-                    <div class="progress-fill" id="hw-progress-bar" style="width: 78%;"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="filter-pills">
-                <button class="pill-btn active" onclick="filterHomework('all', this)">Все (4)</button>
-                <button class="pill-btn" onclick="filterHomework('urgent', this)">Горит дедлайн</button>
-                <button class="pill-btn" onclick="filterHomework('review', this)">На проверке</button>
-                <button class="pill-btn" onclick="filterHomework('done', this)">Сдано</button>
-              </div>
-            </div>
-
-            <div class="grid-2" id="main-hw-grid">
-              <div class="hw-card hw-item" data-status="urgent">
-                <div>
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <span class="badge-soft">Прикладной ИИ и ML • ИРИТ-РтФ</span>
-                    <span class="hw-status urgent" id="hw-st-1">🔥 До 30 октября, 23:59</span>
-                  </div>
-                  <h3 style="font-size:17px; margin-bottom:6px;">Лабораторная №4: Обучение сверточной нейросети и деплой на FastAPI</h3>
-                  <p style="font-size:13px; color:var(--text-muted);">
-                    Преподаватель: доц. Соколов А. В. • Прикрепите ссылку на GitHub-репозиторий и отчет в PDF. Максимум: <strong>+8 баллов БРС</strong>.
-                  </p>
-                </div>
-                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
-                  <input type="text" id="hw-link-1" class="form-input" style="flex:1; padding:8px 12px; font-size:13px;" value="https://github.com/urfu-ai/cnn-fastapi-lab4" />
-                  <button class="btn-primary" style="padding:9px 16px; font-size:12.5px;" onclick="submitHomework(1)">Сдать работу ✓</button>
-                  <button class="btn-gold teacher-grade-btn" style="display:none; padding:9px 14px; font-size:12px;" onclick="gradeHomework(1, '+8.0 БРС')">Оценить: 8/8 БРС</button>
-                </div>
-              </div>
-
-              <div class="hw-card hw-item" data-status="urgent">
-                <div>
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <span class="badge-soft">Проектный практикум • Команда</span>
-                    <span class="hw-status urgent" id="hw-st-2">⏳ До 1 ноября, 18:00</span>
-                  </div>
-                  <h3 style="font-size:17px; margin-bottom:6px;">Спринт 2: Интерактивный прототип и дизайн-система фасада УрФУ</h3>
-                  <p style="font-size:13px; color:var(--text-muted);">
-                    Куратор: В. В. Виткин • Загрузите ссылку на макеты в Figma и проведите тестирование сценариев. <strong>+12 баллов БРС</strong>.
-                  </p>
-                </div>
-                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
-                  <input type="text" id="hw-link-2" class="form-input" style="flex:1; padding:8px 12px; font-size:13px;" value="https://figma.com/file/urfu-glass-redesign" />
-                  <button class="btn-primary" style="padding:9px 16px; font-size:12.5px;" onclick="submitHomework(2)">Сдать работу ✓</button>
-                  <button class="btn-gold teacher-grade-btn" style="display:none; padding:9px 14px; font-size:12px;" onclick="gradeHomework(2, '+12.0 БРС')">Оценить: 12/12 БРС</button>
-                </div>
-              </div>
-
-              <div class="hw-card hw-item" data-status="review">
-                <div>
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <span class="badge-soft">Алгоритмы и структуры данных</span>
-                    <span class="hw-status review" id="hw-st-3">👀 На проверке у педагога</span>
-                  </div>
-                  <h3 style="font-size:17px; margin-bottom:6px;">Домашнее задание №3: Поиск кратчайшего пути в графе корпусов</h3>
-                  <p style="font-size:13px; color:var(--text-muted);">
-                    Отправлено 24 октября • Автотесты пройдены (18/18). Ожидается подтверждение преподавателя.
-                  </p>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
-                  <span style="font-size:12.5px; font-weight:700; color:var(--navy);">📎 graph_dijkstra_urfu.py</span>
-                  <button class="btn-gold teacher-grade-btn" style="display:none; padding:8px 14px; font-size:12px;" onclick="gradeHomework(3, '+6.0 БРС')">Выставить 6/6 в БРС</button>
-                </div>
-              </div>
-
-              <div class="hw-card hw-item" data-status="done">
-                <div>
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <span class="badge-soft">Базы данных и SQL</span>
-                    <span class="hw-status done" id="hw-st-4">✅ Проверено • +10.0 БРС</span>
-                  </div>
-                  <h3 style="font-size:17px; margin-bottom:6px;">Проектирование схемы БД для сервиса менторов Campus Connect</h3>
-                  <p style="font-size:13px; color:var(--text-muted);">
-                    Комментарий педагога: «Отличная нормализация таблиц и индексов, баллы зачислены в итоговый рейтинг семестра».
-                  </p>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
-                  <span style="font-size:12.5px; color:var(--success); font-weight:700;">В ведомости БРС: 10 из 10</span>
-                  <span class="badge-gold">Зачтено</span>
-                </div>
+                <span id="map-route-text">Активная локация: Стеклянный атриум А-101 (масштаб 85% для полного обзора корпуса)</span>
               </div>
             </div>
           </div>
@@ -519,68 +566,7 @@
         </section>
 
         <!-- ===============================================================
-             ЭКРАН 2: ДОМАШНИЕ ЗАДАНИЯ И РАБОЧЕЕ МЕСТО ПЕДАГОГА
-             =============================================================== -->
-        <section id="screen-homework" class="screen">
-          <div class="page-banner parallax-layer" data-depth="1">
-            <img class="page-banner-bg" src="src/6571bc0a21495630507812.jpg" alt="Коворкинг" />
-            <div>
-              <span class="badge-gold">УЧЕБНЫЙ ХАБ • СТУДЕНТ ↔ ПЕДАГОГ</span>
-              <h1 class="morph-headline" style="margin-top:8px;">Домашние задания, проекты и журнал БРС</h1>
-              <p>Прозрачный трекер дедлайнов для студента и конструктор заданий для преподавателя</p>
-            </div>
-            <button class="btn-gold" onclick="toggleTeacherHwMode()">Переключить: Студент / Педагог</button>
-          </div>
-
-          <div class="grid-2 parallax-layer" data-depth="2">
-            <div class="glass-card">
-              <span class="badge-soft">СТУДЕНТУ • БЫСТРАЯ ОТПРАВКА РЕШЕНИЯ</span>
-              <h3 style="font-size:20px; margin:10px 0 14px;">Отправить домашнее задание на проверку</h3>
-              <div class="form-field">
-                <label>ВЫБЕРИ ДИСЦИПЛИНУ</label>
-                <select class="form-input" id="new-hw-subject">
-                  <option>Прикладной искусственный интеллект (доц. Соколов А. В.)</option>
-                  <option>Проектный практикум ИРИТ-РтФ (В. В. Виткин)</option>
-                  <option>Алгоритмы и структуры данных (проф. Мельников И. П.)</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label>ССЫЛКА НА РЕПОЗИТОРИЙ / МАКЕТ В FIGMA / ОТЧЕТ</label>
-                <input type="text" class="form-input" id="new-hw-url" value="https://github.com/urfu-student/ai-homework-solution" />
-              </div>
-              <div class="form-field">
-                <label>КОММЕНТАРИЙ ДЛЯ ПРЕПОДАВАТЕЛЯ</label>
-                <textarea class="form-textarea" id="new-hw-comment">Выполнены все 3 пункта ТЗ, добавлены unit-тесты и документация в README.</textarea>
-              </div>
-              <button class="btn-primary" onclick="addStudentSubmission()">Отправить работу в БРС →</button>
-            </div>
-
-            <div class="glass-card-beige">
-              <span class="badge-gold">ПЕДАГОГУ • СОЗДАНИЕ ЗАДАНИЯ ДЛЯ ПОТОКА</span>
-              <h3 style="font-size:20px; margin:10px 0 14px;">Выдать новое задание группе / потоку</h3>
-              <div class="grid-2" style="gap:12px;">
-                <div class="form-field">
-                  <label>ПОТОК / ГРУППА</label>
-                  <input type="text" class="form-input" id="teacher-group" value="РИ-160033, РИ-230912" />
-                </div>
-                <div class="form-field">
-                  <label>ВЕС В БРС (БАЛЛЫ)</label>
-                  <input type="text" class="form-input" id="teacher-points" value="+10.0 баллов" />
-                </div>
-              </div>
-              <div class="form-field">
-                <label>НАЗВАНИЕ И КРИТЕРИИ ЗАДАНИЯ</label>
-                <textarea class="form-textarea" id="teacher-task-title">Лабораторная работа №5: Интеграция LLM-ассистента с базой знаний кампуса УрФУ.</textarea>
-              </div>
-              <button class="btn-gold" onclick="publishTeacherTask()">Опубликовать задание для студентов ✓</button>
-            </div>
-          </div>
-
-          <div id="extra-hw-list" style="margin-top:22px;" class="grid-2 parallax-layer" data-depth="3"></div>
-        </section>
-
-        <!-- ===============================================================
-             ЭКРАН 3: КАТАЛОГ ПРОГРАММ + КАЛЬКУЛЯТОР ЕГЭ
+             ЭКРАН 2: КАТАЛОГ ПРОГРАММ + КАЛЬКУЛЯТОР ЕГЭ (ДОСТУПЕН АБИТУРИЕНТУ)
              =============================================================== -->
         <section id="screen-programs" class="screen">
           <div class="page-banner parallax-layer" data-depth="1">
@@ -675,7 +661,7 @@
         </section>
 
         <!-- ===============================================================
-             ЭКРАН 4: ЛЕНДИНГ ПРОГРАММЫ «ПРИКЛАДНОЙ ИСКУССТВЕННЫЙ ИНТЕЛЛЕКТ»
+             ЭКРАН 3: ЛЕНДИНГ ПРОГРАММЫ «ПРИКЛАДНОЙ ИСКУССТВЕННЫЙ ИНТЕЛЛЕКТ»
              =============================================================== -->
         <section id="screen-ai-landing" class="screen">
           <div class="page-banner parallax-layer" data-depth="1" style="min-height:250px;">
@@ -685,7 +671,7 @@
               <h1 class="morph-headline" style="font-size:32px; margin:10px 0;">Прикладной искусственный интеллект</h1>
               <p style="max-width:680px;">Обучение в новом стеклянном кампусе УрФУ совместно с инженерами Сбера, Контура и Яндекса. Собственные GPU-кластеры и проектный практикум с 1 семестра.</p>
             </div>
-            <button class="btn-gold" onclick="openAuthModal('register')">Подать заявление онлайн</button>
+            <button class="btn-gold" onclick="showToast('Заявка абитуриента на программу 09.03.04 зарегистрирована ✓')">Подать заявление на программу</button>
           </div>
 
           <div class="grid-3 parallax-layer" data-depth="2">
@@ -708,7 +694,193 @@
         </section>
 
         <!-- ===============================================================
-             ЭКРАН 5: ДАШБОРД СТУДЕНТА CAMPUS CONNECT
+             ЭКРАН 4: ОТДЕЛЬНАЯ СТРАНИЦА НАВИГАТОРА КОРПУСА 3D
+             =============================================================== -->
+        <section id="screen-campus-map" class="screen">
+          <div class="page-banner parallax-layer" data-depth="1">
+            <img class="page-banner-bg" src="src/DIP_8550.jpg" alt="Стеклянный атриум" />
+            <div>
+              <h1 class="morph-headline">Интерактивный навигатор корпуса УрФУ</h1>
+              <p id="full-map-subtitle">Полноэкранная схема этажей `campusnavigator-mu.vercel.app` в полупрозрачном стеклянном фрейме</p>
+            </div>
+            <a href="https://campusnavigator-mu.vercel.app/" target="_blank" rel="noopener" class="btn-gold" style="text-decoration:none;">Открыть в новой вкладке ↗</a>
+          </div>
+
+          <div class="navigator-glass-shell parallax-layer" data-depth="2">
+            <div class="navigator-viewport tall-map">
+              <div class="navigator-scale-stage" style="width:117.65%; height:117.65%; transform:scale(0.85);">
+                <iframe
+                  src="https://campusnavigator-mu.vercel.app/"
+                  title="Полная карта корпуса УрФУ"
+                  loading="lazy"
+                  allow="fullscreen; geolocation"
+                ></iframe>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ЭКРАН 5: ДНИ ОТКРЫТЫХ ДВЕРЕЙ И АФИША СОБЫТИЙ
+             =============================================================== -->
+        <section id="screen-events" class="screen">
+          <div class="page-banner parallax-layer" data-depth="1">
+            <img class="page-banner-bg" src="src/20240604_kampus.jpg" alt="Аллея кампуса" />
+            <div>
+              <h1 class="morph-headline">Дни открытых дверей и события кампуса</h1>
+              <p>Экскурсии для абитуриентов, хакатоны, открытые лекции в стеклянном атриуме и студенческий спорт</p>
+            </div>
+          </div>
+
+          <div class="grid-3 parallax-layer" data-depth="2">
+            <div class="glass-card">
+              <span class="badge-gold">ДЛЯ АБИТУРИЕНТОВ • СУББОТА 14:00</span>
+              <h3 style="margin:10px 0 6px;">Большой День открытых дверей в Новокольцовском</h3>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Экскурсия по стеклянному атриуму, общежитиям и лабораториям ИИ + разбор правил приёма.</p>
+              <button class="btn-primary" onclick="showToast('Вы зарегистрированы на День открытых дверей УрФУ ✓')">Зарегистрироваться гостем</button>
+            </div>
+            <div class="glass-card">
+              <span class="badge-soft">ТРАДИЦИИ ВУЗА • 19 ОКТЯБРЯ</span>
+              <h3 style="margin:10px 0 6px;">День рождения УрФУ и Хоровод у ГУКа</h3>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Праздничная программа на площади Кирова и фестиваль студенческих объединений.</p>
+              <button class="btn-glass" onclick="showToast('Событие добавлено в календарь ✓')">Напомнить о событии</button>
+            </div>
+            <div class="glass-card">
+              <span class="badge-gold">КАРЬЕРА • 26 НОЯБРЯ</span>
+              <h3 style="margin:10px 0 6px;">Форум «Пик IT» и День карьеры</h3>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Мастер-классы от Сбера, Контура и Яндекса для старшеклассников и студентов УрФУ.</p>
+              <button class="btn-glass" onclick="showToast('Событие добавлено в календарь ✓')">Участвовать</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ЭКРАН 6: ОБ УРФУ, 12 ИНСТИТУТОВ, БРС И СЛОВАРЬ СЛЕНГА
+             =============================================================== -->
+        <section id="screen-about" class="screen">
+          <div class="page-banner parallax-layer" data-depth="1">
+            <img class="page-banner-bg" src="src/nov_kampus_ijun_24.jpg" alt="Кампус" />
+            <div>
+              <h1 class="morph-headline">Об УрФУ: институты, общежития и словарь</h1>
+              <p>Структура федерального университета, условия проживания в новом кампусе и студенческий сленг</p>
+            </div>
+          </div>
+
+          <div class="grid-3 parallax-layer" data-depth="2" style="margin-bottom:26px;">
+            <div class="glass-card"><strong>🏛️ ГУК и Паркет</strong><p style="font-size:13px; color:var(--text-muted); margin-top:6px;">ГУК — Главный учебный корпус на Мира, 19. «Паркет» — легендарное место встреч на 2 этаже.</p></div>
+            <div class="glass-card"><strong>🏢 Общежития Новокольцовского</strong><p style="font-size:13px; color:var(--text-muted); margin-top:6px;">Двухместные студии гостиничного типа со своей кухней, коворкингами, прачечными и фитнес-зонами.</p></div>
+            <div class="glass-card"><strong>📊 БРС (0–100 баллов)</strong><p style="font-size:13px; color:var(--text-muted); margin-top:6px;">Прозрачная балльно-рейтинговая система, в которой каждая лабораторная и проект приближают к автомату.</p></div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ЭКРАН 7 (ЗАКРЫТЫЙ): НЕДЕЛЬНОЕ РАСПИСАНИЕ ЗАНЯТИЙ (ПН – СБ)
+             С УКАЗАНИЕМ ВРЕМЕНИ, ИМЕНИ ПРЕПОДАВАТЕЛЯ И АУДИТОРИИ
+             =============================================================== -->
+        <section id="screen-schedule" class="screen">
+          <div class="page-banner parallax-layer" data-depth="1">
+            <img class="page-banner-bg" src="src/DIP_8550.jpg" alt="Стеклянный атриум" />
+            <div>
+              <span class="badge-gold" id="schedule-role-badge">РАСПИСАНИЕ НЕДЕЛИ • ГРУППА РИ-160033</span>
+              <h1 class="morph-headline" style="margin-top:8px;" id="schedule-main-title">Календарная сетка занятий на неделю</h1>
+              <p id="schedule-main-sub">Нажми на любую аудиторию в карточке пары, чтобы мгновенно подсветить её на 3D-карте корпуса</p>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn-gold" id="week-even-btn" onclick="switchScheduleWeek('even', this)">Чётная неделя (26–31 окт)</button>
+              <button class="btn-glass" id="week-odd-btn" style="color:var(--cream); border-color:rgba(255,255,255,0.4);" onclick="switchScheduleWeek('odd', this)">Нечётная неделя</button>
+            </div>
+          </div>
+
+          <!-- Панель фильтров расписания и легенда -->
+          <div class="glass-card-beige parallax-layer" data-depth="2" style="margin-bottom:22px; padding:16px 22px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+              <div class="filter-pills">
+                <button class="pill-btn active" onclick="filterScheduleType('all', this)">Все пары недели</button>
+                <button class="pill-btn" onclick="filterScheduleType('lecture', this)">Лекции</button>
+                <button class="pill-btn" onclick="filterScheduleType('lab', this)">Лабораторные и практика</button>
+                <button class="pill-btn" onclick="filterScheduleType('project', this)">Проектный практикум</button>
+              </div>
+              <div style="display:flex; gap:14px; font-size:12px; font-weight:700; color:var(--navy); align-items:center;">
+                <span><i class="legend-dot gold"></i> Лекция</span>
+                <span><i class="legend-dot navy"></i> Лабораторная / Практика</span>
+                <span><i class="legend-dot green"></i> Проектный практикум</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- СЕТКА РАСПИСАНИЯ НЕДЕЛИ (ВРЕМЕННЫЕ СЛОТЫ × 6 ДНЕЙ ПН–СБ) -->
+          <div class="week-schedule-shell parallax-layer" data-depth="3">
+            <div class="week-grid-table" id="week-grid-table">
+              <!-- Генерируется динамически в app.js с учетом роли (Студент / Педагог) и четности недели -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ЭКРАН 8 (ЗАКРЫТЫЙ): ДОМАШНИЕ ЗАДАНИЯ И РАБОЧЕЕ МЕСТО ПЕДАГОГА
+             =============================================================== -->
+        <section id="screen-homework" class="screen">
+          <div class="page-banner parallax-layer" data-depth="1">
+            <img class="page-banner-bg" src="src/6571bc0a21495630507812.jpg" alt="Коворкинг" />
+            <div>
+              <span class="badge-gold">УЧЕБНЫЙ ХАБ • СТУДЕНТ ↔ ПЕДАГОГ</span>
+              <h1 class="morph-headline" style="margin-top:8px;">Домашние задания, проекты и журнал БРС</h1>
+              <p>Прозрачный трекер дедлайнов для студента и конструктор заданий для преподавателя</p>
+            </div>
+            <button class="btn-gold" onclick="navigateTo('schedule', document.querySelector('[data-screen=schedule]'))">🗓️ Открыть расписание недели</button>
+          </div>
+
+          <div class="grid-2 parallax-layer" data-depth="2">
+            <!-- Форма для студента -->
+            <div class="glass-card" id="hw-student-form-card">
+              <span class="badge-soft">СТУДЕНТУ • БЫСТРАЯ ОТПРАВКА РЕШЕНИЯ</span>
+              <h3 style="font-size:20px; margin:10px 0 14px;">Отправить домашнее задание на проверку</h3>
+              <div class="form-field">
+                <label>ВЫБЕРИ ДИСЦИПЛИНУ</label>
+                <select class="form-input" id="new-hw-subject">
+                  <option>Прикладной искусственный интеллект (доц. Соколов А. В.)</option>
+                  <option>Проектный практикум ИРИТ-РтФ (В. В. Виткин)</option>
+                  <option>Алгоритмы и структуры данных (проф. Мельников И. П.)</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>ССЫЛКА НА РЕПОЗИТОРИЙ / МАКЕТ В FIGMA / ОТЧЕТ</label>
+                <input type="text" class="form-input" id="new-hw-url" value="https://github.com/urfu-student/ai-homework-solution" />
+              </div>
+              <div class="form-field">
+                <label>КОММЕНТАРИЙ ДЛЯ ПРЕПОДАВАТЕЛЯ</label>
+                <textarea class="form-textarea" id="new-hw-comment">Выполнены все 3 пункта ТЗ, добавлены unit-тесты и документация в README.</textarea>
+              </div>
+              <button class="btn-primary" onclick="addStudentSubmission()">Отправить работу в БРС →</button>
+            </div>
+
+            <!-- Форма для педагога -->
+            <div class="glass-card-beige" id="hw-teacher-form-card">
+              <span class="badge-gold">ПЕДАГОГУ • СОЗДАНИЕ ЗАДАНИЯ ДЛЯ ПОТОКА</span>
+              <h3 style="font-size:20px; margin:10px 0 14px;">Выдать новое задание группе / потоку</h3>
+              <div class="grid-2" style="gap:12px;">
+                <div class="form-field">
+                  <label>ПОТОК / ГРУППА</label>
+                  <input type="text" class="form-input" id="teacher-group" value="РИ-160033, РИ-230912" />
+                </div>
+                <div class="form-field">
+                  <label>ВЕС В БРС (БАЛЛЫ)</label>
+                  <input type="text" class="form-input" id="teacher-points" value="+10.0 баллов" />
+                </div>
+              </div>
+              <div class="form-field">
+                <label>НАЗВАНИЕ И КРИТЕРИИ ЗАДАНИЯ</label>
+                <textarea class="form-textarea" id="teacher-task-title">Лабораторная работа №5: Интеграция LLM-ассистента с базой знаний кампуса УрФУ.</textarea>
+              </div>
+              <button class="btn-gold" onclick="publishTeacherTask()">Опубликовать задание для студентов ✓</button>
+            </div>
+          </div>
+
+          <div id="extra-hw-list" style="margin-top:22px;" class="grid-2 parallax-layer" data-depth="3"></div>
+        </section>
+
+        <!-- ===============================================================
+             ЭКРАН 9 (ЗАКРЫТЫЙ): ДАШБОРД И БРС CAMPUS CONNECT
              =============================================================== -->
         <section id="screen-dashboard" class="screen">
           <div class="page-banner parallax-layer" data-depth="1">
@@ -717,49 +889,56 @@
               <h1 class="morph-headline" id="dashboard-user-greeting">Привет, Эльдаров Эльдар Эльдарович</h1>
               <p id="dashboard-user-sub">ИРИТ-РтФ, группа РИ-160033 • Средний балл БРС: 88.4 • Кампус Новокольцовский</p>
             </div>
-            <button class="btn-gold" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))">Мои дедлайны ДЗ (2)</button>
+            <button class="btn-gold" onclick="navigateTo('schedule', document.querySelector('[data-screen=schedule]'))">🗓️ Расписание на неделю</button>
           </div>
 
           <div class="grid-3 parallax-layer" data-depth="2" style="margin-bottom:24px;">
+            <div class="glass-card" onclick="navigateTo('schedule', document.querySelector('[data-screen=schedule]'))" style="cursor:pointer;">
+              <strong>🗓️ Недельное расписание</strong>
+              <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">Сетка Пн–Сб с именами преподавателей и аудиториями</p>
+            </div>
             <div class="glass-card" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))" style="cursor:pointer;">
               <strong>📚 Домашние задания</strong>
-              <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">2 работы ждут отправки до конца недели</p>
+              <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">2 работы ждут отправки • +24.5 балла в БРС</p>
             </div>
             <div class="glass-card" onclick="navigateTo('teamup', document.querySelector('[data-screen=teamup]'))" style="cursor:pointer;">
               <strong>🤖 UrFU TeamUp</strong>
               <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">ИИ-подбор участников в проектную команду</p>
             </div>
-            <div class="glass-card" onclick="navigateTo('campus-map', document.querySelector('[data-screen=campus-map]'))" style="cursor:pointer;">
-              <strong>🗺️ Навигатор корпуса</strong>
-              <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">Следующая пара: Атриум, ауд. А-101</p>
-            </div>
           </div>
 
           <div class="grid-2 parallax-layer" data-depth="3">
             <div class="glass-card">
-              <h3 style="margin-bottom:12px;">📅 Расписание на сегодня</h3>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3>📊 Балльно-рейтинговая зачетка (БРС)</h3>
+                <span class="badge-gold">Семестр Осень 2026</span>
+              </div>
               <div style="display:flex; flex-direction:column; gap:10px; font-size:13.5px;">
-                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; border-left:4px solid var(--gold);">
-                  <strong>10:15 – 11:50 • Машинное обучение (Лекция)</strong>
-                  <div style="color:var(--text-muted); font-size:12px;">Стеклянный атриум, зал А-101 • доц. Соколов А. В.</div>
+                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; display:flex; justify-content:space-between;">
+                  <span><strong>Прикладной ИИ и ML</strong> (доц. Соколов А. В.)</span>
+                  <strong style="color:var(--success);">91.2 / 100</strong>
                 </div>
-                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; border-left:4px solid var(--navy);">
-                  <strong>12:15 – 13:50 • Проектный практикум (Коворкинг)</strong>
-                  <div style="color:var(--text-muted); font-size:12px;">Панорамный коворкинг 3 этаж • Защита спринта</div>
+                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; display:flex; justify-content:space-between;">
+                  <span><strong>Проектный практикум</strong> (В. В. Виткин)</span>
+                  <strong style="color:var(--success);">89.5 / 100</strong>
+                </div>
+                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; display:flex; justify-content:space-between;">
+                  <span><strong>Алгоритмы и структуры данных</strong> (проф. Мельников И. П.)</span>
+                  <strong style="color:var(--navy);">84.6 / 100</strong>
                 </div>
               </div>
             </div>
 
             <div class="glass-card">
-              <h3 style="margin-bottom:12px;">🔖 Избранные события кампуса</h3>
+              <h3 style="margin-bottom:12px;">📅 Ближайшие пары сегодня (Вторник)</h3>
               <div style="display:flex; flex-direction:column; gap:10px; font-size:13.5px;">
-                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px;">
-                  <strong>Знакомство с Campus Connect в Новокольцовском</strong>
-                  <div style="color:var(--text-muted); font-size:12px;">18:00 • Главный стеклянный холл</div>
+                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; border-left:4px solid var(--gold);">
+                  <strong>10:15 – 11:50 • Прикладной ИИ и ML (Лекция)</strong>
+                  <div style="color:var(--text-muted); font-size:12px;">👤 доц. Соколов А. В. • 📍 Стеклянный атриум А-101</div>
                 </div>
-                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px;">
-                  <strong>Пик IT и Ярмарка вакансий партнеров УрФУ</strong>
-                  <div style="color:var(--text-muted); font-size:12px;">12:00 • Корпус ИРИТ-РтФ</div>
+                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; border-left:4px solid var(--navy);">
+                  <strong>12:15 – 13:50 • Проектный практикум (Практика)</strong>
+                  <div style="color:var(--text-muted); font-size:12px;">👤 В. В. Виткин • 📍 Панорамный коворкинг 3 этаж</div>
                 </div>
               </div>
             </div>
@@ -767,7 +946,7 @@
         </section>
 
         <!-- ===============================================================
-             ЭКРАН 6: URFU TEAMUP — ИИ-ПОДБОР КОМАНДЫ
+             ЭКРАН 10 (ЗАКРЫТЫЙ): URFU TEAMUP — ИИ-ПОДБОР КОМАНДЫ
              =============================================================== -->
         <section id="screen-teamup" class="screen">
           <div class="page-banner parallax-layer" data-depth="1">
@@ -810,18 +989,18 @@
         </section>
 
         <!-- ===============================================================
-             ЭКРАН 7: МЕНТОРЫ И ПЕДАГОГИ КАМПУСА
+             ЭКРАН 11 (ЗАКРЫТЫЙ): МЕНТОРЫ, КОНСУЛЬТАЦИИ И ПРОФИЛЬ УрФУ ID
              =============================================================== -->
         <section id="screen-mentors" class="screen">
           <div class="page-banner parallax-layer" data-depth="1">
             <img class="page-banner-bg" src="src/6571bc0a21495630507812.jpg" alt="Коворкинг" />
             <div>
-              <h1 class="morph-headline">Менторы и преподаватели-консультанты</h1>
-              <p>Запишись на консультацию в панорамном коворкинге кампуса или онлайн</p>
+              <h1 class="morph-headline">Менторы, консультации и профиль УрФУ ID</h1>
+              <p>Запишись на разбор проекта в панорамном коворкинге кампуса или настрой свой профиль наставника</p>
             </div>
           </div>
 
-          <div class="grid-3 parallax-layer" data-depth="2">
+          <div class="grid-3 parallax-layer" data-depth="2" style="margin-bottom:24px;">
             <div class="glass-card">
               <span class="badge-gold">МЕНТОР СТУДЕНТОВ</span>
               <h3 style="margin:10px 0 6px;">Эльдаров Эльдар</h3>
@@ -833,7 +1012,7 @@
               <span class="badge-soft">НАУЧНЫЙ РУКОВОДИТЕЛЬ</span>
               <h3 style="margin:10px 0 6px;">Соколов Алексей Викторович</h3>
               <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">Доцент ИРИТ-РтФ • Консультации по курсовым, ВКР и публикациям в лаборатории ИИ.</p>
-              <button class="btn-primary" onclick="showToast('Вы записаны на консультацию в Чт 16:00 ✓')">Записаться в слот</button>
+              <button class="btn-primary" onclick="showToast('Вы записаны на консультацию в Чт 16:00 (ауд. И-420) ✓')">Записаться в слот</button>
             </div>
 
             <div class="glass-card">
@@ -843,129 +1022,40 @@
               <button class="btn-primary" onclick="showToast('Запрос ментору отправлен ✓')">Назначить встречу</button>
             </div>
           </div>
-        </section>
 
-        <!-- ===============================================================
-             ЭКРАН 8: АФИША СОБЫТИЙ
-             =============================================================== -->
-        <section id="screen-events" class="screen">
-          <div class="page-banner parallax-layer" data-depth="1">
-            <img class="page-banner-bg" src="src/20240604_kampus.jpg" alt="Аллея кампуса" />
-            <div>
-              <h1 class="morph-headline">Афиша событий нового кампуса</h1>
-              <p>Хакатоны, открытые лекции в стеклянном атриуме, спорт и студенческие клубы</p>
-            </div>
-          </div>
-
-          <div class="grid-3 parallax-layer" data-depth="2">
-            <div class="glass-card">
-              <span class="badge-gold">07 ОКТЯБРЯ • 18:00</span>
-              <h3 style="margin:10px 0 6px;">Знакомство с Campus Connect</h3>
-              <p style="font-size:13px; color:var(--text-muted);">Презентация цифровых сервисов кампуса в главном стеклянном атриуме.</p>
-            </div>
-            <div class="glass-card">
-              <span class="badge-soft">19 ОКТЯБРЯ • 14:00</span>
-              <h3 style="margin:10px 0 6px;">День рождения УрФУ и Хоровод</h3>
-              <p style="font-size:13px; color:var(--text-muted);">Праздничная программа на площади перед ГУК и в кампусе Новокольцовский.</p>
-            </div>
-            <div class="glass-card">
-              <span class="badge-gold">26 НОЯБРЯ • 12:00</span>
-              <h3 style="margin:10px 0 6px;">Форум «Пик IT» и День карьеры</h3>
-              <p style="font-size:13px; color:var(--text-muted);">Мастер-классы от работодателей, ревью резюме и быстрые офферы на стажировку.</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- ===============================================================
-             ЭКРАН 9: ОБ УРФУ, 12 ИНСТИТУТОВ, БРС И СЛОВАРЬ СЛЕНГА
-             =============================================================== -->
-        <section id="screen-about" class="screen">
-          <div class="page-banner parallax-layer" data-depth="1">
-            <img class="page-banner-bg" src="src/nov_kampus_ijun_24.jpg" alt="Кампус" />
-            <div>
-              <h1 class="morph-headline">Об УрФУ: институты, БРС и словарь кампуса</h1>
-              <p>Структура федерального университета, правила балльно-рейтинговой системы и сленг студентов</p>
-            </div>
-          </div>
-
-          <div class="grid-3 parallax-layer" data-depth="2" style="margin-bottom:26px;">
-            <div class="glass-card"><strong>🏛️ ГУК и Паркет</strong><p style="font-size:13px; color:var(--text-muted); margin-top:6px;">ГУК — Главный учебный корпус на Мира, 19. «Паркет» — легендарное место встреч на 2 этаже.</p></div>
-            <div class="glass-card"><strong>📊 БРС (0–100 баллов)</strong><p style="font-size:13px; color:var(--text-muted); margin-top:6px;">Балльно-рейтинговая система учитывает посещаемость, домашние задания и контрольные точки.</p></div>
-            <div class="glass-card"><strong>📄 Хвостовка и ППОС</strong><p style="font-size:13px; color:var(--text-muted); margin-top:6px;">Электронный экзаменационный лист для пересдачи и Профсоюз студентов УрФУ.</p></div>
-          </div>
-        </section>
-
-        <!-- ===============================================================
-             ЭКРАН 10: ОТДЕЛЬНАЯ СТРАНИЦА НАВИГАТОРА КОРПУСА 3D
-             =============================================================== -->
-        <section id="screen-campus-map" class="screen">
-          <div class="page-banner parallax-layer" data-depth="1">
-            <img class="page-banner-bg" src="src/DIP_8550.jpg" alt="Стеклянный атриум" />
-            <div>
-              <h1 class="morph-headline">Интерактивный навигатор корпуса УрФУ</h1>
-              <p>Полноэкранная схема этажей `campusnavigator-mu.vercel.app` в полупрозрачном стеклянном фрейме</p>
-            </div>
-            <a href="https://campusnavigator-mu.vercel.app/" target="_blank" rel="noopener" class="btn-gold" style="text-decoration:none;">Открыть в новой вкладке ↗</a>
-          </div>
-
-          <div class="navigator-glass-shell parallax-layer" data-depth="2">
-            <div class="navigator-viewport tall-map">
-              <div class="navigator-scale-stage" style="width:117.65%; height:117.65%; transform:scale(0.85);">
-                <iframe
-                  src="https://campusnavigator-mu.vercel.app/"
-                  title="Полная карта корпуса УрФУ"
-                  loading="lazy"
-                  allow="fullscreen; geolocation"
-                ></iframe>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- ===============================================================
-             ЭКРАН 11: УРФУ ID И ПРОФИЛЬ СТУДЕНТА / ПЕДАГОГА
-             =============================================================== -->
-        <section id="screen-auth-profile" class="screen">
-          <div class="grid-2 parallax-layer" data-depth="1">
-            <div class="glass-card" style="padding:32px;">
-              <span class="badge-gold">МОЙ ПРОФИЛЬ CAMPUS CONNECT</span>
-              <h2 class="morph-headline" style="font-size:23px; margin:10px 0 16px;">Личные данные и академический статус</h2>
+          <div class="grid-2 parallax-layer" data-depth="3">
+            <div class="glass-card" style="padding:28px;">
+              <span class="badge-gold">АКТИВНЫЙ ПРОФИЛЬ УрФУ ID</span>
+              <h3 style="font-size:20px; margin:10px 0 14px;">Мои учетные данные кампуса</h3>
               <div class="form-field">
                 <label>ФИО</label>
-                <input type="text" class="form-input" value="Эльдаров Эльдар Эльдарович" />
-              </div>
-              <div class="form-field">
-                <label>КОРПОРАТИВНЫЙ EMAIL (@URFU.ME / @URFU.RU)</label>
-                <input type="email" class="form-input" value="proverka@urfu.ru" />
+                <input type="text" class="form-input" id="profile-fio-field" value="Эльдаров Эльдар Эльдарович" />
               </div>
               <div class="grid-2" style="gap:12px;">
                 <div class="form-field">
-                  <label>ИНСТИТУТ / КАФЕДРА</label>
-                  <input type="text" class="form-input" value="ИРИТ-РтФ" />
+                  <label>ПОДРАЗДЕЛЕНИЕ / ИНСТИТУТ</label>
+                  <input type="text" class="form-input" id="profile-inst-field" value="ИРИТ-РтФ" />
                 </div>
                 <div class="form-field">
-                  <label>ГРУППА / СТАТУС</label>
-                  <input type="text" class="form-input" value="РИ-160033" />
+                  <label>ГРУППА / ДОЛЖНОСТЬ</label>
+                  <input type="text" class="form-input" id="profile-group-field" value="РИ-160033" />
                 </div>
               </div>
-              <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn-primary" onclick="navigateTo('dashboard', document.querySelector('[data-screen=dashboard]'))">Перейти в дашборд →</button>
-                <button class="btn-glass" onclick="openAuthModal('register')">Открыть окно входа / регистрации</button>
-              </div>
+              <button class="btn-glass" onclick="logoutToAbiturient()">Выйти из аккаунта (Вернуться в режим Абитуриента)</button>
             </div>
 
-            <div class="glass-card-beige" style="padding:32px;">
-              <span class="badge-soft">ПРОФИЛЬ МЕНТОРА И ПРЕПОДАВАТЕЛЯ</span>
-              <h2 style="font-size:23px; margin:10px 0 16px;">Настройки компетенций и консультаций</h2>
+            <div class="glass-card-beige" style="padding:28px;">
+              <span class="badge-soft">НАСТРОЙКИ МЕНТОРСТВА И КОНСУЛЬТАЦИЙ</span>
+              <h3 style="font-size:20px; margin:10px 0 14px;">Компетенции в Campus Connect</h3>
               <div class="form-field">
-                <label>О СЕБЕ КАК О МЕНТОРЕ</label>
+                <label>О СЕБЕ</label>
                 <textarea class="form-textarea">Помогаю с учебой, разбором первого проекта и подготовкой к собеседованиям.</textarea>
               </div>
               <div class="form-field">
-                <label>НАВЫКИ (ЧЕРЕЗ ЗАПЯТУЮ)</label>
-                <input type="text" class="form-input" value="Python, SQL, FastAPI" />
+                <label>ТЕГИ НАВЫКОВ</label>
+                <input type="text" class="form-input" value="Python, SQL, FastAPI, Machine Learning" />
               </div>
-              <button class="btn-gold" onclick="showToast('Настройки менторства сохранены ✓')">Сохранить настройки ✓</button>
+              <button class="btn-gold" onclick="showToast('Настройки профиля сохранены ✓')">Сохранить изменения ✓</button>
             </div>
           </div>
         </section>
@@ -982,23 +1072,23 @@
             </p>
           </div>
           <div>
-            <strong style="color:var(--white); display:block; margin-bottom:8px;">Экосистема</strong>
+            <strong style="color:var(--white); display:block; margin-bottom:8px;">Абитуриенту (Открыто)</strong>
             <div style="font-size:13px; display:flex; flex-direction:column; gap:6px;">
+              <span style="cursor:pointer;" onclick="navigateTo('programs', document.querySelector('[data-screen=programs]'))">Калькулятор ЕГЭ и программы</span>
+              <span style="cursor:pointer;" onclick="navigateTo('ai-landing', document.querySelector('[data-screen=ai-landing]'))">Программа «Прикладной ИИ»</span>
+              <span style="cursor:pointer;" onclick="navigateTo('events', document.querySelector('[data-screen=events]'))">Дни открытых дверей</span>
+            </div>
+          </div>
+          <div>
+            <strong style="color:var(--white); display:block; margin-bottom:8px;">Студенту и Педагогу (УрФУ ID)</strong>
+            <div style="font-size:13px; display:flex; flex-direction:column; gap:6px;">
+              <span style="cursor:pointer;" onclick="navigateTo('schedule', document.querySelector('[data-screen=schedule]'))">Расписание недели Пн–Сб</span>
               <span style="cursor:pointer;" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))">Домашние задания и БРС</span>
-              <span style="cursor:pointer;" onclick="navigateTo('campus-map', document.querySelector('[data-screen=campus-map]'))">Навигатор корпуса 3D</span>
               <span style="cursor:pointer;" onclick="navigateTo('teamup', document.querySelector('[data-screen=teamup]'))">UrFU TeamUp</span>
             </div>
           </div>
           <div>
-            <strong style="color:var(--white); display:block; margin-bottom:8px;">Поступление</strong>
-            <div style="font-size:13px; display:flex; flex-direction:column; gap:6px;">
-              <span style="cursor:pointer;" onclick="navigateTo('programs', document.querySelector('[data-screen=programs]'))">Калькулятор ЕГЭ</span>
-              <span style="cursor:pointer;" onclick="navigateTo('ai-landing', document.querySelector('[data-screen=ai-landing]'))">Прикладной ИИ</span>
-              <span style="cursor:pointer;" onclick="navigateTo('about', document.querySelector('[data-screen=about]'))">12 институтов УрФУ</span>
-            </div>
-          </div>
-          <div>
-            <strong style="color:var(--white); display:block; margin-bottom:8px;">Контакты</strong>
+            <strong style="color:var(--white); display:block; margin-bottom:8px;">Кампус</strong>
             <p style="font-size:13px;">г. Екатеринбург, ул. Мира, 19<br>Новокольцовский, ул. Универсиады, 7</p>
           </div>
         </div>
@@ -1007,7 +1097,9 @@
     </div>
   </div>
 
-  <!-- ВСПЛЫВАЮЩАЯ ФОРМА АВТОРИЗАЦИИ И РЕГИСТРАЦИИ С АНИМИРОВАННЫМ ПОЯВЛЕНИЕМ -->
+  <!-- =====================================================================
+       ВСПЛЫВАЮЩАЯ ФОРМА АВТОРИЗАЦИИ УрФУ ID С ВЫБОРОМ РОЛИ (СТУДЕНТ / ПЕДАГОГ)
+       ===================================================================== -->
   <div class="auth-modal-backdrop" id="auth-modal-backdrop" onclick="closeAuthModal()">
     <div class="auth-modal-card" onclick="event.stopPropagation()">
       <button class="auth-close-btn" onclick="closeAuthModal()" title="Закрыть">✕</button>
@@ -1015,9 +1107,21 @@
       <div style="text-align:center;">
         <div style="display:inline-flex; align-items:center; gap:10px; margin-bottom:6px;">
           <div style="width:36px; height:36px; border-radius:10px; background:var(--navy); color:var(--gold); display:flex; align-items:center; justify-content:center; font-family:'Unbounded',sans-serif; font-weight:800;">У</div>
-          <span class="display-font" style="font-size:18px; color:var(--navy);">Campus Connect • УрФУ</span>
+          <span class="display-font" style="font-size:18px; color:var(--navy);">Авторизация УрФУ ID</span>
         </div>
-        <p style="font-size:13px; color:var(--text-muted);">Единый вход для студентов, менторов и педагогов кампуса</p>
+        <p style="font-size:12.5px; color:var(--text-muted);" id="auth-modal-prompt">
+          Для доступа к расписанию недели, домашним заданиям и БРС войдите как Студент или Педагог
+        </p>
+      </div>
+
+      <!-- Выбор роли при входе: Студент или Педагог -->
+      <div class="auth-role-selector">
+        <button type="button" class="auth-role-option active" id="modal-role-student" onclick="selectModalRole('student')">
+          ⚡ Я Студент УрФУ
+        </button>
+        <button type="button" class="auth-role-option" id="modal-role-teacher" onclick="selectModalRole('teacher')">
+          👩‍🏫 Я Педагог / Куратор
+        </button>
       </div>
 
       <div class="auth-mode-tabs">
@@ -1025,10 +1129,17 @@
         <button class="auth-tab-btn" id="tab-btn-register" onclick="switchAuthTab('register')">Создать аккаунт</button>
       </div>
 
+      <!-- Быстрые демо-профили для мгновенной проверки жюри -->
+      <div style="display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
+        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">Быстрый демо-вход:</span>
+        <button type="button" class="pill-btn" style="padding:4px 10px; font-size:11px;" onclick="quickDemoLogin('student')">⚡ Студент (Эльдаров Э. • РИ-160033)</button>
+        <button type="button" class="pill-btn" style="padding:4px 10px; font-size:11px;" onclick="quickDemoLogin('teacher')">👩‍🏫 Педагог (доц. Соколов А. В.)</button>
+      </div>
+
       <div class="auth-panel active" id="auth-panel-login">
         <div class="form-field">
-          <label>EMAIL УрФУ</label>
-          <input type="email" class="form-input" id="login-email" value="proverka@urfu.ru" placeholder="your.email@urfu.me" />
+          <label>КОРПОРАТИВНЫЙ EMAIL (@URFU.ME / @URFU.RU)</label>
+          <input type="email" class="form-input" id="login-email" value="proverka@urfu.ru" />
         </div>
         <div class="form-field">
           <label>ПАРОЛЬ</label>
@@ -1037,21 +1148,11 @@
         </div>
 
         <button class="btn-primary" style="width:100%; justify-content:center; margin-top:6px; padding:13px;" onclick="performAnimatedLogin('login')">
-          Войти в кампус →
+          Войти и открыть закрытые разделы →
         </button>
-
-        <div style="text-align:center; margin-top:14px; font-size:12.5px; color:var(--text-muted);">
-          Нет аккаунта? <a href="#" onclick="switchAuthTab('register'); return false;" style="color:var(--navy); font-weight:800;">Зарегистрироваться</a>
-        </div>
       </div>
 
       <div class="auth-panel" id="auth-panel-register">
-        <div style="display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;">
-          <span style="font-size:11px; color:var(--text-muted); font-weight:700;">Автозаполнение:</span>
-          <button type="button" class="pill-btn" style="padding:3px 10px; font-size:11px;" onclick="fillDemoUser('Эльдаров Эльдар Эльдарович', 'proverka@urfu.ru', 'ИРИТ-РтФ', 'РИ-160033')">Эльдаров Э. Э.</button>
-          <button type="button" class="pill-btn" style="padding:3px 10px; font-size:11px;" onclick="fillDemoUser('Иванов Иван Иванович', 'proverka2@mail.ru', 'ИРИТ-РтФ', 'РИ-160033')">Иванов И. И.</button>
-        </div>
-
         <div class="form-field">
           <label>ФИО</label>
           <input type="text" class="form-input" id="reg-fio" value="Эльдаров Эльдар Эльдарович" />
@@ -1062,11 +1163,11 @@
         </div>
         <div class="grid-2" style="gap:10px;">
           <div class="form-field">
-            <label>ИНСТИТУТ</label>
+            <label>ИНСТИТУТ / КАФЕДРА</label>
             <input type="text" class="form-input" id="reg-inst" value="ИРИТ-РтФ" />
           </div>
           <div class="form-field">
-            <label>ГРУППА</label>
+            <label id="reg-group-label">ГРУППА / ДОЛЖНОСТЬ</label>
             <input type="text" class="form-input" id="reg-group" value="РИ-160033" />
           </div>
         </div>
@@ -1074,7 +1175,6 @@
           <div class="form-field">
             <label>ПАРОЛЬ</label>
             <input type="password" class="form-input" id="reg-pwd1" value="••••••••" />
-            <button type="button" class="pwd-eye-btn" onclick="togglePwdVisibility('reg-pwd1')">👁️</button>
           </div>
           <div class="form-field">
             <label>ПОДТВЕРДИТЕ ПАРОЛЬ</label>
@@ -1110,18 +1210,18 @@
     <div class="ai-header">
       <div>
         <strong style="font-size:14px;">🤖 GigaChat Помощник УрФУ</strong>
-        <div style="font-size:11px; color:var(--gold);">Навигация, ДЗ, БРС и история вуза</div>
+        <div style="font-size:11px; color:var(--gold);">Поступление, расписание, ДЗ и история</div>
       </div>
       <button onclick="toggleAiChat()" style="background:none; border:none; color:var(--cream); font-size:18px; cursor:pointer;">✕</button>
     </div>
     <div class="ai-messages" id="ai-messages">
       <div class="msg-bot">
-        Привет! Я ИИ-помощник Campus Connect. Помогу найти аудиторию на карте корпуса, подскажу дедлайны по домашним заданиям или историю УрФУ!
+        Привет! Сейчас сайт открыт в режиме <strong>Абитуриента</strong>. Я могу подсказать проходные баллы ЕГЭ, а если ты авторизуешься через УрФУ ID — покажу расписание пар и дедлайны ДЗ!
       </div>
     </div>
     <div style="display:flex; gap:6px; padding:8px 12px; flex-wrap:wrap; border-top:1px solid var(--beige);">
-      <button class="pill-btn" style="font-size:11px; padding:4px 10px;" onclick="sendQuickAi('Где я?')">Где я?</button>
-      <button class="pill-btn" style="font-size:11px; padding:4px 10px;" onclick="sendQuickAi('Какие у меня дедлайны по ДЗ?')">Мои ДЗ</button>
+      <button class="pill-btn" style="font-size:11px; padding:4px 10px;" onclick="sendQuickAi('Как поступить в УрФУ?')">Поступление</button>
+      <button class="pill-btn" style="font-size:11px; padding:4px 10px;" onclick="sendQuickAi('Покажи расписание недели')">Расписание</button>
       <button class="pill-btn" style="font-size:11px; padding:4px 10px;" onclick="sendQuickAi('Расскажи мне про историю ВУЗа')">История УрФУ</button>
     </div>
     <div style="display:flex; padding:10px; gap:8px; border-top:1px solid var(--beige);">

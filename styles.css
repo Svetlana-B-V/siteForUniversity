@@ -16,12 +16,12 @@
 
   /* Многослойные полупрозрачные фоны (Glassmorphism) */
   --glass-surface: rgba(255, 255, 255, 0.58);
-  --glass-surface-hover: rgba(255, 255, 255, 0.8);
+  --glass-surface-hover: rgba(255, 255, 255, 0.82);
   --glass-beige: rgba(232, 220, 200, 0.54);
-  --glass-beige-strong: rgba(232, 220, 200, 0.76);
+  --glass-beige-strong: rgba(232, 220, 200, 0.78);
   --glass-navy: rgba(31, 42, 68, 0.76);
   --glass-navy-deep: rgba(20, 28, 46, 0.88);
-  --glass-border: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.82);
   --glass-gold-border: rgba(198, 167, 94, 0.48);
   --glass-blur: blur(22px) saturate(160%);
   --glass-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
@@ -165,7 +165,7 @@ h1, h2, h3, .display-font {
 
 .smart-sidebar:hover,
 .smart-sidebar.pinned {
-  width: 286px;
+  width: 288px;
 }
 
 .sidebar-pin-btn {
@@ -228,7 +228,7 @@ h1, h2, h3, .display-font {
   background: var(--navy-light);
   color: var(--gold);
   font-family: 'Unbounded', sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -261,7 +261,7 @@ h1, h2, h3, .display-font {
 
 .profile-name {
   font-family: 'Unbounded', sans-serif;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--white);
 }
@@ -332,6 +332,17 @@ h1, h2, h3, .display-font {
   opacity: 0;
   transform: translateX(-10px);
   transition: opacity 0.3s var(--ease-silk), transform 0.3s var(--ease-silk);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  padding-right: 8px;
+}
+
+.lock-tag {
+  font-style: normal;
+  font-size: 11px;
+  opacity: 0.75;
 }
 
 .smart-sidebar:hover .nav-text,
@@ -500,7 +511,7 @@ h1, h2, h3, .display-font {
 
 .topbar-search {
   flex: 1;
-  max-width: 560px;
+  max-width: 540px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -571,7 +582,6 @@ h1, h2, h3, .display-font {
 
 /* =========================================================================
    4. БЕСШОВНЫЙ КИНЕМАТОГРАФИЧНЫЙ ПЕРЕХОД КАК В ВИДЕО
-      (ГИГАНТСКИЙ МАСШТАБ И СКОЛЬЖЕНИЕ ЗАГОЛОВКА + ОПТИЧЕСКИЙ БОКЕ-ЗУМ ФОНА)
    ========================================================================= */
 .screens-viewport {
   display: grid;
@@ -591,7 +601,6 @@ h1, h2, h3, .display-font {
   display: block;
 }
 
-/* Уходящий экран: главный заголовок сильно увеличивается и уплывает вправо (как "THE ART OF LIFE" на 00:01) */
 .screen.is-leaving {
   pointer-events: none;
   z-index: 1;
@@ -622,8 +631,6 @@ h1, h2, h3, .display-font {
     opacity 0.7s var(--ease-editorial);
 }
 
-/* Входящий экран: сначала появляется в мягком оптическом расфокусе и легком увеличении (как на 00:04),
-   затем плавно фокусируется в резкость, а текст скользит на место (как на 00:05) */
 .screen.is-entering {
   z-index: 2;
   opacity: 0;
@@ -655,7 +662,6 @@ h1, h2, h3, .display-font {
   filter: blur(16px);
 }
 
-/* Финальная сфокусированная фаза активного экрана */
 .screen.visible {
   z-index: 2;
   opacity: 1;
@@ -708,7 +714,6 @@ h1, h2, h3, .display-font {
     filter 1.05s var(--ease-silk) 0.2s;
 }
 
-/* Анимация переключения слайда внутри Hero-витрины (точно как в видео) */
 .hero-editorial-zoom-out {
   transform: translate3d(150px, 0, 0) scale(2.1) !important;
   opacity: 0 !important;
@@ -753,7 +758,6 @@ h1, h2, h3, .display-font {
   }
 }
 
-/* Круглая золотая кнопка переключения панорамы (как в правом нижнем углу на видео) */
 .editorial-next-circle {
   width: 44px;
   height: 44px;
@@ -778,7 +782,213 @@ h1, h2, h3, .display-font {
 }
 
 /* =========================================================================
-   5. КНОПКИ, СТЕКЛЯННЫЕ КАРТОЧКИ, HERO, КАРТА И БЛОК ДЗ
+   5. НЕДЕЛЬНОЕ РАСПИСАНИЕ ЗАНЯТИЙ (СЕТКА ПН–СБ СО ВРЕМЕНЕМ, ИМЕНЕМ, АУДИТОРИЕЙ)
+   ========================================================================= */
+.week-schedule-shell {
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1.5px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  box-shadow: var(--shadow-float);
+  overflow-x: auto;
+}
+
+.week-grid-table {
+  display: grid;
+  grid-template-columns: 112px repeat(6, minmax(185px, 1fr));
+  gap: 12px;
+  min-width: 1220px;
+}
+
+.week-col-header {
+  background: var(--navy);
+  color: var(--cream);
+  padding: 12px 14px;
+  border-radius: 16px;
+  text-align: center;
+  border: 1px solid rgba(198, 167, 94, 0.35);
+}
+
+.week-col-header.today-col {
+  background: linear-gradient(135deg, var(--gold-bright) 0%, var(--gold) 100%);
+  color: var(--navy);
+  border-color: var(--navy);
+  box-shadow: 0 8px 20px rgba(198, 167, 94, 0.35);
+}
+
+.week-col-header .day-name {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  display: block;
+}
+
+.week-col-header .day-date {
+  font-size: 11px;
+  opacity: 0.82;
+  font-weight: 600;
+}
+
+.time-slot-cell {
+  background: rgba(232, 220, 200, 0.58);
+  border: 1px solid rgba(31, 42, 68, 0.12);
+  border-radius: 16px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.time-slot-cell .pair-num {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.time-slot-cell .pair-hours {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-top: 4px;
+}
+
+.schedule-cell {
+  min-height: 126px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.38);
+  border: 1px dashed rgba(31, 42, 68, 0.12);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.lesson-card {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  border-radius: 13px;
+  padding: 11px 12px;
+  border-left: 4px solid var(--navy);
+  box-shadow: 0 6px 16px rgba(31, 42, 68, 0.06);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  transition: transform 0.25s var(--ease-silk), box-shadow 0.25s ease;
+}
+
+.lesson-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(31, 42, 68, 0.14);
+}
+
+.lesson-card.type-lecture {
+  border-left-color: var(--gold);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.94) 0%, rgba(232, 220, 200, 0.48) 100%);
+}
+
+.lesson-card.type-lab {
+  border-left-color: var(--navy);
+}
+
+.lesson-card.type-project {
+  border-left-color: var(--success);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.94) 0%, rgba(30, 122, 83, 0.08) 100%);
+}
+
+.lesson-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+
+.lesson-time-tag {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--navy);
+  background: rgba(232, 220, 200, 0.75);
+  padding: 2px 7px;
+  border-radius: 99px;
+}
+
+.lesson-type-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--navy);
+  color: var(--gold);
+}
+
+.lesson-subject {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--navy);
+  line-height: 1.28;
+}
+
+.lesson-person {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.lesson-room-btn {
+  border: 1px solid rgba(198, 167, 94, 0.55);
+  background: rgba(250, 247, 242, 0.9);
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  transition: all 0.2s ease;
+}
+
+.lesson-room-btn:hover {
+  background: var(--gold);
+  border-color: var(--navy);
+}
+
+.empty-slot-label {
+  margin: auto;
+  font-size: 11px;
+  color: rgba(82, 96, 122, 0.5);
+  font-weight: 600;
+  text-align: center;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+.legend-dot.gold { background: var(--gold); }
+.legend-dot.navy { background: var(--navy); }
+.legend-dot.green { background: var(--success); }
+
+/* =========================================================================
+   6. КНОПКИ, СТЕКЛЯННЫЕ КАРТОЧКИ, HERO, КАРТА И БЛОК ДЗ
    ========================================================================= */
 .btn-primary {
   background: var(--navy);
@@ -1058,6 +1268,12 @@ h1, h2, h3, .display-font {
   color: var(--text-muted);
   font-size: 13.5px;
   margin-top: 4px;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
 }
 
 .grid-3 {
@@ -1517,6 +1733,7 @@ h1, h2, h3, .display-font {
   resize: vertical;
 }
 
+/* Модальное окно входа с переключателем Студент / Педагог */
 .auth-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1540,8 +1757,8 @@ h1, h2, h3, .display-font {
 .auth-modal-card {
   position: relative;
   width: 100%;
-  max-width: 465px;
-  background: rgba(250, 247, 242, 0.88);
+  max-width: 480px;
+  background: rgba(250, 247, 242, 0.92);
   backdrop-filter: blur(26px);
   border: 2px solid rgba(255, 255, 255, 0.92);
   border-radius: 30px;
@@ -1568,22 +1785,47 @@ h1, h2, h3, .display-font {
   cursor: pointer;
 }
 
+.auth-role-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 14px 0 10px;
+}
+
+.auth-role-option {
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(31, 42, 68, 0.18);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--navy);
+  font-weight: 800;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.auth-role-option.active {
+  background: var(--gold);
+  border-color: var(--navy);
+  box-shadow: 0 4px 12px rgba(198, 167, 94, 0.35);
+}
+
 .auth-mode-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
   background: rgba(232, 220, 200, 0.65);
   padding: 5px;
   border-radius: var(--radius-pill);
-  margin: 16px 0 18px;
+  margin: 10px 0 14px;
 }
 
 .auth-tab-btn {
   border: none;
   background: transparent;
-  padding: 9px 14px;
+  padding: 8px 14px;
   border-radius: var(--radius-pill);
   font-weight: 800;
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--navy);
   cursor: pointer;
 }
@@ -1753,8 +1995,8 @@ h1, h2, h3, .display-font {
   gap: 24px;
 }
 
-@media (max-width: 1120px) {
-  .hero-glass-stage, .grid-3, .grid-2, .navy-stats-bar, .campus-bento-gallery, .footer-inner {
+@media (max-width: 1180px) {
+  .hero-glass-stage, .grid-4, .grid-3, .grid-2, .navy-stats-bar, .campus-bento-gallery, .footer-inner {
     grid-template-columns: 1fr;
   }
   .campus-bento-gallery {
