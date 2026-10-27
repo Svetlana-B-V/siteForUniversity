@@ -3,1596 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>УрФУ × Campus Connect — Цифровой фасад и экосистема кампуса</title>
+  <title>УрФУ × Campus Connect — Цифровой фасад и экосистема университета</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=Unbounded:wght@600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      /* Основная палитра: Navy, Warm Beige, Soft Gold */
-      --navy: #1F2A44;
-      --navy-dark: #141C2E;
-      --navy-light: #2C3B5E;
-      --beige: #E8DCC8;
-      --beige-deep: #D5C3A5;
-      --cream: #FAF7F2;
-      --gold: #C6A75E;
-      --gold-bright: #DFC077;
-      --white: #FFFFFF;
-      --text-main: #1F2A44;
-      --text-muted: #52607A;
-      --success: #1E7A53;
-      --danger: #C84B31;
-
-      /* Многослойные полупрозрачные фоны (Glassmorphism) */
-      --glass-surface: rgba(255, 255, 255, 0.56);
-      --glass-surface-hover: rgba(255, 255, 255, 0.78);
-      --glass-beige: rgba(232, 220, 200, 0.52);
-      --glass-beige-strong: rgba(232, 220, 200, 0.74);
-      --glass-navy: rgba(31, 42, 68, 0.74);
-      --glass-navy-deep: rgba(20, 28, 46, 0.84);
-      --glass-border: rgba(255, 255, 255, 0.78);
-      --glass-gold-border: rgba(198, 167, 94, 0.48);
-      --glass-blur: blur(22px) saturate(160%);
-      --glass-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
-
-      --radius-xl: 30px;
-      --radius-lg: 22px;
-      --radius-md: 15px;
-      --radius-pill: 999px;
-      --shadow-glass: 0 18px 44px rgba(31, 42, 68, 0.09), var(--glass-inner-glow);
-      --shadow-float: 0 24px 56px rgba(31, 42, 68, 0.16), var(--glass-inner-glow);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Golos Text', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: var(--cream);
-      color: var(--text-main);
-      line-height: 1.55;
-      overflow-x: hidden;
-      min-height: 100vh;
-      position: relative;
-    }
-
-    /* АНИМИРОВАННЫЙ ПОЛУПРОЗРАЧНЫЙ ФОН КАМПУСА СО СВЕТОВЫМИ СФЕРАМИ */
-    .ambient-stage {
-      position: fixed;
-      inset: 0;
-      z-index: -2;
-      overflow: hidden;
-      pointer-events: none;
-      background: linear-gradient(135deg, #FAF7F2 0%, #EFE6D5 50%, #FAF7F2 100%);
-    }
-
-    .ambient-photo-layer {
-      position: absolute;
-      inset: -4%;
-      background-image: url('src/DIP_8550.jpg');
-      background-size: cover;
-      background-position: center;
-      opacity: 0.12;
-      filter: blur(26px) saturate(130%);
-      transition: background-image 0.9s ease, opacity 0.6s ease;
-      animation: slowBreathe 18s ease-in-out infinite alternate;
-    }
-
-    .ambient-orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(65px);
-      opacity: 0.55;
-      animation: floatOrb 16s ease-in-out infinite alternate;
-    }
-
-    .ambient-orb.orb-1 {
-      width: 520px;
-      height: 520px;
-      background: rgba(232, 220, 200, 0.95);
-      top: -120px;
-      left: -100px;
-    }
-
-    .ambient-orb.orb-2 {
-      width: 440px;
-      height: 440px;
-      background: rgba(198, 167, 94, 0.32);
-      top: 25%;
-      right: -120px;
-      animation-delay: -5s;
-    }
-
-    .ambient-orb.orb-3 {
-      width: 480px;
-      height: 480px;
-      background: rgba(31, 42, 68, 0.12);
-      bottom: -140px;
-      left: 28%;
-      animation-delay: -9s;
-    }
-
-    @keyframes slowBreathe {
-      0% { transform: scale(1); }
-      100% { transform: scale(1.06); }
-    }
-
-    @keyframes floatOrb {
-      0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(40px, -35px) scale(1.08); }
-    }
-
-    h1, h2, h3, .display-font {
-      font-family: 'Unbounded', sans-serif;
-      letter-spacing: -0.02em;
-    }
-
-    /* ВЕРХНИЙ АНИМИРОВАННЫЙ ЛУЧ ПЕРЕХОДА МЕЖДУ РАЗДЕЛАМИ */
-    .route-progress-bar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 3px;
-      width: 0%;
-      background: linear-gradient(90deg, var(--navy), var(--gold-bright), var(--navy));
-      z-index: 2500;
-      transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
-      box-shadow: 0 0 14px rgba(198, 167, 94, 0.8);
-      opacity: 0;
-    }
-
-    /* ПАНЕЛЬ БЫСТРОГО ПЕРЕКЛЮЧЕНИЯ 11 СТРАНИЦ */
-    .proto-switcher {
-      position: sticky;
-      top: 0;
-      z-index: 1100;
-      background: var(--glass-navy-deep);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      color: var(--cream);
-      padding: 9px 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      overflow-x: auto;
-      border-bottom: 1.5px solid var(--glass-gold-border);
-      scrollbar-width: thin;
-    }
-
-    .proto-switcher-label {
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      color: var(--gold);
-      letter-spacing: 0.08em;
-      white-space: nowrap;
-      margin-right: 4px;
-    }
-
-    .proto-tab {
-      background: rgba(232, 220, 200, 0.1);
-      color: var(--beige);
-      border: 1px solid rgba(198, 167, 94, 0.25);
-      padding: 6px 13px;
-      border-radius: var(--radius-pill);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    .proto-tab:hover {
-      background: rgba(198, 167, 94, 0.25);
-      color: var(--white);
-      transform: translateY(-1px);
-    }
-
-    .proto-tab.active {
-      background: var(--gold);
-      color: var(--navy);
-      border-color: var(--gold);
-      font-weight: 700;
-      box-shadow: 0 4px 14px rgba(198, 167, 94, 0.45);
-    }
-
-    /* СТЕКЛЯННАЯ ПЛАВАЮЩАЯ ШАПКА-КАПСУЛА */
-    .top-navbar-wrap {
-      padding: 16px 28px 0;
-      max-width: 1400px;
-      margin: 0 auto;
-      position: sticky;
-      top: 46px;
-      z-index: 1000;
-    }
-
-    .top-navbar {
-      background: var(--glass-surface);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1.5px solid var(--glass-border);
-      border-radius: var(--radius-pill);
-      padding: 10px 22px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: var(--shadow-glass);
-      gap: 14px;
-      transition: background 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .top-navbar:hover {
-      background: var(--glass-surface-hover);
-    }
-
-    .brand-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      text-decoration: none;
-      color: var(--navy);
-    }
-
-    .brand-logo svg {
-      width: 40px;
-      height: 40px;
-      flex-shrink: 0;
-      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .brand-logo:hover svg {
-      transform: rotate(-4deg) scale(1.06);
-    }
-
-    .brand-title {
-      font-family: 'Unbounded', sans-serif;
-      font-weight: 800;
-      font-size: 18px;
-      line-height: 1.05;
-      color: var(--navy);
-    }
-
-    .brand-sub {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-wrap: wrap;
-    }
-
-    .nav-link {
-      padding: 8px 14px;
-      border-radius: var(--radius-pill);
-      font-size: 13.5px;
-      font-weight: 600;
-      color: var(--navy);
-      cursor: pointer;
-      border: none;
-      background: transparent;
-      transition: all 0.22s ease;
-    }
-
-    .nav-link:hover, .nav-link.active {
-      background: var(--glass-beige-strong);
-      color: var(--navy);
-      transform: translateY(-1px);
-    }
-
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .role-pills {
-      display: inline-flex;
-      background: var(--glass-beige);
-      backdrop-filter: blur(10px);
-      padding: 4px;
-      border-radius: var(--radius-pill);
-      border: 1px solid var(--glass-gold-border);
-    }
-
-    .role-pill-btn {
-      border: none;
-      background: transparent;
-      color: var(--navy);
-      padding: 6px 12px;
-      border-radius: var(--radius-pill);
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.25s ease;
-    }
-
-    .role-pill-btn.active {
-      background: var(--navy);
-      color: var(--gold);
-      box-shadow: 0 3px 10px rgba(31, 42, 68, 0.22);
-    }
-
-    /* КНОПКИ */
-    .btn-primary {
-      background: var(--navy);
-      color: var(--cream);
-      border: 1px solid rgba(198, 167, 94, 0.35);
-      padding: 11px 22px;
-      border-radius: var(--radius-pill);
-      font-weight: 700;
-      font-size: 13.5px;
-      cursor: pointer;
-      transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn-primary:hover {
-      background: var(--navy-light);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 24px rgba(31, 42, 68, 0.24);
-    }
-
-    .btn-gold {
-      background: linear-gradient(135deg, var(--gold-bright) 0%, var(--gold) 100%);
-      color: var(--navy);
-      border: 1px solid rgba(255, 255, 255, 0.65);
-      padding: 11px 22px;
-      border-radius: var(--radius-pill);
-      font-weight: 800;
-      font-size: 13.5px;
-      cursor: pointer;
-      transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn-gold:hover {
-      filter: brightness(1.05);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 24px rgba(198, 167, 94, 0.4);
-    }
-
-    .btn-glass {
-      background: var(--glass-surface);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      color: var(--navy);
-      border: 1.5px solid rgba(31, 42, 68, 0.3);
-      padding: 10px 20px;
-      border-radius: var(--radius-pill);
-      font-weight: 700;
-      font-size: 13.5px;
-      cursor: pointer;
-      transition: all 0.28s ease;
-      box-shadow: var(--glass-inner-glow);
-    }
-
-    .btn-glass:hover {
-      background: var(--glass-beige-strong);
-      border-color: var(--navy);
-      transform: translateY(-2px);
-    }
-
-    /* АНИМИРОВАННЫЕ ПЕРЕХОДЫ МЕЖДУ РАЗДЕЛАМИ САЙТА И КАСКАД КАРТОЧЕК */
-    .container {
-      max-width: 1360px;
-      margin: 0 auto;
-      padding: 24px 28px 64px;
-    }
-
-    .screen {
-      display: none;
-      opacity: 0;
-      transform: translateY(22px) scale(0.985);
-      filter: blur(10px);
-      transition:
-        opacity 0.48s cubic-bezier(0.16, 1, 0.3, 1),
-        transform 0.48s cubic-bezier(0.16, 1, 0.3, 1),
-        filter 0.48s cubic-bezier(0.16, 1, 0.3, 1);
-      will-change: opacity, transform, filter;
-    }
-
-    .screen.active {
-      display: block;
-    }
-
-    .screen.visible {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      filter: blur(0);
-    }
-
-    /* Каскадная анимация элементов внутри активного экрана */
-    .screen.visible .stagger-card {
-      animation: cardCascadeIn 0.58s cubic-bezier(0.16, 1, 0.3, 1) both;
-    }
-
-    .screen.visible .stagger-card:nth-child(1) { animation-delay: 0.05s; }
-    .screen.visible .stagger-card:nth-child(2) { animation-delay: 0.11s; }
-    .screen.visible .stagger-card:nth-child(3) { animation-delay: 0.17s; }
-    .screen.visible .stagger-card:nth-child(4) { animation-delay: 0.23s; }
-    .screen.visible .stagger-card:nth-child(5) { animation-delay: 0.29s; }
-    .screen.visible .stagger-card:nth-child(6) { animation-delay: 0.35s; }
-
-    @keyframes cardCascadeIn {
-      0% {
-        opacity: 0;
-        transform: translateY(24px) scale(0.97);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    /* Плавное проявление секций при скролле */
-    .reveal-on-scroll {
-      opacity: 0;
-      transform: translateY(26px);
-      transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .reveal-on-scroll.in-view {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* HERO-СЕКЦИЯ С ПОЛУПРОЗРАЧНЫМ СТЕКЛОМ И ФОТО КАМПУСА */
-    .hero-glass-stage {
-      position: relative;
-      border-radius: var(--radius-xl);
-      overflow: hidden;
-      padding: 44px 48px;
-      display: grid;
-      grid-template-columns: 1.08fr 0.92fr;
-      gap: 36px;
-      align-items: center;
-      background: linear-gradient(135deg, rgba(232, 220, 200, 0.58) 0%, rgba(255, 255, 255, 0.64) 100%);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1.5px solid var(--glass-border);
-      box-shadow: var(--shadow-glass);
-    }
-
-    .hero-ambient-bg {
-      position: absolute;
-      inset: 0;
-      background-image: url('src/DIP_8550.jpg');
-      background-size: cover;
-      background-position: center;
-      opacity: 0.16;
-      pointer-events: none;
-      z-index: 0;
-      transition: background-image 0.5s ease;
-    }
-
-    .hero-content-left {
-      position: relative;
-      z-index: 2;
-    }
-
-    .pill-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.78);
-      backdrop-filter: blur(12px);
-      color: var(--navy);
-      padding: 7px 16px;
-      border-radius: var(--radius-pill);
-      font-size: 12px;
-      font-weight: 700;
-      border: 1px solid var(--gold);
-      margin-bottom: 18px;
-      box-shadow: 0 4px 14px rgba(31, 42, 68, 0.06);
-    }
-
-    .hero-title {
-      font-size: 40px;
-      line-height: 1.12;
-      color: var(--navy);
-      margin-bottom: 16px;
-    }
-
-    .hero-title .gold-highlight {
-      color: var(--gold);
-      text-decoration: underline;
-      text-decoration-color: rgba(198, 167, 94, 0.45);
-      text-underline-offset: 6px;
-    }
-
-    .hero-desc {
-      font-size: 15.5px;
-      color: var(--text-muted);
-      margin-bottom: 22px;
-      max-width: 550px;
-    }
-
-    .hero-search-bar {
-      display: flex;
-      background: rgba(255, 255, 255, 0.78);
-      backdrop-filter: blur(16px);
-      border: 1.5px solid var(--glass-gold-border);
-      border-radius: var(--radius-pill);
-      padding: 6px 6px 6px 20px;
-      margin-bottom: 22px;
-      box-shadow: 0 8px 24px rgba(31, 42, 68, 0.06);
-      max-width: 540px;
-    }
-
-    .hero-search-bar input {
-      border: none;
-      outline: none;
-      width: 100%;
-      font-size: 14px;
-      color: var(--navy);
-      background: transparent;
-    }
-
-    /* ПРАВАЯ СТЕКЛЯННАЯ ВИТРИНА С ПЕРЕКЛЮЧЕНИЕМ ФОТО ИЗ ПАПКИ SRC */
-    .hero-photo-showcase {
-      position: relative;
-      z-index: 2;
-      border-radius: var(--radius-xl);
-      overflow: hidden;
-      height: 435px;
-      border: 2.5px solid rgba(255, 255, 255, 0.88);
-      box-shadow: var(--shadow-float);
-      background: var(--navy);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 20px;
-    }
-
-    .hero-main-img {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
-    }
-
-    .hero-photo-showcase:hover .hero-main-img {
-      transform: scale(1.05);
-    }
-
-    .hero-img-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(20,28,46,0.28) 0%, rgba(20,28,46,0.06) 45%, rgba(20,28,46,0.76) 100%);
-      pointer-events: none;
-    }
-
-    .hero-top-glass-tag {
-      position: relative;
-      z-index: 2;
-      align-self: flex-start;
-      background: rgba(31, 42, 68, 0.68);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      color: var(--cream);
-      border: 1px solid rgba(255, 255, 255, 0.38);
-      padding: 7px 14px;
-      border-radius: var(--radius-pill);
-      font-size: 12px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .hero-bottom-glass-card {
-      position: relative;
-      z-index: 2;
-      background: rgba(250, 247, 242, 0.76);
-      backdrop-filter: blur(20px) saturate(165%);
-      -webkit-backdrop-filter: blur(20px) saturate(165%);
-      border-radius: var(--radius-lg);
-      padding: 16px 20px;
-      border: 1.5px solid rgba(255, 255, 255, 0.9);
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.2);
-    }
-
-    .hero-thumb-strip {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-      padding-top: 10px;
-      border-top: 1px solid rgba(31, 42, 68, 0.14);
-    }
-
-    .hero-thumb-btn {
-      flex: 1;
-      height: 42px;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 2px solid rgba(255, 255, 255, 0.5);
-      cursor: pointer;
-      padding: 0;
-      background: var(--navy);
-      transition: all 0.25s ease;
-    }
-
-    .hero-thumb-btn.active, .hero-thumb-btn:hover {
-      border-color: var(--gold);
-      transform: translateY(-2px) scale(1.03);
-    }
-
-    .hero-thumb-btn img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    /* ПОЛУПРОЗРАЧНЫЕ КАРТОЧКИ (GLASS CARDS) */
-    .glass-card {
-      background: var(--glass-surface);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1.5px solid var(--glass-border);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      box-shadow: var(--shadow-glass);
-      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .glass-card:hover {
-      border-color: var(--gold);
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-float);
-      background: var(--glass-surface-hover);
-    }
-
-    .glass-card-beige {
-      background: var(--glass-beige);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1.5px solid rgba(255, 255, 255, 0.78);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      box-shadow: var(--shadow-glass);
-    }
-
-    .glass-card-navy {
-      background: var(--glass-navy);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      color: var(--cream);
-      border: 1.5px solid var(--glass-gold-border);
-      border-radius: var(--radius-lg);
-      padding: 26px;
-      box-shadow: var(--shadow-glass);
-    }
-
-    /* СЕТКИ И ЗАГОЛОВКИ СЕКЦИЙ */
-    .section-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      margin: 46px 0 22px;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-
-    .section-head h2 {
-      font-size: 27px;
-      color: var(--navy);
-    }
-
-    .section-sub {
-      color: var(--text-muted);
-      font-size: 14px;
-      margin-top: 4px;
-    }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 22px;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 22px;
-    }
-
-    /* АНИМИРОВАННАЯ ПОЛУПРОЗРАЧНАЯ КАРТА КАМПУСА С УДОБНЫМ МАСШТАБОМ */
-    .navigator-glass-shell {
-      position: relative;
-      background: linear-gradient(135deg, rgba(31, 42, 68, 0.68) 0%, rgba(232, 220, 200, 0.52) 100%);
-      backdrop-filter: blur(26px) saturate(165%);
-      -webkit-backdrop-filter: blur(26px) saturate(165%);
-      border-radius: var(--radius-xl);
-      padding: 24px;
-      border: 2px solid rgba(255, 255, 255, 0.82);
-      box-shadow: var(--shadow-float);
-      overflow: hidden;
-      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .navigator-glass-shell::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-image: url('src/oblozhka.jpg');
-      background-size: cover;
-      background-position: center;
-      opacity: 0.14;
-      pointer-events: none;
-    }
-
-    .navigator-top-hud {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 18px;
-      background: rgba(255, 255, 255, 0.76);
-      backdrop-filter: blur(16px);
-      border-radius: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.9);
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .radar-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 800;
-      font-size: 13px;
-      color: var(--navy);
-    }
-
-    .radar-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--gold);
-      position: relative;
-    }
-
-    .radar-dot::after {
-      content: "";
-      position: absolute;
-      inset: -5px;
-      border-radius: 50%;
-      border: 2px solid var(--gold);
-      animation: radarPulse 1.8s infinite ease-out;
-    }
-
-    @keyframes radarPulse {
-      0% { transform: scale(0.6); opacity: 1; }
-      100% { transform: scale(1.9); opacity: 0; }
-    }
-
-    .scale-controls {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(31, 42, 68, 0.08);
-      padding: 4px;
-      border-radius: var(--radius-pill);
-    }
-
-    .scale-btn {
-      border: none;
-      background: transparent;
-      color: var(--navy);
-      font-size: 12px;
-      font-weight: 700;
-      padding: 6px 12px;
-      border-radius: var(--radius-pill);
-      cursor: pointer;
-      transition: all 0.22s ease;
-    }
-
-    .scale-btn.active, .scale-btn:hover {
-      background: var(--navy);
-      color: var(--gold);
-      box-shadow: 0 3px 10px rgba(31, 42, 68, 0.18);
-    }
-
-    /* Быстрые пресеты маршрутов над картой */
-    .navigator-route-pills {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
-
-    .route-chip {
-      background: rgba(255, 255, 255, 0.72);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.9);
-      color: var(--navy);
-      padding: 7px 14px;
-      border-radius: var(--radius-pill);
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .route-chip:hover, .route-chip.active {
-      background: var(--gold);
-      color: var(--navy);
-      border-color: var(--navy);
-      transform: translateY(-2px);
-    }
-
-    /* Контейнер карты с умным масштабированием (чтобы весь корпус был виден целиком и удобно) */
-    .navigator-viewport {
-      position: relative;
-      z-index: 2;
-      width: 100%;
-      height: 540px;
-      border-radius: 22px;
-      overflow: hidden;
-      background: rgba(250, 247, 242, 0.62);
-      backdrop-filter: blur(14px);
-      border: 2px solid rgba(255, 255, 255, 0.88);
-      box-shadow: inset 0 0 32px rgba(31, 42, 68, 0.08);
-      transition: height 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .navigator-viewport.tall-map {
-      height: 740px;
-    }
-
-    /* Анимированная стеклянная шторка поверх угла карты с подсказкой маршрута */
-    .map-floating-Status {
-      position: absolute;
-      left: 16px;
-      bottom: 16px;
-      z-index: 5;
-      background: rgba(31, 42, 68, 0.76);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      color: var(--cream);
-      padding: 10px 18px;
-      border-radius: var(--radius-pill);
-      border: 1px solid var(--glass-gold-border);
-      font-size: 12.5px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
-      pointer-events: none;
-      transition: all 0.35s ease;
-    }
-
-    .navigator-scale-stage {
-      width: 117.65%;
-      height: 117.65%;
-      transform: scale(0.85);
-      transform-origin: 0 0;
-      transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-                  width 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-                  height 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .navigator-scale-stage iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      background: transparent;
-    }
-
-    /* ФОТО-ГАЛЕРЕЯ НОВОГО КАМПУСА (BENTO С ФОТО ИЗ ПАПКИ SRC) */
-    .campus-bento-gallery {
-      display: grid;
-      grid-template-columns: 1.3fr 1fr 1fr;
-      grid-template-rows: 230px 230px;
-      gap: 18px;
-    }
-
-    .bento-photo-card {
-      position: relative;
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      cursor: pointer;
-      border: 2px solid rgba(255, 255, 255, 0.86);
-      box-shadow: var(--shadow-glass);
-      background: var(--navy);
-    }
-
-    .bento-photo-card.tall {
-      grid-row: span 2;
-    }
-
-    .bento-photo-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    .bento-photo-card:hover img {
-      transform: scale(1.07);
-    }
-
-    .bento-glass-caption {
-      position: absolute;
-      left: 14px;
-      right: 14px;
-      bottom: 14px;
-      background: rgba(31, 42, 68, 0.72);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      color: var(--cream);
-      padding: 12px 16px;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.34);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .bento-glass-caption strong {
-      display: block;
-      font-size: 14px;
-      color: var(--white);
-    }
-
-    .bento-glass-caption span {
-      font-size: 11.5px;
-      color: var(--beige);
-    }
-
-    /* БЛОК ДОМАШНЕГО ЗАДАНИЯ СТУДЕНТА И ПРОВЕРКИ ПЕДАГОГОМ */
-    .hw-wrapper {
-      background: linear-gradient(135deg, rgba(232, 220, 200, 0.56) 0%, rgba(255, 255, 255, 0.68) 100%);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1.5px solid var(--glass-border);
-      border-radius: var(--radius-xl);
-      padding: 32px;
-      box-shadow: var(--shadow-glass);
-    }
-
-    .hw-top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 22px;
-      padding-bottom: 18px;
-      border-bottom: 1px solid rgba(31, 42, 68, 0.12);
-    }
-
-    .hw-card {
-      background: rgba(255, 255, 255, 0.72);
-      backdrop-filter: blur(16px);
-      border: 1.5px solid rgba(255, 255, 255, 0.9);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 14px;
-      box-shadow: 0 8px 24px rgba(31, 42, 68, 0.05);
-      transition: all 0.28s ease;
-    }
-
-    .hw-card:hover {
-      border-color: var(--gold);
-      transform: translateY(-3px);
-      background: rgba(255, 255, 255, 0.88);
-    }
-
-    .hw-status {
-      font-size: 11px;
-      font-weight: 800;
-      padding: 4px 11px;
-      border-radius: var(--radius-pill);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .hw-status.urgent {
-      background: rgba(200, 75, 49, 0.14);
-      color: var(--danger);
-      border: 1px solid rgba(200, 75, 49, 0.3);
-    }
-
-    .hw-status.review {
-      background: rgba(198, 167, 94, 0.25);
-      color: #7A5F1E;
-      border: 1px solid var(--gold);
-    }
-
-    .hw-status.done {
-      background: rgba(31, 122, 84, 0.14);
-      color: var(--success);
-      border: 1px solid rgba(31, 122, 84, 0.3);
-    }
-
-    .progress-track {
-      width: 100%;
-      height: 10px;
-      background: rgba(31, 42, 68, 0.12);
-      border-radius: var(--radius-pill);
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--navy) 0%, var(--gold) 100%);
-      border-radius: var(--radius-pill);
-      transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    /* ТЕМНО-СИНЯЯ ПОЛУПРОЗРАЧНАЯ ПОЛОСА СТАТИСТИКИ */
-    .navy-stats-bar {
-      position: relative;
-      overflow: hidden;
-      background: var(--glass-navy);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      color: var(--cream);
-      border-radius: var(--radius-xl);
-      padding: 34px 40px;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 24px;
-      margin: 42px 0;
-      text-align: center;
-      border: 1.5px solid var(--glass-gold-border);
-      box-shadow: var(--shadow-glass);
-    }
-
-    .navy-stat-box {
-      border-right: 1px solid rgba(232, 220, 200, 0.18);
-      padding: 0 12px;
-      position: relative;
-      z-index: 2;
-    }
-
-    .navy-stat-box:last-child {
-      border-right: none;
-    }
-
-    .navy-stat-box .num {
-      font-family: 'Unbounded', sans-serif;
-      font-size: 30px;
-      color: var(--gold);
-      margin: 6px 0 4px;
-    }
-
-    .navy-stat-box .lbl {
-      font-size: 13px;
-      color: var(--beige);
-    }
-
-    /* БЕЙДЖИ И ФИЛЬТРЫ */
-    .tag-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
-
-    .badge-soft {
-      background: var(--glass-beige-strong);
-      color: var(--navy);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 11px;
-      border-radius: var(--radius-pill);
-    }
-
-    .badge-gold {
-      background: var(--gold);
-      color: var(--navy);
-      font-size: 11px;
-      font-weight: 800;
-      padding: 4px 11px;
-      border-radius: var(--radius-pill);
-    }
-
-    .filter-pills {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .pill-btn {
-      background: var(--glass-beige);
-      backdrop-filter: blur(10px);
-      color: var(--navy);
-      border: 1px solid rgba(31, 42, 68, 0.12);
-      padding: 8px 16px;
-      border-radius: var(--radius-pill);
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.22s ease;
-    }
-
-    .pill-btn.active, .pill-btn:hover {
-      background: var(--navy);
-      color: var(--gold);
-    }
-
-    /* ВНУТРЕННИЙ КАБИНЕТ CAMPUS CONNECT С ПОЛУПРОЗРАЧНЫМ САЙДБАРОМ */
-    .app-shell {
-      display: grid;
-      grid-template-columns: 255px 1fr;
-      min-height: calc(100vh - 130px);
-      max-width: 1380px;
-      margin: 20px auto;
-      background: var(--glass-surface);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border-radius: var(--radius-xl);
-      overflow: hidden;
-      box-shadow: var(--shadow-float);
-      border: 1.5px solid var(--glass-border);
-    }
-
-    .sidebar {
-      background: var(--glass-navy-deep);
-      backdrop-filter: blur(24px);
-      color: var(--cream);
-      padding: 26px 18px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      border-right: 1px solid var(--glass-gold-border);
-    }
-
-    .sidebar-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 10px 20px;
-      border-bottom: 1px solid rgba(232, 220, 200, 0.15);
-      margin-bottom: 16px;
-    }
-
-    .sidebar-brand span {
-      font-family: 'Unbounded', sans-serif;
-      font-size: 13.5px;
-      font-weight: 700;
-      color: var(--gold);
-    }
-
-    .sidebar-nav {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .side-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 11px 14px;
-      border-radius: var(--radius-md);
-      color: var(--beige);
-      font-size: 13.5px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      background: transparent;
-      text-align: left;
-      transition: all 0.22s ease;
-    }
-
-    .side-item:hover {
-      background: rgba(232, 220, 200, 0.14);
-      color: var(--white);
-      transform: translateX(3px);
-    }
-
-    .side-item.active {
-      background: var(--gold);
-      color: var(--navy);
-      font-weight: 800;
-    }
-
-    .app-main {
-      padding: 28px 32px 48px;
-      overflow-y: auto;
-    }
-
-    .page-banner {
-      position: relative;
-      background: linear-gradient(125deg, rgba(31, 42, 68, 0.86) 0%, rgba(44, 59, 94, 0.78) 100%);
-      backdrop-filter: blur(18px);
-      color: var(--white);
-      padding: 28px 32px;
-      border-radius: var(--radius-lg);
-      margin-bottom: 26px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 20px;
-      overflow: hidden;
-      border: 1.5px solid var(--glass-gold-border);
-      box-shadow: var(--shadow-glass);
-    }
-
-    .page-banner-bg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.26;
-      pointer-events: none;
-    }
-
-    .page-banner > div, .page-banner > button, .page-banner > a {
-      position: relative;
-      z-index: 2;
-    }
-
-    /* ФОРМЫ И ИНПУТЫ */
-    .form-field {
-      margin-bottom: 14px;
-      position: relative;
-    }
-
-    .form-field label {
-      display: block;
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-
-    .form-input, .form-textarea {
-      width: 100%;
-      padding: 11px 14px;
-      border-radius: var(--radius-md);
-      border: 1.5px solid rgba(213, 195, 165, 0.85);
-      background: rgba(255, 255, 255, 0.78);
-      backdrop-filter: blur(8px);
-      color: var(--navy);
-      font-family: inherit;
-      font-size: 14px;
-      transition: all 0.22s ease;
-    }
-
-    .form-input:focus, .form-textarea:focus {
-      outline: none;
-      border-color: var(--navy);
-      background: var(--white);
-      box-shadow: 0 0 0 3px rgba(198, 167, 94, 0.28);
-    }
-
-    .form-textarea {
-      min-height: 86px;
-      resize: vertical;
-    }
-
-    /* =====================================================================
-       АНИМИРОВАННОЕ МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ И РЕГИСТРАЦИИ (КАК В ВИДЕО)
-       ===================================================================== */
-    .auth-modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 2200;
-      background: rgba(20, 28, 46, 0.62);
-      backdrop-filter: blur(20px) saturate(150%);
-      -webkit-backdrop-filter: blur(20px) saturate(150%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1),
-                  visibility 0.38s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .auth-modal-backdrop.open {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .auth-modal-card {
-      position: relative;
-      width: 100%;
-      max-width: 470px;
-      background: rgba(250, 247, 242, 0.86);
-      backdrop-filter: blur(26px) saturate(180%);
-      -webkit-backdrop-filter: blur(26px) saturate(180%);
-      border: 2px solid rgba(255, 255, 255, 0.92);
-      border-radius: 30px;
-      padding: 34px 32px 30px;
-      box-shadow: 0 30px 70px rgba(15, 23, 42, 0.38), var(--glass-inner-glow);
-      transform: translateY(38px) scale(0.92) rotateX(6deg);
-      transition: transform 0.48s cubic-bezier(0.34, 1.56, 0.64, 1);
-      overflow: hidden;
-    }
-
-    .auth-modal-backdrop.open .auth-modal-card {
-      transform: translateY(0) scale(1) rotateX(0deg);
-    }
-
-    .auth-close-btn {
-      position: absolute;
-      top: 18px;
-      right: 18px;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 1px solid rgba(31, 42, 68, 0.15);
-      background: rgba(255, 255, 255, 0.75);
-      color: var(--navy);
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .auth-close-btn:hover {
-      background: var(--navy);
-      color: var(--gold);
-      transform: rotate(90deg);
-    }
-
-    .auth-mode-tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      background: rgba(232, 220, 200, 0.65);
-      padding: 5px;
-      border-radius: var(--radius-pill);
-      margin: 18px 0 20px;
-      border: 1px solid rgba(198, 167, 94, 0.35);
-    }
-
-    .auth-tab-btn {
-      border: none;
-      background: transparent;
-      padding: 9px 14px;
-      border-radius: var(--radius-pill);
-      font-weight: 800;
-      font-size: 13px;
-      color: var(--navy);
-      cursor: pointer;
-      transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    .auth-tab-btn.active {
-      background: var(--navy);
-      color: var(--gold);
-      box-shadow: 0 4px 14px rgba(31, 42, 68, 0.22);
-    }
-
-    .auth-panel {
-      display: none;
-      animation: authPanelSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .auth-panel.active {
-      display: block;
-    }
-
-    @keyframes authPanelSlide {
-      0% { opacity: 0; transform: translateY(12px) scale(0.98); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .pwd-eye-btn {
-      position: absolute;
-      right: 12px;
-      bottom: 9px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      opacity: 0.7;
-    }
-
-    /* ЛАЙТБОКС ДЛЯ ПРОСМОТРА ФОТОГРАФИЙ ИЗ ПАПКИ SRC */
-    .lightbox-modal {
-      position: fixed;
-      inset: 0;
-      z-index: 2300;
-      background: rgba(20, 28, 46, 0.82);
-      backdrop-filter: blur(20px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 32px;
-    }
-
-    .lightbox-modal.open {
-      display: flex;
-    }
-
-    .lightbox-box {
-      max-width: 1020px;
-      width: 100%;
-      background: rgba(250, 247, 242, 0.9);
-      backdrop-filter: blur(20px);
-      border-radius: var(--radius-xl);
-      overflow: hidden;
-      border: 2px solid var(--gold);
-      box-shadow: 0 28px 64px rgba(0, 0, 0, 0.45);
-      animation: authPanelSlide 0.32s ease;
-    }
-
-    .lightbox-box img {
-      width: 100%;
-      max-height: 70vh;
-      object-fit: cover;
-      display: block;
-    }
-
-    /* ВСПЛЫВАЮЩЕЕ УВЕДОМЛЕНИЕ (TOAST) */
-    .toast-notice {
-      position: fixed;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: var(--glass-navy-deep);
-      backdrop-filter: blur(18px);
-      color: var(--cream);
-      border: 1.5px solid var(--gold);
-      padding: 12px 24px;
-      border-radius: var(--radius-pill);
-      font-size: 13.5px;
-      font-weight: 700;
-      z-index: 2400;
-      opacity: 0;
-      transition: all 0.32s cubic-bezier(0.22, 1, 0.36, 1);
-      pointer-events: none;
-      box-shadow: var(--shadow-float);
-    }
-
-    .toast-notice.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
-    }
-
-    /* ПЛАВАЮЩИЙ ЧАТ GIGACHAT ПОМОЩНИК */
-    .ai-fab {
-      position: fixed;
-      right: 26px;
-      bottom: 26px;
-      z-index: 990;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: var(--gold);
-      color: var(--navy);
-      border: 3px solid var(--navy);
-      box-shadow: 0 12px 28px rgba(31, 42, 68, 0.28);
-      font-size: 24px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .ai-fab:hover {
-      transform: scale(1.08) rotate(-6deg);
-    }
-
-    .ai-drawer {
-      position: fixed;
-      right: 26px;
-      bottom: 96px;
-      width: 365px;
-      background: rgba(250, 247, 242, 0.88);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border-radius: 24px;
-      border: 2px solid var(--gold);
-      box-shadow: 0 22px 54px rgba(31, 42, 68, 0.28);
-      z-index: 995;
-      overflow: hidden;
-      display: none;
-      flex-direction: column;
-      animation: authPanelSlide 0.3s ease;
-    }
-
-    .ai-drawer.open {
-      display: flex;
-    }
-
-    .ai-header {
-      background: var(--glass-navy-deep);
-      color: var(--cream);
-      padding: 15px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .ai-messages {
-      padding: 14px;
-      max-height: 270px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      font-size: 13px;
-    }
-
-    .msg-bot {
-      background: rgba(255, 255, 255, 0.86);
-      border: 1px solid var(--beige);
-      padding: 10px 14px;
-      border-radius: 14px 14px 14px 4px;
-      color: var(--navy);
-    }
-
-    .msg-user {
-      background: var(--gold);
-      color: var(--navy);
-      font-weight: 700;
-      padding: 10px 14px;
-      border-radius: 14px 14px 4px 14px;
-      align-self: flex-end;
-    }
-
-    .site-footer {
-      background: var(--glass-navy-deep);
-      backdrop-filter: blur(22px);
-      color: var(--beige);
-      padding: 44px 28px;
-      margin-top: 64px;
-      border-top: 3px solid var(--gold);
-    }
-
-    .footer-inner {
-      max-width: 1360px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1.4fr 1fr 1fr 1fr;
-      gap: 30px;
-    }
-
-    @media (max-width: 1060px) {
-      .hero-glass-stage, .app-shell, .grid-3, .grid-2, .navy-stats-bar, .campus-bento-gallery, .footer-inner {
-        grid-template-columns: 1fr;
-      }
-      .campus-bento-gallery {
-        grid-template-rows: auto;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-  <!-- АНИМИРОВАННЫЙ ПОЛУПРОЗРАЧНЫЙ ФОН КАМПУСА СО СФЕРАМИ СВЕТА -->
+  <!-- АНИМИРОВАННЫЙ ПОЛУПРОЗРАЧНЫЙ ФОН КАМПУСА СО СВЕТОВЫМИ СФЕРАМИ -->
   <div class="ambient-stage">
     <div class="ambient-photo-layer" id="ambient-photo-layer"></div>
     <div class="ambient-orb orb-1"></div>
@@ -1600,969 +19,995 @@
     <div class="ambient-orb orb-3"></div>
   </div>
 
-  <!-- ВЕРХНИЙ АНИМИРОВАННЫЙ ИНДИКАТОР ПЕРЕХОДА МЕЖДУ РАЗДЕЛАМИ -->
-  <div class="route-progress-bar" id="route-progress-bar"></div>
+  <!-- ЕДИНЫЙ КАРКАС ПРИЛОЖЕНИЯ (РАСКРЫВАЮЩИЙСЯ САЙДБАР СЛЕВА + РАБОЧАЯ ОБЛАСТЬ СПРАВА) -->
+  <div class="workspace-wrapper">
 
-  <!-- ПАНЕЛЬ БЫСТРОГО ПЕРЕКЛЮЧЕНИЯ ВСЕХ 11 ЭКРАНОВ -->
-  <div class="proto-switcher">
-    <span class="proto-switcher-label">11 СТРАНИЦ ПРОТОТИПА:</span>
-    <button class="proto-tab active" onclick="showScreen('home')">1. Главная + Карта + ДЗ</button>
-    <button class="proto-tab" onclick="showScreen('homework')">2. Домашние задания и Педагог</button>
-    <button class="proto-tab" onclick="showScreen('programs')">3. Каталог программ + ЕГЭ</button>
-    <button class="proto-tab" onclick="showScreen('ai-landing')">4. Лендинг программы (ИИ)</button>
-    <button class="proto-tab" onclick="showScreen('dashboard')">5. Дашборд Campus Connect</button>
-    <button class="proto-tab" onclick="showScreen('teamup')">6. UrFU TeamUp (ИИ-команды)</button>
-    <button class="proto-tab" onclick="showScreen('mentors')">7. Менторы и коворкинг</button>
-    <button class="proto-tab" onclick="showScreen('events')">8. Афиша событий</button>
-    <button class="proto-tab" onclick="showScreen('about')">9. Об УрФУ + БРС + Сленг</button>
-    <button class="proto-tab" onclick="showScreen('campus-map')">10. Навигатор корпуса 3D</button>
-    <button class="proto-tab" onclick="showScreen('auth-profile')">11. УрФУ ID и Профиль</button>
+    <!-- РАСКРЫВАЮЩАЯСЯ БОКОВАЯ НАВИГАЦИЯ (MINI ↔ FULL ПО НАВЕДЕНИЮ И КНОПКЕ) -->
+    <aside class="smart-sidebar" id="smart-sidebar">
+      <button class="sidebar-pin-btn" id="sidebar-pin-btn" onclick="toggleSidebarPin()" title="Закрепить / открепить меню">
+        ⇄
+      </button>
+
+      <!-- Верхний блок профиля в золотом кольце -->
+      <div class="sidebar-profile" onclick="openAuthModal('login')" title="Открыть профиль УрФУ ID">
+        <div class="avatar-ring">
+          <div class="avatar-circle" id="sidebar-avatar-initials">ЭЭ</div>
+          <span class="online-dot"></span>
+        </div>
+        <div class="profile-meta">
+          <div class="profile-name" id="sidebar-user-name">Эльдар Эльдаров</div>
+          <div class="profile-mail" id="sidebar-user-mail">proverka@urfu.ru • РИ-160033</div>
+        </div>
+      </div>
+
+      <!-- Список всех 11 разделов с плавным бежевым вырезом активного пункта -->
+      <nav class="sidebar-menu" aria-label="Основная навигация по 11 страницам">
+        <button class="nav-item active" data-screen="home" onclick="navigateTo('home', this)">
+          <span class="nav-icon">🏛️</span>
+          <span class="nav-text">Главная + Карта</span>
+        </button>
+
+        <button class="nav-item" data-screen="homework" onclick="navigateTo('homework', this)">
+          <span class="nav-icon">📚</span>
+          <span class="nav-text">Домашние задания</span>
+        </button>
+
+        <button class="nav-item" data-screen="programs" onclick="navigateTo('programs', this)">
+          <span class="nav-icon">🎓</span>
+          <span class="nav-text">Программы и ЕГЭ</span>
+        </button>
+
+        <button class="nav-item" data-screen="ai-landing" onclick="navigateTo('ai-landing', this)">
+          <span class="nav-icon">🧠</span>
+          <span class="nav-text">Программа «ИИ»</span>
+        </button>
+
+        <button class="nav-item" data-screen="dashboard" onclick="navigateTo('dashboard', this)">
+          <span class="nav-icon">⚡</span>
+          <span class="nav-text">Дашборд студента</span>
+        </button>
+
+        <button class="nav-item" data-screen="teamup" onclick="navigateTo('teamup', this)">
+          <span class="nav-icon">🤝</span>
+          <span class="nav-text">UrFU TeamUp (ИИ)</span>
+        </button>
+
+        <button class="nav-item" data-screen="mentors" onclick="navigateTo('mentors', this)">
+          <span class="nav-icon">👨‍🏫</span>
+          <span class="nav-text">Менторы и педагоги</span>
+        </button>
+
+        <button class="nav-item" data-screen="events" onclick="navigateTo('events', this)">
+          <span class="nav-icon">📅</span>
+          <span class="nav-text">Афиша событий</span>
+        </button>
+
+        <button class="nav-item" data-screen="about" onclick="navigateTo('about', this)">
+          <span class="nav-icon">📖</span>
+          <span class="nav-text">Об УрФУ и сленг</span>
+        </button>
+
+        <button class="nav-item" data-screen="campus-map" onclick="navigateTo('campus-map', this)">
+          <span class="nav-icon">🗺️</span>
+          <span class="nav-text">Карта корпуса 3D</span>
+        </button>
+
+        <button class="nav-item" data-screen="auth-profile" onclick="navigateTo('auth-profile', this)">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-text">Профиль УрФУ ID</span>
+        </button>
+      </nav>
+
+      <!-- Нижний блок сайдбара: Активные пользователи (+70) и мини-карта связей кампуса -->
+      <div class="sidebar-footer-widgets">
+        <div class="active-users-label">АКТИВНЫЕ В КАМПУСЕ</div>
+        <div class="active-users-row" onclick="navigateTo('mentors', document.querySelector('[data-screen=mentors]'))">
+          <div class="mini-ava" style="background:#2C3B5E;">АК</div>
+          <div class="mini-ava" style="background:#3D517D;">МВ</div>
+          <div class="mini-ava" style="background:#1E7A53;">ДС</div>
+          <div class="mini-ava" style="background:#52607A;">ИП</div>
+          <div class="mini-ava gold-counter">+70</div>
+        </div>
+
+        <div class="sidebar-minimap" onclick="navigateTo('campus-map', document.querySelector('[data-screen=campus-map]'))" title="Открыть карту кампуса">
+          <svg viewBox="0 0 220 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="24" cy="52" r="2" fill="#E8DCC8" fill-opacity="0.35"/>
+            <circle cx="44" cy="40" r="2" fill="#E8DCC8" fill-opacity="0.35"/>
+            <circle cx="72" cy="28" r="2" fill="#E8DCC8" fill-opacity="0.35"/>
+            <circle cx="110" cy="46" r="2" fill="#E8DCC8" fill-opacity="0.35"/>
+            <circle cx="148" cy="26" r="2" fill="#E8DCC8" fill-opacity="0.35"/>
+            <circle cx="188" cy="48" r="2" fill="#E8DCC8" fill-opacity="0.35"/>
+            <path d="M28 54C65 14 135 14 186 48" stroke="#C6A75E" stroke-width="2" stroke-dasharray="4 3"/>
+            <path d="M58 58C95 32 135 34 162 56" stroke="#C6A75E" stroke-width="1.5" stroke-opacity="0.65"/>
+            <circle cx="28" cy="54" r="4.5" fill="#C6A75E"/>
+            <circle cx="112" cy="24" r="3.5" fill="#E8DCC8"/>
+            <circle cx="186" cy="48" r="4.5" fill="#C6A75E"/>
+            <text x="18" y="70" fill="#E8DCC8" font-size="9" font-weight="700">ГУК (Мира 19)</text>
+            <text x="122" y="70" fill="#C6A75E" font-size="9" font-weight="700">Новокольцовский</text>
+          </svg>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ПРАВАЯ ОСНОВНАЯ РАБОЧАЯ ОБЛАСТЬ -->
+    <div class="main-stage">
+
+      <!-- КОМПАКТНАЯ СТЕКЛЯННАЯ ВЕРХНЯЯ ПАНЕЛЬ: ПОИСК + ПЕРЕКЛЮЧАТЕЛЬ РОЛЕЙ + УрФУ ID -->
+      <header class="compact-glass-topbar">
+        <div class="brand-compact" onclick="navigateTo('home', document.querySelector('[data-screen=home]'))">
+          <svg viewBox="0 0 112 112" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="112" height="112" rx="26" fill="#1F2A44"/>
+            <path d="M26 24H44C46.5 24 48.5 25.2 49.8 27.4L60.5 46.5L46.5 61L22.8 31C20.8 27.8 22.8 24 26 24Z" fill="#E8DCC8"/>
+            <path d="M73 24H91C94.2 24 96.2 27.5 94.4 30.4L53.5 92.5C51.8 95 49.2 96 46 96H28C24.8 96 22.8 92.5 24.6 89.6L73 24Z" fill="#C6A75E"/>
+            <path d="M59 14L61.8 21.2L69 24L61.8 26.8L59 34L56.2 26.8L49 24L56.2 21.2L59 14Z" fill="#C6A75E"/>
+          </svg>
+          <div>
+            <span class="brand-compact-title">УрФУ</span>
+            <span class="brand-compact-tag">Campus Connect</span>
+          </div>
+        </div>
+
+        <div class="topbar-search">
+          <span>🔍</span>
+          <input type="text" id="Quick-search-input" placeholder="Поиск по кампусу: аудитория, ДЗ, программа ЕГЭ, преподаватель..." onkeydown="if(event.key==='Enter') handleQuickSearch(this.value)" />
+          <kbd>⌘K</kbd>
+        </div>
+
+        <div class="topbar-controls">
+          <div class="role-pills" title="Адаптировать интерфейс под роль">
+            <button class="role-pill-btn active" id="role-btn-student" onclick="setGlobalRole('student')">Студенту</button>
+            <button class="role-pill-btn" id="role-btn-teacher" onclick="setGlobalRole('teacher')">Педагогу</button>
+            <button class="role-pill-btn" id="role-btn-abit" onclick="setGlobalRole('abit')">Абитуриенту</button>
+          </div>
+          <button class="btn-gold" id="header-auth-btn" onclick="openAuthModal('login')">Войти через УрФУ</button>
+        </div>
+      </header>
+
+      <!-- КОНТЕЙНЕР БЕСШОВНОГО ПЕРЕКРЫТИЯ ЭКРАНОВ (ДЛЯ ПЛАВНОГО TRANSITION КАК НА ВИДЕО) -->
+      <div class="screens-viewport" id="screens-viewport">
+
+        <!-- ===============================================================
+             ЭКРАН 1: ГЛАВНАЯ СТРАНИЦА (ФАСАД + КАРТА КОРПУСА + ДОМАШНИЕ ЗАДАНИЯ)
+             =============================================================== -->
+        <section id="screen-home" class="screen active visible">
+          <!-- HERO-БЛОК С КИНЕМАТОГРАФИЧНЫМ ПЕРЕХОДОМ ТИПОГРАФИКИ И ФОНА -->
+          <div class="hero-glass-stage parallax-layer" data-depth="1">
+            <div class="hero-ambient-bg" id="hero-ambient-bg"></div>
+
+            <div class="hero-content-left" id="hero-editorial-text">
+              <div class="pill-badge" id="hero-role-badge">✨ Пространство света, стекла и технологий • Новокольцовский</div>
+              <h1 class="hero-title morph-headline" id="hero-main-heading">
+                Добро пожаловать в <span class="gold-highlight">сообщество</span> нового кампуса!
+              </h1>
+              <p class="hero-desc" id="hero-main-desc">
+                Люди. Идеи. События. В одном кампусе. Наводи курсор на левую панель для плавного перехода по 11 разделам экосистемы, сдавай домашние задания в БРС и строй маршруты по стеклянным атриумам.
+              </p>
+
+              <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+                <button class="btn-primary" onclick="openAuthModal('login')">🔐 Войти через УрФУ</button>
+                <button class="btn-gold" onclick="document.getElementById('main-homework-block').scrollIntoView({behavior:'smooth'})">📚 Домашние задания</button>
+                <button class="btn-glass" onclick="document.getElementById('main-navigator-block').scrollIntoView({behavior:'smooth'})">🗺️ Навигатор корпуса (85%)</button>
+              </div>
+            </div>
+
+            <!-- Правая витрина с оптическим расфокус-переходом и круглой золотой кнопкой как на видео -->
+            <div class="hero-photo-showcase">
+              <img id="hero-showcase-img" class="hero-main-img" src="src/oblozhka.jpg" alt="Новый кампус УрФУ" />
+              <div class="hero-img-overlay"></div>
+
+              <div style="display:flex; justify-content:space-between; align-items:center; position:relative; z-index:2;">
+                <div class="hero-top-glass-tag">
+                  <span>🏛️</span>
+                  <span id="hero-photo-label">ИРИТ-РтФ • Зеркальные стелы и фасад нового кампуса</span>
+                </div>
+
+                <!-- Круглая золотая кнопка переключения сцены (точно как в видео-референсе) -->
+                <button class="editorial-next-circle" onclick="cycleHeroEditorialSlide()" title="Следующая панорама кампуса (плавный переход)">
+                  →
+                </button>
+              </div>
+
+              <div class="hero-bottom-glass-card">
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px;">
+                  <div>
+                    <strong class="display-font" style="font-size:19px; color:var(--navy);">38 000+</strong>
+                    <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Студентов УрФУ</div>
+                  </div>
+                  <div style="border-left:1.5px solid rgba(31,42,68,0.15); padding-left:12px;">
+                    <strong class="display-font" style="font-size:19px; color:var(--navy);">100 000 м²</strong>
+                    <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Света и стекла</div>
+                  </div>
+                  <div style="border-left:1.5px solid rgba(31,42,68,0.15); padding-left:12px;">
+                    <strong class="display-font" style="font-size:19px; color:var(--gold);">96%</strong>
+                    <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Трудоустройство</div>
+                  </div>
+                </div>
+
+                <div class="hero-thumb-strip">
+                  <button class="hero-thumb-btn active" onclick="changeHeroPhoto(0, this)" title="Фасад и стелы">
+                    <img src="src/oblozhka.jpg" alt="Обложка кампуса" />
+                  </button>
+                  <button class="hero-thumb-btn" onclick="changeHeroPhoto(1, this)" title="Стеклянный атриум">
+                    <img src="src/DIP_8550.jpg" alt="Атриум кампуса" />
+                  </button>
+                  <button class="hero-thumb-btn" onclick="changeHeroPhoto(2, this)" title="Панорамный коворкинг">
+                    <img src="src/6571bc0a21495630507812.jpg" alt="Коворкинг" />
+                  </button>
+                  <button class="hero-thumb-btn" onclick="changeHeroPhoto(3, this)" title="Площадь кампуса">
+                    <img src="src/nov_kampus_ijun_24.jpg" alt="Площадь кампуса" />
+                  </button>
+                  <button class="hero-thumb-btn" onclick="changeHeroPhoto(4, this)" title="Аллеи студгородка">
+                    <img src="src/20240604_kampus.jpg" alt="Двор кампуса" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ПАНЕЛЬ БЫСТРОГО ДОСТУПА ДЛЯ ПЕДАГОГА -->
+          <div id="teacher-quick-ribbon" class="glass-card-navy parallax-layer" data-depth="2" style="margin-top:22px; display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+              <div>
+                <span class="badge-gold">РАБОЧЕЕ МЕСТО ПРЕПОДАВАТЕЛЯ УрФУ</span>
+                <h3 style="font-size:20px; margin-top:8px;">Управление курсами, проверка ДЗ и ведомость БРС</h3>
+                <p style="font-size:13.5px; color:var(--beige);">На проверке 4 лабораторные работы группы РИ-160033 • Ближайшая лекция: Стеклянный атриум А-101 (14:15)</p>
+              </div>
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn-gold" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))">Проверить ДЗ студентов (4)</button>
+                <button class="btn-glass" style="background:rgba(255,255,255,0.14); color:var(--cream); border-color:var(--gold);" onclick="showToast('Ведомость БРС синхронизирована с личным кабинетом преподавателя ✓')">Выгрузить ведомость БРС</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ВСТРОЕННАЯ АНИМИРОВАННАЯ КАРТА КОРПУСА С ПРОЗРАЧНЫМ ФОНОМ И УДОБНЫМ МАСШТАБОМ -->
+          <div id="main-navigator-block" class="section-head parallax-layer" data-depth="2">
+            <div>
+              <h2>🗺️ Анимированный навигатор корпуса УрФУ</h2>
+              <p class="section-sub">Полупрозрачный стеклянный интерфейс `campusnavigator-mu.vercel.app` с удобным масштабом 85% и быстрыми маршрутами</p>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn-glass" onclick="toggleMapHeight()">⤢ Развернуть по высоте</button>
+              <a href="https://campusnavigator-mu.vercel.app/" target="_blank" rel="noopener" class="btn-gold" style="text-decoration:none;">Открыть в новой вкладке ↗</a>
+            </div>
+          </div>
+
+          <div class="navigator-glass-shell parallax-layer" data-depth="3">
+            <div class="navigator-top-hud">
+              <div class="radar-badge">
+                <span class="radar-dot"></span>
+                <span>Интерактивная схема корпуса • Новокольцовский / ГУК</span>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <span style="font-size:12px; font-weight:700; color:var(--text-muted);">Масштаб обзора:</span>
+                <div class="scale-controls">
+                  <button class="scale-btn" onclick="setNavigatorScale(0.75, this)">75% Весь корпус</button>
+                  <button class="scale-btn active" onclick="setNavigatorScale(0.85, this)">85% Оптимально</button>
+                  <button class="scale-btn" onclick="setNavigatorScale(1.0, this)">100% Крупно</button>
+                </div>
+                <button class="pill-btn" style="padding:6px 12px; font-size:12px;" onclick="reloadCampusMap()">↻ Сбросить вид</button>
+              </div>
+            </div>
+
+            <div class="navigator-route-pills">
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="route-chip active" onclick="highlightCampusRoute('Стеклянный атриум (1 этаж) • Главный лекторий А-101', this)">✨ Стеклянный атриум</button>
+                <button class="route-chip" onclick="highlightCampusRoute('Панорамный коворкинг (3 этаж, крыло Б) • Зона TeamUp', this)">💻 Коворкинг 3 этаж</button>
+                <button class="route-chip" onclick="highlightCampusRoute('Деканат ИРИТ-РтФ и преподавательская (2 этаж, И-204)', this)">🏛️ Деканат и Педагоги</button>
+                <button class="route-chip" onclick="highlightCampusRoute('Лаборатория Прикладного ИИ и робототехники (Крыло В)', this)">🔬 Лаборатория ИИ</button>
+              </div>
+              <span class="badge-gold">Живая 2D/3D навигация</span>
+            </div>
+
+            <div class="navigator-viewport" id="main-map-viewport">
+              <div class="navigator-scale-stage" id="navigator-scale-stage">
+                <iframe
+                  id="campus-navigator-iframe"
+                  src="https://campusnavigator-mu.vercel.app/"
+                  title="Интерактивная карта корпуса УрФУ — Campus Navigator"
+                  loading="lazy"
+                  allow="fullscreen; geolocation"
+                ></iframe>
+              </div>
+
+              <div class="map-floating-status" id="map-route-status">
+                <span>🧭</span>
+                <span id="map-route-text">Активная локация: Стеклянный атриум (масштаб 85% для полного обзора крыльев корпуса)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ОТДЕЛЬНЫЙ БЛОК С ДОМАШНИМ ЗАДАНИЕМ СТУДЕНТА И ПРОВЕРКОЙ ПЕДАГОГА -->
+          <div id="main-homework-block" class="section-head parallax-layer" data-depth="2">
+            <div>
+              <h2>📚 Домашние задания и трекер семестра</h2>
+              <p class="section-sub">Сдавай лабораторные и проекты в один клик — баллы БРС начисляются автоматически после проверки педагогом</p>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <button class="pill-btn" id="hw-mode-toggle-btn" onclick="toggleTeacherHwMode()">👩‍🏫 Режим проверки (Педагогу)</button>
+              <button class="btn-primary" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))">Все задания и ведомость →</button>
+            </div>
+          </div>
+
+          <div class="hw-wrapper parallax-layer" data-depth="3">
+            <div class="hw-top-bar">
+              <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
+                <div>
+                  <div style="font-size:12px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Прогресс сдачи ДЗ за семестр</div>
+                  <div style="display:flex; align-items:baseline; gap:10px; margin-top:2px;">
+                    <span class="display-font" style="font-size:24px; color:var(--navy);" id="hw-progress-label">78% выполнено</span>
+                    <span class="badge-gold" id="hw-brs-bonus">+24.5 балла в БРС</span>
+                  </div>
+                </div>
+                <div style="width:220px;">
+                  <div class="progress-track">
+                    <div class="progress-fill" id="hw-progress-bar" style="width: 78%;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="filter-pills">
+                <button class="pill-btn active" onclick="filterHomework('all', this)">Все (4)</button>
+                <button class="pill-btn" onclick="filterHomework('urgent', this)">Горит дедлайн</button>
+                <button class="pill-btn" onclick="filterHomework('review', this)">На проверке</button>
+                <button class="pill-btn" onclick="filterHomework('done', this)">Сдано</button>
+              </div>
+            </div>
+
+            <div class="grid-2" id="main-hw-grid">
+              <div class="hw-card hw-item" data-status="urgent">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span class="badge-soft">Прикладной ИИ и ML • ИРИТ-РтФ</span>
+                    <span class="hw-status urgent" id="hw-st-1">🔥 До 30 октября, 23:59</span>
+                  </div>
+                  <h3 style="font-size:17px; margin-bottom:6px;">Лабораторная №4: Обучение сверточной нейросети и деплой на FastAPI</h3>
+                  <p style="font-size:13px; color:var(--text-muted);">
+                    Преподаватель: доц. Соколов А. В. • Прикрепите ссылку на GitHub-репозиторий и отчет в PDF. Максимум: <strong>+8 баллов БРС</strong>.
+                  </p>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
+                  <input type="text" id="hw-link-1" class="form-input" style="flex:1; padding:8px 12px; font-size:13px;" value="https://github.com/urfu-ai/cnn-fastapi-lab4" />
+                  <button class="btn-primary" style="padding:9px 16px; font-size:12.5px;" onclick="submitHomework(1)">Сдать работу ✓</button>
+                  <button class="btn-gold teacher-grade-btn" style="display:none; padding:9px 14px; font-size:12px;" onclick="gradeHomework(1, '+8.0 БРС')">Оценить: 8/8 БРС</button>
+                </div>
+              </div>
+
+              <div class="hw-card hw-item" data-status="urgent">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span class="badge-soft">Проектный практикум • Команда</span>
+                    <span class="hw-status urgent" id="hw-st-2">⏳ До 1 ноября, 18:00</span>
+                  </div>
+                  <h3 style="font-size:17px; margin-bottom:6px;">Спринт 2: Интерактивный прототип и дизайн-система фасада УрФУ</h3>
+                  <p style="font-size:13px; color:var(--text-muted);">
+                    Куратор: В. В. Виткин • Загрузите ссылку на макеты в Figma и проведите тестирование сценариев. <strong>+12 баллов БРС</strong>.
+                  </p>
+                </div>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
+                  <input type="text" id="hw-link-2" class="form-input" style="flex:1; padding:8px 12px; font-size:13px;" value="https://figma.com/file/urfu-glass-redesign" />
+                  <button class="btn-primary" style="padding:9px 16px; font-size:12.5px;" onclick="submitHomework(2)">Сдать работу ✓</button>
+                  <button class="btn-gold teacher-grade-btn" style="display:none; padding:9px 14px; font-size:12px;" onclick="gradeHomework(2, '+12.0 БРС')">Оценить: 12/12 БРС</button>
+                </div>
+              </div>
+
+              <div class="hw-card hw-item" data-status="review">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span class="badge-soft">Алгоритмы и структуры данных</span>
+                    <span class="hw-status review" id="hw-st-3">👀 На проверке у педагога</span>
+                  </div>
+                  <h3 style="font-size:17px; margin-bottom:6px;">Домашнее задание №3: Поиск кратчайшего пути в графе корпусов</h3>
+                  <p style="font-size:13px; color:var(--text-muted);">
+                    Отправлено 24 октября • Автотесты пройдены (18/18). Ожидается подтверждение преподавателя.
+                  </p>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
+                  <span style="font-size:12.5px; font-weight:700; color:var(--navy);">📎 graph_dijkstra_urfu.py</span>
+                  <button class="btn-gold teacher-grade-btn" style="display:none; padding:8px 14px; font-size:12px;" onclick="gradeHomework(3, '+6.0 БРС')">Выставить 6/6 в БРС</button>
+                </div>
+              </div>
+
+              <div class="hw-card hw-item" data-status="done">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span class="badge-soft">Базы данных и SQL</span>
+                    <span class="hw-status done" id="hw-st-4">✅ Проверено • +10.0 БРС</span>
+                  </div>
+                  <h3 style="font-size:17px; margin-bottom:6px;">Проектирование схемы БД для сервиса менторов Campus Connect</h3>
+                  <p style="font-size:13px; color:var(--text-muted);">
+                    Комментарий педагога: «Отличная нормализация таблиц и индексов, баллы зачислены в итоговый рейтинг семестра».
+                  </p>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
+                  <span style="font-size:12.5px; color:var(--success); font-weight:700;">В ведомости БРС: 10 из 10</span>
+                  <span class="badge-gold">Зачтено</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ГАЛЕРЕЯ СВЕТА И СТЕКЛА НОВОГО КАМПУСА (ВСЕ 5 ФОТО ИЗ ПАПКИ SRC) -->
+          <div class="section-head parallax-layer" data-depth="2">
+            <div>
+              <h2>✨ Архитектура света и стекла: кампус в деталях</h2>
+              <p class="section-sub">Нажми на любую фотографию из папки `src`, чтобы открыть панораму в полноэкранном стеклянном лайтбоксе</p>
+            </div>
+            <button class="btn-glass" onclick="navigateTo('campus-map', document.querySelector('[data-screen=campus-map]'))">3D-карта корпуса →</button>
+          </div>
+
+          <div class="campus-bento-gallery parallax-layer" data-depth="3">
+            <div class="bento-photo-card tall" onclick="openLightbox('src/DIP_8550.jpg', 'Стеклянный атриум и главный лекторий со световым куполом')">
+              <img src="src/DIP_8550.jpg" alt="Стеклянный атриум и лекторий УрФУ" />
+              <div class="bento-glass-caption">
+                <div>
+                  <strong>Главный стеклянный атриум и амфитеатр</strong>
+                  <span>Панорамный зенитный фонарь и 3 уровня галерей</span>
+                </div>
+                <span class="badge-gold">⤢</span>
+              </div>
+            </div>
+
+            <div class="bento-photo-card" onclick="openLightbox('src/oblozhka.jpg', 'Зеркальные стелы с символами науки у входа в ИРИТ-РтФ')">
+              <img src="src/oblozhka.jpg" alt="Фасад ИРИТ-РтФ со стелами" />
+              <div class="bento-glass-caption">
+                <div>
+                  <strong>Цифровой фасад ИРИТ-РтФ</strong>
+                  <span>Зеркальные стелы и панорамное остекление</span>
+                </div>
+                <span class="badge-gold">⤢</span>
+              </div>
+            </div>
+
+            <div class="bento-photo-card" onclick="openLightbox('src/6571bc0a21495630507812.jpg', 'Коворкинг с панорамными окнами для командной работы и хакатонов')">
+              <img src="src/6571bc0a21495630507812.jpg" alt="Панорамный коворкинг УрФУ" />
+              <div class="bento-glass-caption">
+                <div>
+                  <strong>Панорамный коворкинг 24/7</strong>
+                  <span>Пространство для UrFU TeamUp и менторов</span>
+                </div>
+                <span class="badge-gold">⤢</span>
+              </div>
+            </div>
+
+            <div class="bento-photo-card" onclick="openLightbox('src/nov_kampus_ijun_24.jpg', 'Площадь флагов, уличные лаунж-кольца и жилые корпуса')">
+              <img src="src/nov_kampus_ijun_24.jpg" alt="Площадь нового кампуса УрФУ" />
+              <div class="bento-glass-caption">
+                <div>
+                  <strong>Площадь кампуса и лаунж-зоны</strong>
+                  <span>Жилые корпуса гостиничного типа</span>
+                </div>
+                <span class="badge-gold">⤢</span>
+              </div>
+            </div>
+
+            <div class="bento-photo-card" onclick="openLightbox('src/20240604_kampus.jpg', 'Пешеходный бульвар без машин внутри студгородка в Новокольцовском')">
+              <img src="src/20240604_kampus.jpg" alt="Внутренний двор кампуса" />
+              <div class="bento-glass-caption">
+                <div>
+                  <strong>Зеленый бульвар студгородка</strong>
+                  <span>Экологичная среда для отдыха между парами</span>
+                </div>
+                <span class="badge-gold">⤢</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ТЕМНО-СИНЯЯ ПОЛУПРОЗРАЧНАЯ ПОЛОСА ЦИФР УНИВЕРСИТЕТА -->
+          <div class="navy-stats-bar parallax-layer" data-depth="2">
+            <div class="navy-stat-box">
+              <div>🏛️</div>
+              <div class="num">1920</div>
+              <div class="lbl">Год основания вуза</div>
+            </div>
+            <div class="navy-stat-box">
+              <div>🎓</div>
+              <div class="num">38 000+</div>
+              <div class="lbl">Студентов всех уровней</div>
+            </div>
+            <div class="navy-stat-box">
+              <div>🔬</div>
+              <div class="num">420+</div>
+              <div class="lbl">Лабораторий и R&D центров</div>
+            </div>
+            <div class="navy-stat-box">
+              <div>✨</div>
+              <div class="num">12</div>
+              <div class="lbl">Профильных институтов</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ЭКРАН 2: ДОМАШНИЕ ЗАДАНИЯ И РАБОЧЕЕ МЕСТО ПЕДАГОГА
+             =============================================================== -->
+        <section id="screen-homework" class="screen">
+          <div class="page-banner parallax-layer" data-depth="1">
+            <img class="page-banner-bg" src="src/6571bc0a21495630507812.jpg" alt="Коворкинг" />
+            <div>
+              <span class="badge-gold">УЧЕБНЫЙ ХАБ • СТУДЕНТ ↔ ПЕДАГОГ</span>
+              <h1 class="morph-headline" style="margin-top:8px;">Домашние задания, проекты и журнал БРС</h1>
+              <p>Прозрачный трекер дедлайнов для студента и конструктор заданий для преподавателя</p>
+            </div>
+            <button class="btn-gold" onclick="toggleTeacherHwMode()">Переключить: Студент / Педагог</button>
+          </div>
+
+          <div class="grid-2 parallax-layer" data-depth="2">
+            <div class="glass-card">
+              <span class="badge-soft">СТУДЕНТУ • БЫСТРАЯ ОТПРАВКА РЕШЕНИЯ</span>
+              <h3 style="font-size:20px; margin:10px 0 14px;">Отправить домашнее задание на проверку</h3>
+              <div class="form-field">
+                <label>ВЫБЕРИ ДИСЦИПЛИНУ</label>
+                <select class="form-input" id="new-hw-subject">
+                  <option>Прикладной искусственный интеллект (доц. Соколов А. В.)</option>
+                  <option>Проектный практикум ИРИТ-РтФ (В. В. Виткин)</option>
+                  <option>Алгоритмы и структуры данных (проф. Мельников И. П.)</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>ССЫЛКА НА РЕПОЗИТОРИЙ / МАКЕТ В FIGMA / ОТЧЕТ</label>
+                <input type="text" class="form-input" id="new-hw-url" value="https://github.com/urfu-student/ai-homework-solution" />
+              </div>
+              <div class="form-field">
+                <label>КОММЕНТАРИЙ ДЛЯ ПРЕПОДАВАТЕЛЯ</label>
+                <textarea class="form-textarea" id="new-hw-comment">Выполнены все 3 пункта ТЗ, добавлены unit-тесты и документация в README.</textarea>
+              </div>
+              <button class="btn-primary" onclick="addStudentSubmission()">Отправить работу в БРС →</button>
+            </div>
+
+            <div class="glass-card-beige">
+              <span class="badge-gold">ПЕДАГОГУ • СОЗДАНИЕ ЗАДАНИЯ ДЛЯ ПОТОКА</span>
+              <h3 style="font-size:20px; margin:10px 0 14px;">Выдать новое задание группе / потоку</h3>
+              <div class="grid-2" style="gap:12px;">
+                <div class="form-field">
+                  <label>ПОТОК / ГРУППА</label>
+                  <input type="text" class="form-input" id="teacher-group" value="РИ-160033, РИ-230912" />
+                </div>
+                <div class="form-field">
+                  <label>ВЕС В БРС (БАЛЛЫ)</label>
+                  <input type="text" class="form-input" id="teacher-points" value="+10.0 баллов" />
+                </div>
+              </div>
+              <div class="form-field">
+                <label>НАЗВАНИЕ И КРИТЕРИИ ЗАДАНИЯ</label>
+                <textarea class="form-textarea" id="teacher-task-title">Лабораторная работа №5: Интеграция LLM-ассистента с базой знаний кампуса УрФУ.</textarea>
+              </div>
+              <button class="btn-gold" onclick="publishTeacherTask()">Опубликовать задание для студентов ✓</button>
+            </div>
+          </div>
+
+          <div id="extra-hw-list" style="margin-top:22px;" class="grid-2 parallax-layer" data-depth="3"></div>
+        </section>
+
+        <!-- ===============================================================
+             ЭКРАН 3: КАТАЛОГ ПРОГРАММ + КАЛЬКУЛЯТОР ЕГЭ
+             =============================================================== -->
+        <section id="screen-programs" class="screen">
+          <div class="page-banner parallax-layer" data-depth="1">
+            <img class="page-banner-bg" src="src/nov_kampus_ijun_24.jpg" alt="Кампус УрФУ" />
+            <div>
+              <span class="badge-gold">ПРИЕМНАЯ КАМПАНИЯ УрФУ</span>
+              <h1 class="morph-headline" style="margin-top:8px;">Каталог программ и калькулятор ЕГЭ</h1>
+              <p>Двигай ползунок своих баллов, чтобы мгновенно увидеть доступные бюджетные направления</p>
+            </div>
+            <button class="btn-gold" onclick="navigateTo('ai-landing', document.querySelector('[data-screen=ai-landing]'))">Флагманская программа ИИ →</button>
+          </div>
+
+          <div class="glass-card-beige parallax-layer" data-depth="2" style="margin-bottom:26px;">
+            <div class="grid-3" style="align-items:center;">
+              <div>
+                <label style="font-size:12px; font-weight:800;">СУММА БАЛЛОВ ЕГЭ: <span id="ege-val" style="font-size:18px; color:var(--navy);">265</span></label>
+                <input type="range" min="160" max="300" value="265" style="width:100%; margin-top:8px; accent-color:var(--navy);" oninput="filterByEge(this.value)" />
+              </div>
+              <div class="filter-pills">
+                <button class="pill-btn active" onclick="filterTopic('all', this)">Все</button>
+                <button class="pill-btn" onclick="filterTopic('it', this)">IT и ИИ</button>
+                <button class="pill-btn" onclick="filterTopic('eng', this)">Инженерия</button>
+                <button class="pill-btn" onclick="filterTopic('econ', this)">Экономика и УГИ</button>
+              </div>
+              <div style="text-align:right; font-weight:800;">
+                Доступно программ: <span id="prog-count" class="badge-gold">6</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-3 parallax-layer" data-depth="3" id="programs-grid">
+            <div class="glass-card prog-item" data-topic="it" data-score="258">
+              <div class="tag-row"><span class="badge-soft">09.03.04 • ИРИТ-РтФ</span><span class="badge-gold">150 мест</span></div>
+              <h3 style="font-size:18px; margin-bottom:8px;">Прикладной ИИ и программная инженерия</h3>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Глубокое обучение, разработка высоконагруженных сервисов и компьютерное зрение.</p>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Проходной: <strong>258</strong></span>
+                <button class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="navigateTo('ai-landing', document.querySelector('[data-screen=ai-landing]'))">Подробнее →</button>
+              </div>
+            </div>
+
+            <div class="glass-card prog-item" data-topic="it" data-score="244">
+              <div class="tag-row"><span class="badge-soft">10.05.03 • ИРИТ-РтФ</span><span class="badge-gold">80 мест</span></div>
+              <h3 style="font-size:18px; margin-bottom:8px;">Информационная безопасность</h3>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Киберполигон УрФУ, криптография и защита автоматизированных систем.</p>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Проходной: <strong>244</strong></span>
+                <button class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="navigateTo('ai-landing', document.querySelector('[data-screen=ai-landing]'))">Подробнее →</button>
+              </div>
+            </div>
+
+            <div class="glass-card prog-item" data-topic="eng" data-score="228">
+              <div class="tag-row"><span class="badge-soft">15.03.06 • ИНМТ</span><span class="badge-gold">110 мест</span></div>
+              <h3 style="font-size:18px; margin-bottom:8px;">Мехатроника и робототехника</h3>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Проектирование промышленных роботов, беспилотных систем и сенсорики.</p>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Проходной: <strong>228</strong></span>
+                <button class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="navigateTo('ai-landing', document.querySelector('[data-screen=ai-landing]'))">Подробнее →</button>
+              </div>
+            </div>
+
+            <div class="glass-card prog-item" data-topic="eng" data-score="218">
+              <div class="tag-row"><span class="badge-soft">08.03.01 • ИСА</span><span class="badge-gold">140 мест</span></div>
+              <h3 style="font-size:18px; margin-bottom:8px;">BIM-архитектура и умный город</h3>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Информационное моделирование зданий и проектирование современных кампусов.</p>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Проходной: <strong>218</strong></span>
+                <button class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="navigateTo('ai-landing', document.querySelector('[data-screen=ai-landing]'))">Подробнее →</button>
+              </div>
+            </div>
+
+            <div class="glass-card prog-item" data-topic="econ" data-score="262">
+              <div class="tag-row"><span class="badge-soft">38.03.05 • ИнЭУ</span><span class="badge-gold">55 мест</span></div>
+              <h3 style="font-size:18px; margin-bottom:8px;">Бизнес-информатика и финтех</h3>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Управление IT-продуктами, системный анализ и финансовые технологии.</p>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Проходной: <strong>262</strong></span>
+                <button class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="navigateTo('ai-landing', document.querySelector('[data-screen=ai-landing]'))">Подробнее →</button>
+              </div>
+            </div>
+
+            <div class="glass-card prog-item" data-topic="econ" data-score="249">
+              <div class="tag-row"><span class="badge-soft">45.03.02 • УГИ</span><span class="badge-gold">45 мест</span></div>
+              <h3 style="font-size:18px; margin-bottom:8px;">Компьютерная лингвистика и цифровые медиа</h3>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Обработка естественного языка (NLP), кросс-культурные коммуникации и дизайн.</p>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Проходной: <strong>249</strong></span>
+                <button class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="navigateTo('ai-landing', document.querySelector('[data-screen=ai-landing]'))">Подробнее →</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ЭКРАН 4: ЛЕНДИНГ ПРОГРАММЫ «ПРИКЛАДНОЙ ИСКУССТВЕННЫЙ ИНТЕЛЛЕКТ»
+             =============================================================== -->
+        <section id="screen-ai-landing" class="screen">
+          <div class="page-banner parallax-layer" data-depth="1" style="min-height:250px;">
+            <img class="page-banner-bg" src="src/DIP_8550.jpg" alt="Атриум ИРИТ-РтФ" style="opacity:0.35;" />
+            <div>
+              <span class="badge-gold">09.03.04 • ИРИТ-РтФ • НОВОКОЛЬЦОВСКИЙ</span>
+              <h1 class="morph-headline" style="font-size:32px; margin:10px 0;">Прикладной искусственный интеллект</h1>
+              <p style="max-width:680px;">Обучение в новом стеклянном кампусе УрФУ совместно с инженерами Сбера, Контура и Яндекса. Собственные GPU-кластеры и проектный практикум с 1 семестра.</p>
+            </div>
+            <button class="btn-gold" onclick="openAuthModal('register')">Подать заявление онлайн</button>
+          </div>
+
+          <div class="grid-3 parallax-layer" data-depth="2">
+            <div class="glass-card">
+              <span class="badge-gold">1–2 КУРС</span>
+              <h3 style="margin:10px 0 8px;">Математическое ядро и Python/C++</h3>
+              <p style="font-size:13.5px; color:var(--text-muted);">Линейная алгебра, вероятностные модели, алгоритмы, SQL и разработка микросервисов на FastAPI.</p>
+            </div>
+            <div class="glass-card">
+              <span class="badge-gold">3 КУРС</span>
+              <h3 style="margin:10px 0 8px;">Computer Vision, NLP и LLM</h3>
+              <p style="font-size:13.5px; color:var(--text-muted);">Глубокие нейросети в PyTorch, генеративные модели, RAG-архитектуры и стажировки в R&D-лабораториях.</p>
+            </div>
+            <div class="glass-card">
+              <span class="badge-gold">4 КУРС</span>
+              <h3 style="margin:10px 0 8px;">MLOps и Диплом как стартап</h3>
+              <p style="font-size:13.5px; color:var(--text-muted);">Вывод ИИ-моделей в продакшен и защита реального индустриального продукта перед комиссией партнеров.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ЭКРАН 5: ДАШБОРД СТУДЕНТА CAMPUS CONNECT
+             =============================================================== -->
+        <section id="screen-dashboard" class="screen">
+          <div class="page-banner parallax-layer" data-depth="1">
+            <img class="page-banner-bg" src="src/oblozhka.jpg" alt="Кампус" />
+            <div>
+              <h1 class="morph-headline" id="dashboard-user-greeting">Привет, Эльдаров Эльдар Эльдарович</h1>
+              <p id="dashboard-user-sub">ИРИТ-РтФ, группа РИ-160033 • Средний балл БРС: 88.4 • Кампус Новокольцовский</p>
+            </div>
+            <button class="btn-gold" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))">Мои дедлайны ДЗ (2)</button>
+          </div>
+
+          <div class="grid-3 parallax-layer" data-depth="2" style="margin-bottom:24px;">
+            <div class="glass-card" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))" style="cursor:pointer;">
+              <strong>📚 Домашние задания</strong>
+              <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">2 работы ждут отправки до конца недели</p>
+            </div>
+            <div class="glass-card" onclick="navigateTo('teamup', document.querySelector('[data-screen=teamup]'))" style="cursor:pointer;">
+              <strong>🤖 UrFU TeamUp</strong>
+              <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">ИИ-подбор участников в проектную команду</p>
+            </div>
+            <div class="glass-card" onclick="navigateTo('campus-map', document.querySelector('[data-screen=campus-map]'))" style="cursor:pointer;">
+              <strong>🗺️ Навигатор корпуса</strong>
+              <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">Следующая пара: Атриум, ауд. А-101</p>
+            </div>
+          </div>
+
+          <div class="grid-2 parallax-layer" data-depth="3">
+            <div class="glass-card">
+              <h3 style="margin-bottom:12px;">📅 Расписание на сегодня</h3>
+              <div style="display:flex; flex-direction:column; gap:10px; font-size:13.5px;">
+                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; border-left:4px solid var(--gold);">
+                  <strong>10:15 – 11:50 • Машинное обучение (Лекция)</strong>
+                  <div style="color:var(--text-muted); font-size:12px;">Стеклянный атриум, зал А-101 • доц. Соколов А. В.</div>
+                </div>
+                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; border-left:4px solid var(--navy);">
+                  <strong>12:15 – 13:50 • Проектный практикум (Коворкинг)</strong>
+                  <div style="color:var(--text-muted); font-size:12px;">Панорамный коворкинг 3 этаж • Защита спринта</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card">
+              <h3 style="margin-bottom:12px;">🔖 Избранные события кампуса</h3>
+              <div style="display:flex; flex-direction:column; gap:10px; font-size:13.5px;">
+                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px;">
+                  <strong>Знакомство с Campus Connect в Новокольцовском</strong>
+                  <div style="color:var(--text-muted); font-size:12px;">18:00 • Главный стеклянный холл</div>
+                </div>
+                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px;">
+                  <strong>Пик IT и Ярмарка вакансий партнеров УрФУ</strong>
+                  <div style="color:var(--text-muted); font-size:12px;">12:00 • Корпус ИРИТ-РтФ</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ЭКРАН 6: URFU TEAMUP — ИИ-ПОДБОР КОМАНДЫ
+             =============================================================== -->
+        <section id="screen-teamup" class="screen">
+          <div class="page-banner parallax-layer" data-depth="1">
+            <img class="page-banner-bg" src="src/6571bc0a21495630507812.jpg" alt="Коворкинг TeamUp" />
+            <div>
+              <span class="badge-gold">AI MATCHMAKING • ПРОЕКТНЫЙ ПРАКТИКУМ</span>
+              <h1 class="morph-headline" style="margin-top:8px;">UrFU TeamUp — ИИ-подбор команды</h1>
+              <p>Студент рассказывает о скиллах — ИИ сохраняет профиль в базу. Тимлид описывает задачу — ИИ подбирает лучших.</p>
+            </div>
+          </div>
+
+          <div class="grid-2 parallax-layer" data-depth="2">
+            <div class="glass-card">
+              <h3 style="margin-bottom:12px;">🙋‍♂️ Я студент: мои скиллы</h3>
+              <div class="form-field">
+                <label>СТЕК И ОПЫТ</label>
+                <textarea id="teamup-student-skills" class="form-textarea">Я Максим, хорошо владею Python, C++, FastAPI, собираю адаптивные интерфейсы в Figma.</textarea>
+              </div>
+              <div class="form-field">
+                <label>КОНТАКТ ДЛЯ СВЯЗИ</label>
+                <input type="text" id="teamup-student-contact" class="form-input" value="@makrol337" />
+              </div>
+              <button class="btn-primary" onclick="saveTeamUpProfile()">Сохранить профиль в базу TeamUp</button>
+            </div>
+
+            <div class="glass-card">
+              <h3 style="margin-bottom:12px;">🎯 Я тимлид / куратор: ищу студентов</h3>
+              <div class="form-field">
+                <label>ОПИСАНИЕ ЗАДАЧИ ПРОЕКТА</label>
+                <textarea id="teamup-query" class="form-textarea">Мне нужен студент, который хорошо знает Python и FastAPI для разработки сервиса навигации по кампусу Новокольцовский.</textarea>
+              </div>
+              <button class="btn-gold" onclick="runTeamUpMatch()">✨ Подобрать кандидатов через ИИ</button>
+            </div>
+          </div>
+
+          <div class="glass-card-beige parallax-layer" data-depth="3" id="teamup-ai-result" style="margin-top:22px;">
+            <h3 style="margin-bottom:8px;">✨ Рекомендации ИИ UrFU TeamUp</h3>
+            <p style="font-size:14px;"><strong>Выбран кандидат №1: Максим (ИРИТ-РтФ, совпадение 98%)</strong> — уверенно владеет Python, FastAPI и C++. Средство связи: <span class="badge-gold">@makrol337</span></p>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ЭКРАН 7: МЕНТОРЫ И ПЕДАГОГИ КАМПУСА
+             =============================================================== -->
+        <section id="screen-mentors" class="screen">
+          <div class="page-banner parallax-layer" data-depth="1">
+            <img class="page-banner-bg" src="src/6571bc0a21495630507812.jpg" alt="Коворкинг" />
+            <div>
+              <h1 class="morph-headline">Менторы и преподаватели-консультанты</h1>
+              <p>Запишись на консультацию в панорамном коворкинге кампуса или онлайн</p>
+            </div>
+          </div>
+
+          <div class="grid-3 parallax-layer" data-depth="2">
+            <div class="glass-card">
+              <span class="badge-gold">МЕНТОР СТУДЕНТОВ</span>
+              <h3 style="margin:10px 0 6px;">Эльдаров Эльдар</h3>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">ИРИТ-РтФ, РИ-160033 • Помогаю с учебой, Python, SQL и FastAPI.</p>
+              <button class="btn-primary" onclick="showToast('Заявка на встречу в коворкинге отправлена ✓')">Назначить встречу</button>
+            </div>
+
+            <div class="glass-card">
+              <span class="badge-soft">НАУЧНЫЙ РУКОВОДИТЕЛЬ</span>
+              <h3 style="margin:10px 0 6px;">Соколов Алексей Викторович</h3>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">Доцент ИРИТ-РтФ • Консультации по курсовым, ВКР и публикациям в лаборатории ИИ.</p>
+              <button class="btn-primary" onclick="showToast('Вы записаны на консультацию в Чт 16:00 ✓')">Записаться в слот</button>
+            </div>
+
+            <div class="glass-card">
+              <span class="badge-gold">ТРЕКЕР СТАРТАПОВ</span>
+              <h3 style="margin:10px 0 6px;">Анна Ковалева</h3>
+              <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">ИнЭУ • Подготовка презентаций для проектного практикума и гранта «Студенческий стартап».</p>
+              <button class="btn-primary" onclick="showToast('Запрос ментору отправлен ✓')">Назначить встречу</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ЭКРАН 8: АФИША СОБЫТИЙ
+             =============================================================== -->
+        <section id="screen-events" class="screen">
+          <div class="page-banner parallax-layer" data-depth="1">
+            <img class="page-banner-bg" src="src/20240604_kampus.jpg" alt="Аллея кампуса" />
+            <div>
+              <h1 class="morph-headline">Афиша событий нового кампуса</h1>
+              <p>Хакатоны, открытые лекции в стеклянном атриуме, спорт и студенческие клубы</p>
+            </div>
+          </div>
+
+          <div class="grid-3 parallax-layer" data-depth="2">
+            <div class="glass-card">
+              <span class="badge-gold">07 ОКТЯБРЯ • 18:00</span>
+              <h3 style="margin:10px 0 6px;">Знакомство с Campus Connect</h3>
+              <p style="font-size:13px; color:var(--text-muted);">Презентация цифровых сервисов кампуса в главном стеклянном атриуме.</p>
+            </div>
+            <div class="glass-card">
+              <span class="badge-soft">19 ОКТЯБРЯ • 14:00</span>
+              <h3 style="margin:10px 0 6px;">День рождения УрФУ и Хоровод</h3>
+              <p style="font-size:13px; color:var(--text-muted);">Праздничная программа на площади перед ГУК и в кампусе Новокольцовский.</p>
+            </div>
+            <div class="glass-card">
+              <span class="badge-gold">26 НОЯБРЯ • 12:00</span>
+              <h3 style="margin:10px 0 6px;">Форум «Пик IT» и День карьеры</h3>
+              <p style="font-size:13px; color:var(--text-muted);">Мастер-классы от работодателей, ревью резюме и быстрые офферы на стажировку.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ЭКРАН 9: ОБ УРФУ, 12 ИНСТИТУТОВ, БРС И СЛОВАРЬ СЛЕНГА
+             =============================================================== -->
+        <section id="screen-about" class="screen">
+          <div class="page-banner parallax-layer" data-depth="1">
+            <img class="page-banner-bg" src="src/nov_kampus_ijun_24.jpg" alt="Кампус" />
+            <div>
+              <h1 class="morph-headline">Об УрФУ: институты, БРС и словарь кампуса</h1>
+              <p>Структура федерального университета, правила балльно-рейтинговой системы и сленг студентов</p>
+            </div>
+          </div>
+
+          <div class="grid-3 parallax-layer" data-depth="2" style="margin-bottom:26px;">
+            <div class="glass-card"><strong>🏛️ ГУК и Паркет</strong><p style="font-size:13px; color:var(--text-muted); margin-top:6px;">ГУК — Главный учебный корпус на Мира, 19. «Паркет» — легендарное место встреч на 2 этаже.</p></div>
+            <div class="glass-card"><strong>📊 БРС (0–100 баллов)</strong><p style="font-size:13px; color:var(--text-muted); margin-top:6px;">Балльно-рейтинговая система учитывает посещаемость, домашние задания и контрольные точки.</p></div>
+            <div class="glass-card"><strong>📄 Хвостовка и ППОС</strong><p style="font-size:13px; color:var(--text-muted); margin-top:6px;">Электронный экзаменационный лист для пересдачи и Профсоюз студентов УрФУ.</p></div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ЭКРАН 10: ОТДЕЛЬНАЯ СТРАНИЦА НАВИГАТОРА КОРПУСА 3D
+             =============================================================== -->
+        <section id="screen-campus-map" class="screen">
+          <div class="page-banner parallax-layer" data-depth="1">
+            <img class="page-banner-bg" src="src/DIP_8550.jpg" alt="Стеклянный атриум" />
+            <div>
+              <h1 class="morph-headline">Интерактивный навигатор корпуса УрФУ</h1>
+              <p>Полноэкранная схема этажей `campusnavigator-mu.vercel.app` в полупрозрачном стеклянном фрейме</p>
+            </div>
+            <a href="https://campusnavigator-mu.vercel.app/" target="_blank" rel="noopener" class="btn-gold" style="text-decoration:none;">Открыть в новой вкладке ↗</a>
+          </div>
+
+          <div class="navigator-glass-shell parallax-layer" data-depth="2">
+            <div class="navigator-viewport tall-map">
+              <div class="navigator-scale-stage" style="width:117.65%; height:117.65%; transform:scale(0.85);">
+                <iframe
+                  src="https://campusnavigator-mu.vercel.app/"
+                  title="Полная карта корпуса УрФУ"
+                  loading="lazy"
+                  allow="fullscreen; geolocation"
+                ></iframe>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             ЭКРАН 11: УРФУ ID И ПРОФИЛЬ СТУДЕНТА / ПЕДАГОГА
+             =============================================================== -->
+        <section id="screen-auth-profile" class="screen">
+          <div class="grid-2 parallax-layer" data-depth="1">
+            <div class="glass-card" style="padding:32px;">
+              <span class="badge-gold">МОЙ ПРОФИЛЬ CAMPUS CONNECT</span>
+              <h2 class="morph-headline" style="font-size:23px; margin:10px 0 16px;">Личные данные и академический статус</h2>
+              <div class="form-field">
+                <label>ФИО</label>
+                <input type="text" class="form-input" value="Эльдаров Эльдар Эльдарович" />
+              </div>
+              <div class="form-field">
+                <label>КОРПОРАТИВНЫЙ EMAIL (@URFU.ME / @URFU.RU)</label>
+                <input type="email" class="form-input" value="proverka@urfu.ru" />
+              </div>
+              <div class="grid-2" style="gap:12px;">
+                <div class="form-field">
+                  <label>ИНСТИТУТ / КАФЕДРА</label>
+                  <input type="text" class="form-input" value="ИРИТ-РтФ" />
+                </div>
+                <div class="form-field">
+                  <label>ГРУППА / СТАТУС</label>
+                  <input type="text" class="form-input" value="РИ-160033" />
+                </div>
+              </div>
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn-primary" onclick="navigateTo('dashboard', document.querySelector('[data-screen=dashboard]'))">Перейти в дашборд →</button>
+                <button class="btn-glass" onclick="openAuthModal('register')">Открыть окно входа / регистрации</button>
+              </div>
+            </div>
+
+            <div class="glass-card-beige" style="padding:32px;">
+              <span class="badge-soft">ПРОФИЛЬ МЕНТОРА И ПРЕПОДАВАТЕЛЯ</span>
+              <h2 style="font-size:23px; margin:10px 0 16px;">Настройки компетенций и консультаций</h2>
+              <div class="form-field">
+                <label>О СЕБЕ КАК О МЕНТОРЕ</label>
+                <textarea class="form-textarea">Помогаю с учебой, разбором первого проекта и подготовкой к собеседованиям.</textarea>
+              </div>
+              <div class="form-field">
+                <label>НАВЫКИ (ЧЕРЕЗ ЗАПЯТУЮ)</label>
+                <input type="text" class="form-input" value="Python, SQL, FastAPI" />
+              </div>
+              <button class="btn-gold" onclick="showToast('Настройки менторства сохранены ✓')">Сохранить настройки ✓</button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ФУТЕР ВНУТРИ РАБОЧЕЙ ЗОНЫ -->
+      <footer class="site-footer">
+        <div class="footer-inner">
+          <div>
+            <div class="display-font" style="font-size:18px; color:var(--gold); margin-bottom:8px;">УрФУ × Campus Connect</div>
+            <p style="font-size:12.5px; opacity:0.85;">
+              ФГАОУ ВО «Уральский федеральный университет имени первого Президента России Б. Н. Ельцина». Конкурсный проект обновления цифрового фасада вуза.
+            </p>
+          </div>
+          <div>
+            <strong style="color:var(--white); display:block; margin-bottom:8px;">Экосистема</strong>
+            <div style="font-size:13px; display:flex; flex-direction:column; gap:6px;">
+              <span style="cursor:pointer;" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))">Домашние задания и БРС</span>
+              <span style="cursor:pointer;" onclick="navigateTo('campus-map', document.querySelector('[data-screen=campus-map]'))">Навигатор корпуса 3D</span>
+              <span style="cursor:pointer;" onclick="navigateTo('teamup', document.querySelector('[data-screen=teamup]'))">UrFU TeamUp</span>
+            </div>
+          </div>
+          <div>
+            <strong style="color:var(--white); display:block; margin-bottom:8px;">Поступление</strong>
+            <div style="font-size:13px; display:flex; flex-direction:column; gap:6px;">
+              <span style="cursor:pointer;" onclick="navigateTo('programs', document.querySelector('[data-screen=programs]'))">Калькулятор ЕГЭ</span>
+              <span style="cursor:pointer;" onclick="navigateTo('ai-landing', document.querySelector('[data-screen=ai-landing]'))">Прикладной ИИ</span>
+              <span style="cursor:pointer;" onclick="navigateTo('about', document.querySelector('[data-screen=about]'))">12 институтов УрФУ</span>
+            </div>
+          </div>
+          <div>
+            <strong style="color:var(--white); display:block; margin-bottom:8px;">Контакты</strong>
+            <p style="font-size:13px;">г. Екатеринбург, ул. Мира, 19<br>Новокольцовский, ул. Универсиады, 7</p>
+          </div>
+        </div>
+      </footer>
+
+    </div>
   </div>
 
-  <!-- ПЛАВАЮЩАЯ СТЕКЛЯННАЯ ШАПКА-КАПСУЛА -->
-  <header class="top-navbar-wrap">
-    <nav class="top-navbar">
-      <div class="brand-logo" onclick="showScreen('home')">
-        <svg viewBox="0 0 112 112" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="112" height="112" rx="26" fill="#1F2A44"/>
-          <path d="M26 24H44C46.5 24 48.5 25.2 49.8 27.4L60.5 46.5L46.5 61L22.8 31C20.8 27.8 22.8 24 26 24Z" fill="#E8DCC8"/>
-          <path d="M73 24H91C94.2 24 96.2 27.5 94.4 30.4L53.5 92.5C51.8 95 49.2 96 46 96H28C24.8 96 22.8 92.5 24.6 89.6L73 24Z" fill="#C6A75E"/>
-          <path d="M59 14L61.8 21.2L69 24L61.8 26.8L59 34L56.2 26.8L49 24L56.2 21.2L59 14Z" fill="#C6A75E"/>
-        </svg>
-        <div>
-          <div class="brand-title">УрФУ</div>
-          <div class="brand-sub">Стеклянный кампус</div>
-        </div>
-      </div>
-
-      <div class="nav-links">
-        <button class="nav-link" onclick="showScreen('home')">Главная</button>
-        <button class="nav-link" onclick="showScreen('homework')">Домашние задания</button>
-        <button class="nav-link" onclick="showScreen('programs')">Поступление</button>
-        <button class="nav-link" onclick="
-          showScreen('home');
-          setTimeout(() => document.getElementById('main-navigator-block').scrollIntoView({behavior:'smooth'}), 180);
-        ">Карта корпуса</button>
-        <button class="nav-link" onclick="showScreen('about')">Об УрФУ и БРС</button>
-        <button class="nav-link" onclick="showScreen('dashboard')">Campus Connect ↗</button>
-      </div>
-
-      <div class="nav-actions">
-        <div class="role-pills" title="Переключить интерфейс под роль">
-          <button class="role-pill-btn active" id="role-btn-student" onclick="setGlobalRole('student')">Студенту</button>
-          <button class="role-pill-btn" id="role-btn-teacher" onclick="setGlobalRole('teacher')">Педагогу</button>
-          <button class="role-pill-btn" id="role-btn-abit" onclick="setGlobalRole('abit')">Абитуриенту</button>
-        </div>
-        <button class="btn-primary" id="header-auth-btn" onclick="openAuthModal('login')">Войти через УрФУ</button>
-      </div>
-    </nav>
-  </header>
-
-  <!-- =====================================================================
-       ЭКРАН 1: ГЛАВНАЯ СТРАНИЦА (СТЕКЛО + ФОТО SRC + ДЗ + КАРТА КОРПУСА)
-       ===================================================================== -->
-  <section id="screen-home" class="screen active visible">
-    <div class="container">
-
-      <!-- СТЕКЛЯННЫЙ HERO-БЛОК -->
-      <div class="hero-glass-stage stagger-card">
-        <div class="hero-ambient-bg" id="hero-ambient-bg"></div>
-
-        <div class="hero-content-left">
-          <div class="pill-badge" id="hero-role-badge">✨ Пространство света, стекла и технологий • Новокольцовский</div>
-          <h1 class="hero-title" id="hero-main-heading">
-            Добро пожаловать в <span class="gold-highlight">сообщество</span> нового кампуса!
-          </h1>
-          <p class="hero-desc" id="hero-main-desc">
-            Люди. Идеи. События. В одном кампусе. Интерактивная навигация по стеклянным атриумам, домашние задания с авторасчетом БРС, ИИ-подбор команды в UrFU TeamUp и удобная среда для педагогов.
-          </p>
-
-          <div class="hero-search-bar">
-            <input type="text" placeholder="Найти аудиторию, домашнее задание, преподавателя или направление..." />
-            <button class="btn-primary" onclick="
-              document.getElementById('main-navigator-block').scrollIntoView({behavior:'smooth'});
-            ">Найти в кампусе →</button>
-          </div>
-
-          <div style="display:flex; gap:12px; flex-wrap:wrap;">
-            <button class="btn-primary" onclick="openAuthModal('login')">🔐 Войти через УрФУ</button>
-            <button class="btn-gold" onclick="
-              document.getElementById('main-homework-block').scrollIntoView({behavior:'smooth'});
-            ">📚 Домашние задания</button>
-            <button class="btn-glass" onclick="
-              document.getElementById('main-navigator-block').scrollIntoView({behavior:'smooth'});
-            ">🗺️ Карта корпуса (85%)</button>
-          </div>
-        </div>
-
-        <!-- Правая интерактивная витрина с реальными фото из папки src/ -->
-        <div class="hero-photo-showcase">
-          <img id="hero-showcase-img" class="hero-main-img" src="src/oblozhka.jpg" alt="Новый кампус УрФУ" />
-          <div class="hero-img-overlay"></div>
-
-          <div class="hero-top-glass-tag">
-            <span>🏛️</span>
-            <span id="hero-photo-label">ИРИТ-РтФ • Зеркальные стелы и фасад нового кампуса</span>
-          </div>
-
-          <div class="hero-bottom-glass-card">
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px;">
-              <div>
-                <strong class="display-font" style="font-size:20px; color:var(--navy);">38 000+</strong>
-                <div style="font-size:11.5px; color:var(--text-muted); font-weight:600;">Студентов УрФУ</div>
-              </div>
-              <div style="border-left:1.5px solid rgba(31,42,68,0.15); padding-left:12px;">
-                <strong class="display-font" style="font-size:20px; color:var(--navy);">100 000 м²</strong>
-                <div style="font-size:11.5px; color:var(--text-muted); font-weight:600;">Света и стекла</div>
-              </div>
-              <div style="border-left:1.5px solid rgba(31,42,68,0.15); padding-left:12px;">
-                <strong class="display-font" style="font-size:20px; color:var(--gold);">96%</strong>
-                <div style="font-size:11.5px; color:var(--text-muted); font-weight:600;">Трудоустройство</div>
-              </div>
-            </div>
-
-            <div class="hero-thumb-strip">
-              <button class="hero-thumb-btn active" onclick="changeHeroPhoto('src/oblozhka.jpg', 'ИРИТ-РтФ • Зеркальные стелы и фасад нового кампуса', this)" title="Фасад и стелы">
-                <img src="src/oblozhka.jpg" alt="Обложка кампуса" />
-              </button>
-              <button class="hero-thumb-btn" onclick="changeHeroPhoto('src/DIP_8550.jpg', 'Стеклянный атриум и главный лекторий со световым куполом', this)" title="Стеклянный атриум">
-                <img src="src/DIP_8550.jpg" alt="Атриум кампуса" />
-              </button>
-              <button class="hero-thumb-btn" onclick="changeHeroPhoto('src/6571bc0a21495630507812.jpg', 'Панорамный коворкинг для проектной работы и встреч с менторами', this)" title="Панорамный коворкинг">
-                <img src="src/6571bc0a21495630507812.jpg" alt="Коворкинг" />
-              </button>
-              <button class="hero-thumb-btn" onclick="changeHeroPhoto('src/nov_kampus_ijun_24.jpg', 'Площадь флагов и современные жилые корпуса в Новокольцовском', this)" title="Площадь кампуса">
-                <img src="src/nov_kampus_ijun_24.jpg" alt="Площадь кампуса" />
-              </button>
-              <button class="hero-thumb-btn" onclick="changeHeroPhoto('src/20240604_kampus.jpg', 'Внутренний зеленый двор и пешеходные аллеи студгородка', this)" title="Аллеи студгородка">
-                <img src="src/20240604_kampus.jpg" alt="Двор кампуса" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ПАНЕЛЬ БЫСТРОГО ДОСТУПА ДЛЯ ПЕДАГОГА -->
-      <div id="teacher-quick-ribbon" class="glass-card-navy" style="margin-top:24px; display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
-          <div>
-            <span class="badge-gold">РАБОЧЕЕ МЕСТО ПРЕПОДАВАТЕЛЯ УрФУ</span>
-            <h3 style="font-size:20px; margin-top:8px;">Быстрое управление курсами, БРС и аудиториями</h3>
-            <p style="font-size:13.5px; color:var(--beige);">На проверке 4 лабораторные работы группы РИ-160033 • Ближайшая лекция: ауд. Атриум А-101 (14:15)</p>
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn-gold" onclick="showScreen('homework')">Проверить ДЗ студентов (4)</button>
-            <button class="btn-glass" style="background:rgba(255,255,255,0.14); color:var(--cream); border-color:var(--gold);" onclick="showToast('Ведомость БРС синхронизирована с личным кабинетом преподавателя ✓')">Выгрузить ведомость БРС</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- =================================================================
-           АНИМИРОВАННАЯ ИНТЕРАКТИВНАЯ КАРТА КОРПУСА С ПРОЗРАЧНЫМ ФОНОМ
-           И УДОБНЫМ МАСШТАБОМ (https://campusnavigator-mu.vercel.app/)
-           ================================================================= -->
-      <div id="main-navigator-block" class="section-head reveal-on-scroll">
-        <div>
-          <h2>🗺️ Анимированный навигатор корпуса УрФУ</h2>
-          <p class="section-sub">Полупрозрачный стеклянный интерфейс с удобным обзорным масштабом и быстрыми маршрутами до аудиторий</p>
-        </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button class="btn-glass" onclick="toggleMapHeight()">⤢ Развернуть по высоте</button>
-          <a href="https://campusnavigator-mu.vercel.app/" target="_blank" rel="noopener" class="btn-gold" style="text-decoration:none;">Открыть в отдельном окне ↗</a>
-        </div>
-      </div>
-
-      <div class="navigator-glass-shell reveal-on-scroll">
-        <!-- Верхняя полупрозрачная панель управления масштабом -->
-        <div class="navigator-top-hud">
-          <div class="radar-badge">
-            <span class="radar-dot"></span>
-            <span>Интерактивная схема корпуса • Новокольцовский / ГУК</span>
-          </div>
-
-          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-            <span style="font-size:12px; font-weight:700; color:var(--text-muted);">Масштаб обзора:</span>
-            <div class="scale-controls">
-              <button class="scale-btn" onclick="setNavigatorScale(0.75, this)">75% Весь корпус</button>
-              <button class="scale-btn active" onclick="setNavigatorScale(0.85, this)">85% Оптимально</button>
-              <button class="scale-btn" onclick="setNavigatorScale(1.0, this)">100% Крупно</button>
-            </div>
-            <button class="pill-btn" style="padding:6px 12px; font-size:12px;" onclick="reloadCampusMap()">↻ Сбросить вид</button>
-          </div>
-        </div>
-
-        <!-- Быстрые интерактивные точки маршрутов для студентов и педагогов -->
-        <div class="navigator-route-pills">
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <button class="route-chip active" onclick="highlightCampusRoute('Стеклянный атриум (1 этаж) • Главный лекторий А-101', this)">✨ Стеклянный атриум</button>
-            <button class="route-chip" onclick="highlightCampusRoute('Панорамный коворкинг (3 этаж, крыло Б) • Зона TeamUp', this)">💻 Коворкинг 3 этаж</button>
-            <button class="route-chip" onclick="highlightCampusRoute('Деканат ИРИТ-РтФ и преподавательская (2 этаж, И-204)', this)">🏛️ Деканат и Педагоги</button>
-            <button class="route-chip" onclick="highlightCampusRoute('Лаборатория Прикладного ИИ и робототехники (Крыло В)', this)">🔬 Лаборатория ИИ</button>
-          </div>
-          <span class="badge-gold">Интерактивное 2D/3D окно</span>
-        </div>
-
-        <!-- Окно карты с комфортным масштабом 85% по умолчанию -->
-        <div class="navigator-viewport" id="main-map-viewport">
-          <div class="navigator-scale-stage" id="navigator-scale-stage">
-            <iframe
-              id="campus-navigator-iframe"
-              src="https://campusnavigator-mu.vercel.app/"
-              title="Интерактивная карта корпуса УрФУ — Campus Navigator"
-              loading="lazy"
-              allow="fullscreen; geolocation"
-            ></iframe>
-          </div>
-
-          <div class="map-floating-Status" id="map-route-status">
-            <span>🧭</span>
-            <span id="map-route-text">Активная локация: Стеклянный атриум (масштаб 85% для полного обзора крыльев корпуса)</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- =================================================================
-           ОТДЕЛЬНЫЙ БЛОК С ДОМАШНИМ ЗАДАНИЕМ СТУДЕНТА (И ПРОВЕРКОЙ ПЕДАГОГА)
-           ================================================================= -->
-      <div id="main-homework-block" class="section-head reveal-on-scroll">
-        <div>
-          <h2>📚 Домашние задания и трекер семестра</h2>
-          <p class="section-sub">Сдавай лабораторные и проекты в один клик — баллы БРС начисляются автоматически после проверки педагогом</p>
-        </div>
-        <div style="display:flex; gap:10px; align-items:center;">
-          <button class="pill-btn" id="hw-mode-toggle-btn" onclick="toggleTeacherHwMode()">👩‍🏫 Режим проверки (Педагогу)</button>
-          <button class="btn-primary" onclick="showScreen('homework')">Все задания и ведомость →</button>
-        </div>
-      </div>
-
-      <div class="hw-wrapper reveal-on-scroll">
-        <div class="hw-top-bar">
-          <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
-            <div>
-              <div style="font-size:12px; font-weight:800; color:var(--text-muted); text-transform:uppercase;">Прогресс сдачи ДЗ за семестр</div>
-              <div style="display:flex; align-items:baseline; gap:10px; margin-top:2px;">
-                <span class="display-font" style="font-size:24px; color:var(--navy);" id="hw-progress-label">78% выполнено</span>
-                <span class="badge-gold" id="hw-brs-bonus">+24.5 балла в БРС</span>
-              </div>
-            </div>
-            <div style="width:220px;">
-              <div class="progress-track">
-                <div class="progress-fill" id="hw-progress-bar" style="width: 78%;"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="filter-pills">
-            <button class="pill-btn active" onclick="filterHomework('all', this)">Все (4)</button>
-            <button class="pill-btn" onclick="filterHomework('urgent', this)">Горит дедлайн</button>
-            <button class="pill-btn" onclick="filterHomework('review', this)">На проверке</button>
-            <button class="pill-btn" onclick="filterHomework('done', this)">Сдано</button>
-          </div>
-        </div>
-
-        <div class="grid-2" id="main-hw-grid">
-          <div class="hw-card hw-item" data-status="urgent">
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span class="badge-soft">Прикладной ИИ и ML • ИРИТ-РтФ</span>
-                <span class="hw-status urgent" id="hw-st-1">🔥 До 30 октября, 23:59</span>
-              </div>
-              <h3 style="font-size:17px; margin-bottom:6px;">Лабораторная №4: Обучение сверточной нейросети и деплой на FastAPI</h3>
-              <p style="font-size:13px; color:var(--text-muted);">
-                Преподаватель: доц. Соколов А. В. • Прикрепите ссылку на GitHub-репозиторий и отчет в формате PDF. Максимум: <strong>+8 баллов БРС</strong>.
-              </p>
-            </div>
-            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
-              <input type="text" id="hw-link-1" class="form-input" placeholder="Ссылка на GitHub / Figma / Google Docs..." style="flex:1; padding:8px 12px; font-size:13px;" value="https://github.com/urfu-ai/cnn-fastapi-lab4" />
-              <button class="btn-primary" style="padding:9px 16px; font-size:12.5px;" onclick="submitHomework(1)">Сдать работу ✓</button>
-              <button class="btn-gold teacher-grade-btn" style="display:none; padding:9px 14px; font-size:12px;" onclick="gradeHomework(1, '+8.0 БРС')">Оценить: 8/8 БРС</button>
-            </div>
-          </div>
-
-          <div class="hw-card hw-item" data-status="urgent">
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span class="badge-soft">Проектный практикум • Команда</span>
-                <span class="hw-status urgent" id="hw-st-2">⏳ До 1 ноября, 18:00</span>
-              </div>
-              <h3 style="font-size:17px; margin-bottom:6px;">Спринт 2: Интерактивный прототип и дизайн-система фасада УрФУ</h3>
-              <p style="font-size:13px; color:var(--text-muted);">
-                Куратор: В. В. Виткин • Загрузите ссылку на макеты в Figma и проведите тестирование сценариев для студентов и преподавателей. <strong>+12 баллов БРС</strong>.
-              </p>
-            </div>
-            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
-              <input type="text" id="hw-link-2" class="form-input" placeholder="Ссылка на проект в Figma..." style="flex:1; padding:8px 12px; font-size:13px;" value="https://figma.com/file/urfu-glass-redesign" />
-              <button class="btn-primary" style="padding:9px 16px; font-size:12.5px;" onclick="submitHomework(2)">Сдать работу ✓</button>
-              <button class="btn-gold teacher-grade-btn" style="display:none; padding:9px 14px; font-size:12px;" onclick="gradeHomework(2, '+12.0 БРС')">Оценить: 12/12 БРС</button>
-            </div>
-          </div>
-
-          <div class="hw-card hw-item" data-status="review">
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span class="badge-soft">Алгоритмы и структуры данных</span>
-                <span class="hw-status review" id="hw-st-3">👀 На проверке у педагога</span>
-              </div>
-              <h3 style="font-size:17px; margin-bottom:6px;">Домашнее задание №3: Поиск кратчайшего пути в графе корпусов</h3>
-              <p style="font-size:13px; color:var(--text-muted);">
-                Отправлено 24 октября • Автотесты пройдены (18/18). Ожидается подтверждение преподавателя.
-              </p>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
-              <span style="font-size:12.5px; font-weight:700; color:var(--navy);">📎 graph_dijkstra_urfu.py</span>
-              <button class="btn-gold teacher-grade-btn" style="display:none; padding:8px 14px; font-size:12px;" onclick="gradeHomework(3, '+6.0 БРС')">Выставить 6/6 в БРС</button>
-            </div>
-          </div>
-
-          <div class="hw-card hw-item" data-status="done">
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span class="badge-soft">Базы данных и SQL</span>
-                <span class="hw-status done" id="hw-st-4">✅ Проверено • +10.0 БРС</span>
-              </div>
-              <h3 style="font-size:17px; margin-bottom:6px;">Проектирование схемы БД для сервиса менторов Campus Connect</h3>
-              <p style="font-size:13px; color:var(--text-muted);">
-                Комментарий педагога: «Отличная нормализация таблиц и индексов, баллы зачислены в итоговый рейтинг семестра».
-              </p>
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
-              <span style="font-size:12.5px; color:var(--success); font-weight:700;">В ведомости БРС: 10 из 10</span>
-              <span class="badge-gold">Зачтено</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- =================================================================
-           ГАЛЕРЕЯ СВЕТА И СТЕКЛА НОВОГО КАМПУСА (ВСЕ 5 ФОТО ИЗ ПАПКИ SRC)
-           ================================================================= -->
-      <div class="section-head reveal-on-scroll">
-        <div>
-          <h2>✨ Архитектура света и стекла: кампус в деталях</h2>
-          <p class="section-sub">Нажми на любую фотографию из папки `src`, чтобы открыть панораму в полноэкранном стеклянном лайтбоксе</p>
-        </div>
-        <button class="btn-glass" onclick="showScreen('campus-map')">Открыть 3D-тур и карту →</button>
-      </div>
-
-      <div class="campus-bento-gallery reveal-on-scroll">
-        <div class="bento-photo-card tall" onclick="openLightbox('src/DIP_8550.jpg', 'Стеклянный атриум и главный лекторий со световым куполом')">
-          <img src="src/DIP_8550.jpg" alt="Стеклянный атриум и лекторий УрФУ" />
-          <div class="bento-glass-caption">
-            <div>
-              <strong>Главный стеклянный атриум и амфитеатр</strong>
-              <span>Панорамный зенитный фонарь, акустические панели и 3 уровня галерей</span>
-            </div>
-            <span class="badge-gold">⤢</span>
-          </div>
-        </div>
-
-        <div class="bento-photo-card" onclick="openLightbox('src/oblozhka.jpg', 'Зеркальные стелы с символами науки у входа в ИРИТ-РтФ')">
-          <img src="src/oblozhka.jpg" alt="Фасад ИРИТ-РтФ со стелами" />
-          <div class="bento-glass-caption">
-            <div>
-              <strong>Цифровой фасад ИРИТ-РтФ</strong>
-              <span>Зеркальные стелы и панорамное остекление</span>
-            </div>
-            <span class="badge-gold">⤢</span>
-          </div>
-        </div>
-
-        <div class="bento-photo-card" onclick="openLightbox('src/6571bc0a21495630507812.jpg', 'Коворкинг с панорамными окнами для командной работы и хакатонов')">
-          <img src="src/6571bc0a21495630507812.jpg" alt="Панорамный коворкинг УрФУ" />
-          <div class="bento-glass-caption">
-            <div>
-              <strong>Панорамный коворкинг 24/7</strong>
-              <span>Пространство для UrFU TeamUp и менторов</span>
-            </div>
-            <span class="badge-gold">⤢</span>
-          </div>
-        </div>
-
-        <div class="bento-photo-card" onclick="openLightbox('src/nov_kampus_ijun_24.jpg', 'Площадь флагов, уличные лаунж-кольца и жилые корпуса')">
-          <img src="src/nov_kampus_ijun_24.jpg" alt="Площадь нового кампуса УрФУ" />
-          <div class="bento-glass-caption">
-            <div>
-              <strong>Площадь кампуса и лаунж-зоны</strong>
-              <span>Жилые корпуса гостиничного типа</span>
-            </div>
-            <span class="badge-gold">⤢</span>
-          </div>
-        </div>
-
-        <div class="bento-photo-card" onclick="openLightbox('src/20240604_kampus.jpg', 'Пешеходный бульвар без машин внутри студгородка в Новокольцовском')">
-          <img src="src/20240604_kampus.jpg" alt="Внутренний двор кампуса" />
-          <div class="bento-glass-caption">
-            <div>
-              <strong>Зеленый бульвар студгородка</strong>
-              <span>Экологичная среда для отдыха между парами</span>
-            </div>
-            <span class="badge-gold">⤢</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ТЕМНО-СИНЯЯ СТЕКЛЯННАЯ ПОЛОСА ЦИФР УНИВЕРСИТЕТА -->
-      <div class="navy-stats-bar reveal-on-scroll">
-        <div class="navy-stat-box">
-          <div>🏛️</div>
-          <div class="num">1920</div>
-          <div class="lbl">Год основания вуза</div>
-        </div>
-        <div class="navy-stat-box">
-          <div>🎓</div>
-          <div class="num">38 000+</div>
-          <div class="lbl">Студентов всех уровней</div>
-        </div>
-        <div class="navy-stat-box">
-          <div>🔬</div>
-          <div class="num">420+</div>
-          <div class="lbl">Лабораторий и R&D центров</div>
-        </div>
-        <div class="navy-stat-box">
-          <div>✨</div>
-          <div class="num">12</div>
-          <div class="lbl">Профильных институтов</div>
-        </div>
-      </div>
-
-      <!-- ПОПУЛЯРНЫЕ ПРОГРАММЫ В ПОЛУПРОЗРАЧНЫХ СТЕКЛЯННЫХ КАРТОЧКАХ -->
-      <div class="section-head reveal-on-scroll">
-        <div>
-          <h2>Флагманские программы обучения</h2>
-          <p class="section-sub">Индивидуальные образовательные траектории (ИОТ) и реальные проекты с индустрией</p>
-        </div>
-        <button class="btn-glass" onclick="showScreen('programs')">Каталог 350+ программ →</button>
-      </div>
-
-      <div class="grid-3 reveal-on-scroll">
-        <div class="glass-card">
-          <div class="tag-row"><span class="badge-soft">ИРИТ-РтФ</span><span class="badge-gold">150 бюджетных мест</span></div>
-          <h3 style="font-size:18px; margin-bottom:8px;">Прикладной искусственный интеллект</h3>
-          <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:18px;">Computer Vision, большие языковые модели (LLM) и ML-инжиниринг в новых лабораториях кампуса.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(31,42,68,0.1); padding-top:14px;">
-            <span style="font-size:13px; font-weight:700;">ЕГЭ от 258 баллов</span>
-            <button class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="showScreen('ai-landing')">Открыть →</button>
-          </div>
-        </div>
-
-        <div class="glass-card">
-          <div class="tag-row"><span class="badge-soft">УПИШ / ИНМТ</span><span class="badge-gold">95 бюджетных мест</span></div>
-          <h3 style="font-size:18px; margin-bottom:8px;">Цифровое машиностроение и робототехника</h3>
-          <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:18px;">Цифровые двойники производства, автономные роботы и инженерный дизайн с партнерами Урала.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(31,42,68,0.1); padding-top:14px;">
-            <span style="font-size:13px; font-weight:700;">ЕГЭ от 234 баллов</span>
-            <button class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="showScreen('programs')">Открыть →</button>
-          </div>
-        </div>
-
-        <div class="glass-card">
-          <div class="tag-row"><span class="badge-soft">ИнЭУ</span><span class="badge-gold">60 бюджетных мест</span></div>
-          <h3 style="font-size:18px; margin-bottom:8px;">Международный финтех и бизнес-аналитика</h3>
-          <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:18px;">Управление цифровыми продуктами, алгоритмическая аналитика и технологическое предпринимательство.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(31,42,68,0.1); padding-top:14px;">
-            <span style="font-size:13px; font-weight:700;">ЕГЭ от 262 баллов</span>
-            <button class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="showScreen('programs')">Открыть →</button>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       ЭКРАН 2: ПОЛНЫЙ ЦЕНТР ДОМАШНИХ ЗАДАНИЙ (ДЛЯ СТУДЕНТОВ И ПЕДАГОГОВ)
-       ===================================================================== -->
-  <section id="screen-homework" class="screen">
-    <div class="container">
-      <div class="page-banner stagger-card">
-        <img class="page-banner-bg" src="src/6571bc0a21495630507812.jpg" alt="Коворкинг" />
-        <div>
-          <span class="badge-gold">УЧЕБНЫЙ ХАБ • СТУДЕНТ ↔ ПЕДАГОГ</span>
-          <h1 style="margin-top:8px;">Домашние задания, проекты и журнал БРС</h1>
-          <p>Прозрачный трекер дедлайнов для студента и удобный конструктор заданий для преподавателя</p>
-        </div>
-        <button class="btn-gold" onclick="toggleTeacherHwMode()">Переключить: Студент / Педагог</button>
-      </div>
-
-      <div class="grid-2">
-        <div class="glass-card stagger-card">
-          <span class="badge-soft">СТУДЕНТУ • БЫСТРАЯ ОТПРАВКА РЕШЕНИЯ</span>
-          <h3 style="font-size:20px; margin:10px 0 14px;">Отправить домашнее задание на проверку</h3>
-          <div class="form-field">
-            <label>ВЫБЕРИ ДИСЦИПЛИНУ</label>
-            <select class="form-input" id="new-hw-subject">
-              <option>Прикладной искусственный интеллект (доц. Соколов А. В.)</option>
-              <option>Проектный практикум ИРИТ-РтФ (В. В. Виткин)</option>
-              <option>Алгоритмы и структуры данных (проф. Мельников И. П.)</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label>ССЫЛКА НА РЕПОЗИТОРИЙ / МАКЕТ В FIGMA / ОТЧЕТ</label>
-            <input type="text" class="form-input" id="new-hw-url" value="https://github.com/urfu-student/ai-homework-solution" />
-          </div>
-          <div class="form-field">
-            <label>КОММЕНТАРИЙ ДЛЯ ПРЕПОДАВАТЕЛЯ</label>
-            <textarea class="form-textarea" id="new-hw-comment">Выполнены все 3 пункта ТЗ, добавлены unit-тесты и документация в README.</textarea>
-          </div>
-          <button class="btn-primary" onclick="addStudentSubmission()">Отправить работу в БРС →</button>
-        </div>
-
-        <div class="glass-card-beige stagger-card">
-          <span class="badge-gold">ПЕДАГОГУ • СОЗДАНИЕ ЗАДАНИЯ ДЛЯ ПОТОКА</span>
-          <h3 style="font-size:20px; margin:10px 0 14px;">Выдать новое задание группе / потоку</h3>
-          <div class="grid-2" style="gap:12px;">
-            <div class="form-field">
-              <label>ПОТОК / ГРУППА</label>
-              <input type="text" class="form-input" id="teacher-group" value="РИ-160033, РИ-230912" />
-            </div>
-            <div class="form-field">
-              <label>ВЕС В БРС (БАЛЛЫ)</label>
-              <input type="text" class="form-input" id="teacher-points" value="+10.0 баллов" />
-            </div>
-          </div>
-          <div class="form-field">
-            <label>НАЗВАНИЕ И КРИТЕРИИ ЗАДАНИЯ</label>
-            <textarea class="form-textarea" id="teacher-task-title">Лабораторная работа №5: Интеграция LLM-ассистента с базой знаний кампуса УрФУ.</textarea>
-          </div>
-          <button class="btn-gold" onclick="publishTeacherTask()">Опубликовать задание для студентов ✓</button>
-        </div>
-      </div>
-
-      <div id="extra-hw-list" style="margin-top:22px;" class="grid-2"></div>
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       ЭКРАН 3: КАТАЛОГ ПРОГРАММ + КАЛЬКУЛЯТОР ЕГЭ
-       ===================================================================== -->
-  <section id="screen-programs" class="screen">
-    <div class="container">
-      <div class="page-banner stagger-card">
-        <img class="page-banner-bg" src="src/nov_kampus_ijun_24.jpg" alt="Кампус УрФУ" />
-        <div>
-          <span class="badge-gold">ПРИЕМНАЯ КАМПАНИЯ УрФУ</span>
-          <h1 style="margin-top:8px;">Каталог программ и калькулятор ЕГЭ</h1>
-          <p>Двигай ползунок своих баллов, чтобы мгновенно увидеть доступные бюджетные направления</p>
-        </div>
-        <button class="btn-gold" onclick="showScreen('ai-landing')">Флагманская программа ИИ →</button>
-      </div>
-
-      <div class="glass-card-beige stagger-card" style="margin-bottom:26px;">
-        <div class="grid-3" style="align-items:center;">
-          <div>
-            <label style="font-size:12px; font-weight:800;">СУММА БАЛЛОВ ЕГЭ: <span id="ege-val" style="font-size:18px; color:var(--navy);">265</span></label>
-            <input type="range" min="160" max="300" value="265" style="width:100%; margin-top:8px; accent-color:var(--navy);" oninput="filterByEge(this.value)" />
-          </div>
-          <div class="filter-pills">
-            <button class="pill-btn active" onclick="filterTopic('all', this)">Все</button>
-            <button class="pill-btn" onclick="filterTopic('it', this)">IT и ИИ</button>
-            <button class="pill-btn" onclick="filterTopic('eng', this)">Инженерия</button>
-            <button class="pill-btn" onclick="filterTopic('econ', this)">Экономика и УГИ</button>
-          </div>
-          <div style="text-align:right; font-weight:800;">
-            Доступно программ: <span id="prog-count" class="badge-gold">6</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid-3" id="programs-grid">
-        <div class="glass-card prog-item stagger-card" data-topic="it" data-score="258">
-          <div class="tag-row"><span class="badge-soft">09.03.04 • ИРИТ-РтФ</span><span class="badge-gold">150 мест</span></div>
-          <h3 style="font-size:18px; margin-bottom:8px;">Прикладной ИИ и программная инженерия</h3>
-          <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Глубокое обучение, разработка высоконагруженных сервисов и компьютерное зрение.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Проходной: <strong>258</strong></span>
-            <button class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="showScreen('ai-landing')">Подробнее →</button>
-          </div>
-        </div>
-
-        <div class="glass-card prog-item stagger-card" data-topic="it" data-score="244">
-          <div class="tag-row"><span class="badge-soft">10.05.03 • ИРИТ-РтФ</span><span class="badge-gold">80 мест</span></div>
-          <h3 style="font-size:18px; margin-bottom:8px;">Информационная безопасность</h3>
-          <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Киберполигон УрФУ, криптография и защита автоматизированных систем.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Проходной: <strong>244</strong></span>
-            <button class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="showScreen('ai-landing')">Подробнее →</button>
-          </div>
-        </div>
-
-        <div class="glass-card prog-item stagger-card" data-topic="eng" data-score="228">
-          <div class="tag-row"><span class="badge-soft">15.03.06 • ИНМТ</span><span class="badge-gold">110 мест</span></div>
-          <h3 style="font-size:18px; margin-bottom:8px;">Мехатроника и робототехника</h3>
-          <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Проектирование промышленных роботов, беспилотных систем и сенсорики.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Проходной: <strong>228</strong></span>
-            <button class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="showScreen('ai-landing')">Подробнее →</button>
-          </div>
-        </div>
-
-        <div class="glass-card prog-item stagger-card" data-topic="eng" data-score="218">
-          <div class="tag-row"><span class="badge-soft">08.03.01 • ИСА</span><span class="badge-gold">140 мест</span></div>
-          <h3 style="font-size:18px; margin-bottom:8px;">BIM-архитектура и умный город</h3>
-          <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Информационное моделирование зданий и проектирование современных кампусов.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Проходной: <strong>218</strong></span>
-            <button class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="showScreen('ai-landing')">Подробнее →</button>
-          </div>
-        </div>
-
-        <div class="glass-card prog-item stagger-card" data-topic="econ" data-score="262">
-          <div class="tag-row"><span class="badge-soft">38.03.05 • ИнЭУ</span><span class="badge-gold">55 мест</span></div>
-          <h3 style="font-size:18px; margin-bottom:8px;">Бизнес-информатика и финтех</h3>
-          <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Управление IT-продуктами, системный анализ и финансовые технологии.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Проходной: <strong>262</strong></span>
-            <button class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="showScreen('ai-landing')">Подробнее →</button>
-          </div>
-        </div>
-
-        <div class="glass-card prog-item stagger-card" data-topic="econ" data-score="249">
-          <div class="tag-row"><span class="badge-soft">45.03.02 • УГИ</span><span class="badge-gold">45 мест</span></div>
-          <h3 style="font-size:18px; margin-bottom:8px;">Компьютерная лингвистика и цифровые медиа</h3>
-          <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Обработка естественного языка (NLP), кросс-культурные коммуникации и дизайн.</p>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Проходной: <strong>249</strong></span>
-            <button class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="showScreen('ai-landing')">Подробнее →</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       ЭКРАН 4: ЛЕНДИНГ ПРОГРАММЫ «ПРИКЛАДНОЙ ИСКУССТВЕННЫЙ ИНТЕЛЛЕКТ»
-       ===================================================================== -->
-  <section id="screen-ai-landing" class="screen">
-    <div class="container">
-      <div class="page-banner stagger-card" style="min-height:260px;">
-        <img class="page-banner-bg" src="src/DIP_8550.jpg" alt="Атриум ИРИТ-РтФ" style="opacity:0.35;" />
-        <div>
-          <span class="badge-gold">09.03.04 • ИРИТ-РтФ • НОВОКОЛЬЦОВСКИЙ</span>
-          <h1 style="font-size:32px; margin:10px 0;">Прикладной искусственный интеллект</h1>
-          <p style="max-width:680px;">Обучение в новом стеклянном кампусе УрФУ совместно с инженерами Сбера, Контура и Яндекса. Собственные GPU-кластеры и проектный практикум с 1 семестра.</p>
-        </div>
-        <button class="btn-gold" onclick="openAuthModal('register')">Подать заявление онлайн</button>
-      </div>
-
-      <div class="grid-3">
-        <div class="glass-card stagger-card">
-          <span class="badge-gold">1–2 КУРС</span>
-          <h3 style="margin:10px 0 8px;">Математическое ядро и Python/C++</h3>
-          <p style="font-size:13.5px; color:var(--text-muted);">Линейная алгебра, вероятностные модели, алгоритмы, SQL и разработка микросервисов на FastAPI.</p>
-        </div>
-        <div class="glass-card stagger-card">
-          <span class="badge-gold">3 КУРС</span>
-          <h3 style="margin:10px 0 8px;">Computer Vision, NLP и LLM</h3>
-          <p style="font-size:13.5px; color:var(--text-muted);">Глубокие нейросети в PyTorch, генеративные модели, RAG-архитектуры и стажировки в R&D-лабораториях.</p>
-        </div>
-        <div class="glass-card stagger-card">
-          <span class="badge-gold">4 КУРС</span>
-          <h3 style="margin:10px 0 8px;">MLOps и Диплом как стартап</h3>
-          <p style="font-size:13.5px; color:var(--text-muted);">Вывод ИИ-моделей в продакшен и защита реального индустриального продукта перед комиссией партнеров.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       ЭКРАН 5: ДАШБОРД СТУДЕНТА CAMPUS CONNECT
-       ===================================================================== -->
-  <section id="screen-dashboard" class="screen">
-    <div class="app-shell stagger-card">
-      <aside class="sidebar">
-        <div>
-          <div class="sidebar-brand"><span>CAMPUS CONNECT</span></div>
-          <nav class="sidebar-nav">
-            <button class="side-item active" onclick="showScreen('dashboard')">🏠 Главная кабинета</button>
-            <button class="side-item" onclick="showScreen('homework')">📚 Домашние задания</button>
-            <button class="side-item" onclick="showScreen('teamup')">✨ UrFU TeamUp (ИИ)</button>
-            <button class="side-item" onclick="showScreen('mentors')">👥 Менторы и коворкинг</button>
-            <button class="side-item" onclick="showScreen('events')">📅 События кампуса</button>
-            <button class="side-item" onclick="showScreen('about')">🏛️ Об УрФУ и БРС</button>
-            <button class="side-item" onclick="showScreen('campus-map')">🗺️ Навигатор корпуса</button>
-          </nav>
-        </div>
-        <button class="btn-gold" style="width:100%; justify-content:center;" onclick="showScreen('home')">← На главный фасад</button>
-      </aside>
-
-      <main class="app-main">
-        <div class="page-banner">
-          <img class="page-banner-bg" src="src/oblozhka.jpg" alt="Кампус" />
-          <div>
-            <h1 id="dashboard-user-greeting">Привет, Эльдаров Эльдар Эльдарович</h1>
-            <p id="dashboard-user-sub">ИРИТ-РтФ, группа РИ-160033 • Средний балл БРС: 88.4 • Кампус Новокольцовский</p>
-          </div>
-          <button class="btn-gold" onclick="showScreen('homework')">Мои дедлайны ДЗ (2)</button>
-        </div>
-
-        <div class="grid-3" style="margin-bottom:24px;">
-          <div class="glass-card" onclick="showScreen('homework')" style="cursor:pointer;">
-            <strong>📚 Домашние задания</strong>
-            <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">2 работы ждут отправки до конца недели</p>
-          </div>
-          <div class="glass-card" onclick="showScreen('teamup')" style="cursor:pointer;">
-            <strong>🤖 UrFU TeamUp</strong>
-            <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">ИИ-подбор участников в проектную команду</p>
-          </div>
-          <div class="glass-card" onclick="showScreen('campus-map')" style="cursor:pointer;">
-            <strong>🗺️ Навигатор корпуса</strong>
-            <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">Следующая пара: Атриум, ауд. А-101</p>
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="glass-card">
-            <h3 style="margin-bottom:12px;">📅 Расписание на сегодня</h3>
-            <div style="display:flex; flex-direction:column; gap:10px; font-size:13.5px;">
-              <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; border-left:4px solid var(--gold);">
-                <strong>10:15 – 11:50 • Машинное обучение (Лекция)</strong>
-                <div style="color:var(--text-muted); font-size:12px;">Стеклянный атриум, зал А-101 • доц. Соколов А. В.</div>
-              </div>
-              <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; border-left:4px solid var(--navy);">
-                <strong>12:15 – 13:50 • Проектный практикум (Коворкинг)</strong>
-                <div style="color:var(--text-muted); font-size:12px;">Панорамный коворкинг 3 этаж • Защита спринта</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="glass-card">
-            <h3 style="margin-bottom:12px;">🔖 Избранные события кампуса</h3>
-            <div style="display:flex; flex-direction:column; gap:10px; font-size:13.5px;">
-              <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px;">
-                <strong>Знакомство с Campus Connect в Новокольцовском</strong>
-                <div style="color:var(--text-muted); font-size:12px;">18:00 • Главный стеклянный холл</div>
-              </div>
-              <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px;">
-                <strong>Пик IT и Ярмарка вакансий партнеров УрФУ</strong>
-                <div style="color:var(--text-muted); font-size:12px;">12:00 • Корпус ИРИТ-РтФ</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       ЭКРАН 6: URFU TEAMUP — ИИ-ПОДБОР КОМАНДЫ
-       ===================================================================== -->
-  <section id="screen-teamup" class="screen">
-    <div class="container">
-      <div class="page-banner stagger-card">
-        <img class="page-banner-bg" src="src/6571bc0a21495630507812.jpg" alt="Коворкинг TeamUp" />
-        <div>
-          <span class="badge-gold">AI MATCHMAKING • ПРОЕКТНЫЙ ПРАКТИКУМ</span>
-          <h1 style="margin-top:8px;">UrFU TeamUp — ИИ-подбор команды</h1>
-          <p>Студент рассказывает о скиллах — ИИ сохраняет профиль в базу. Тимлид описывает задачу — ИИ подбирает лучших.</p>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="glass-card stagger-card">
-          <h3 style="margin-bottom:12px;">🙋‍♂️ Я студент: мои скиллы</h3>
-          <div class="form-field">
-            <label>СТЕК И ОПЫТ</label>
-            <textarea id="teamup-student-skills" class="form-textarea">Я Максим, хорошо владею Python, C++, FastAPI, собираю адаптивные интерфейсы в Figma.</textarea>
-          </div>
-          <div class="form-field">
-            <label>КОНТАКТ ДЛЯ СВЯЗИ</label>
-            <input type="text" id="teamup-student-contact" class="form-input" value="@makrol337" />
-          </div>
-          <button class="btn-primary" onclick="saveTeamUpProfile()">Сохранить профиль в базу TeamUp</button>
-        </div>
-
-        <div class="glass-card stagger-card">
-          <h3 style="margin-bottom:12px;">🎯 Я тимлид / куратор: ищу студентов</h3>
-          <div class="form-field">
-            <label>ОПИСАНИЕ ЗАДАЧИ ПРОЕКТА</label>
-            <textarea id="teamup-query" class="form-textarea">Мне нужен студент, который хорошо знает Python и FastAPI для разработки сервиса навигации по кампусу Новокольцовский.</textarea>
-          </div>
-          <button class="btn-gold" onclick="runTeamUpMatch()">✨ Подобрать кандидатов через ИИ</button>
-        </div>
-      </div>
-
-      <div class="glass-card-beige stagger-card" id="teamup-ai-result" style="margin-top:22px;">
-        <h3 style="margin-bottom:8px;">✨ Рекомендации ИИ UrFU TeamUp</h3>
-        <p style="font-size:14px;"><strong>Выбран кандидат №1: Максим (ИРИТ-РтФ, совпадение 98%)</strong> — уверенно владеет Python, FastAPI и C++. Средство связи: <span class="badge-gold">@makrol337</span></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       ЭКРАН 7: МЕНТОРЫ И ПЕДАГОГИ КАМПУСА
-       ===================================================================== -->
-  <section id="screen-mentors" class="screen">
-    <div class="container">
-      <div class="page-banner stagger-card">
-        <img class="page-banner-bg" src="src/6571bc0a21495630507812.jpg" alt="Коворкинг" />
-        <div>
-          <h1>Менторы и преподаватели-консультанты</h1>
-          <p>Запишись на консультацию в панорамном коворкинге кампуса или онлайн</p>
-        </div>
-      </div>
-
-      <div class="grid-3">
-        <div class="glass-card stagger-card">
-          <span class="badge-gold">МЕНТОР СТУДЕНТОВ</span>
-          <h3 style="margin:10px 0 6px;">Эльдаров Эльдар</h3>
-          <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">ИРИТ-РтФ, РИ-160033 • Помогаю с учебой, Python, SQL и FastAPI.</p>
-          <button class="btn-primary" onclick="showToast('Заявка на встречу в коворкинге отправлена ✓')">Назначить встречу</button>
-        </div>
-
-        <div class="glass-card stagger-card">
-          <span class="badge-soft">НАУЧНЫЙ РУКОВОДИТЕЛЬ</span>
-          <h3 style="margin:10px 0 6px;">Соколов Алексей Викторович</h3>
-          <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">Доцент ИРИТ-РтФ • Консультации по курсовым, ВКР и публикациям в лаборатории ИИ.</p>
-          <button class="btn-primary" onclick="showToast('Вы записаны на консультацию в Чт 16:00 ✓')">Записаться в слот</button>
-        </div>
-
-        <div class="glass-card stagger-card">
-          <span class="badge-gold">ТРЕКЕР СТАРТАПОВ</span>
-          <h3 style="margin:10px 0 6px;">Анна Ковалева</h3>
-          <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">ИнЭУ • Подготовка презентаций для проектного практикума и гранта «Студенческий стартап».</p>
-          <button class="btn-primary" onclick="showToast('Запрос ментору отправлен ✓')">Назначить встречу</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       ЭКРАН 8: АФИША СОБЫТИЙ
-       ===================================================================== -->
-  <section id="screen-events" class="screen">
-    <div class="container">
-      <div class="page-banner stagger-card">
-        <img class="page-banner-bg" src="src/20240604_kampus.jpg" alt="Аллея кампуса" />
-        <div>
-          <h1>Афиша событий нового кампуса</h1>
-          <p>Хакатоны, открытые лекции в стеклянном атриуме, спорт и студенческие клубы</p>
-        </div>
-      </div>
-
-      <div class="grid-3">
-        <div class="glass-card stagger-card">
-          <span class="badge-gold">07 ОКТЯБРЯ • 18:00</span>
-          <h3 style="margin:10px 0 6px;">Знакомство с Campus Connect</h3>
-          <p style="font-size:13px; color:var(--text-muted);">Презентация цифровых сервисов кампуса в главном стеклянном атриуме.</p>
-        </div>
-        <div class="glass-card stagger-card">
-          <span class="badge-soft">19 ОКТЯБРЯ • 14:00</span>
-          <h3 style="margin:10px 0 6px;">День рождения УрФУ и Хоровод</h3>
-          <p style="font-size:13px; color:var(--text-muted);">Праздничная программа на площади перед ГУК и в кампусе Новокольцовский.</p>
-        </div>
-        <div class="glass-card stagger-card">
-          <span class="badge-gold">26 НОЯБРЯ • 12:00</span>
-          <h3 style="margin:10px 0 6px;">Форум «Пик IT» и День карьеры</h3>
-          <p style="font-size:13px; color:var(--text-muted);">Мастер-классы от работодателей, ревью резюме и быстрые офферы на стажировку.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       ЭКРАН 9: ОБ УРФУ, 12 ИНСТИТУТОВ, БРС И СЛОВАРЬ СЛЕНГА
-       ===================================================================== -->
-  <section id="screen-about" class="screen">
-    <div class="container">
-      <div class="page-banner stagger-card">
-        <img class="page-banner-bg" src="src/nov_kampus_ijun_24.jpg" alt="Кампус" />
-        <div>
-          <h1>Об УрФУ: институты, БРС и словарь кампуса</h1>
-          <p>Структура федерального университета, правила балльно-рейтинговой системы и сленг студентов</p>
-        </div>
-      </div>
-
-      <div class="grid-3" style="margin-bottom:26px;">
-        <div class="glass-card stagger-card"><strong>🏛️ ГУК и Паркет</strong><p style="font-size:13px; color:var(--text-muted); margin-top:6px;">ГУК — Главный учебный корпус на Мира, 19. «Паркет» — легендарное место встреч на 2 этаже.</p></div>
-        <div class="glass-card stagger-card"><strong>📊 БРС (0–100 баллов)</strong><p style="font-size:13px; color:var(--text-muted); margin-top:6px;">Балльно-рейтинговая система учитывает посещаемость, домашние задания и контрольные точки.</p></div>
-        <div class="glass-card stagger-card"><strong>📄 Хвостовка и ППОС</strong><p style="font-size:13px; color:var(--text-muted); margin-top:6px;">Электронный экзаменационный лист для пересдачи и Профсоюз студентов УрФУ.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       ЭКРАН 10: ОТДЕЛЬНАЯ СТРАНИЦА НАВИГАТОРА КОРПУСА
-       ===================================================================== -->
-  <section id="screen-campus-map" class="screen">
-    <div class="container">
-      <div class="page-banner stagger-card">
-        <img class="page-banner-bg" src="src/DIP_8550.jpg" alt="Стеклянный атриум" />
-        <div>
-          <h1>Интерактивный навигатор корпуса УрФУ</h1>
-          <p>Полноэкранная схема этажей `campusnavigator-mu.vercel.app` в полупрозрачном стеклянном фрейме</p>
-        </div>
-        <a href="https://campusnavigator-mu.vercel.app/" target="_blank" rel="noopener" class="btn-gold" style="text-decoration:none;">Открыть в новой вкладке ↗</a>
-      </div>
-
-      <div class="navigator-glass-shell stagger-card">
-        <div class="navigator-viewport tall-map">
-          <div class="navigator-scale-stage" style="width:117.65%; height:117.65%; transform:scale(0.85);">
-            <iframe
-              src="https://campusnavigator-mu.vercel.app/"
-              title="Полная карта корпуса УрФУ"
-              loading="lazy"
-              allow="fullscreen; geolocation"
-            ></iframe>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       ЭКРАН 11: УРФУ ID И ПРОФИЛЬ СТУДЕНТА / ПЕДАГОГА
-       ===================================================================== -->
-  <section id="screen-auth-profile" class="screen">
-    <div class="container">
-      <div class="grid-2">
-        <div class="glass-card stagger-card" style="padding:32px;">
-          <span class="badge-gold">МОЙ ПРОФИЛЬ CAMPUS CONNECT</span>
-          <h2 style="font-size:23px; margin:10px 0 16px;">Личные данные и академический статус</h2>
-          <div class="form-field">
-            <label>ФИО</label>
-            <input type="text" class="form-input" id="profile-fio-input" value="Эльдаров Эльдар Эльдарович" />
-          </div>
-          <div class="form-field">
-            <label>КОРПОРАТИВНЫЙ EMAIL (@URFU.ME / @URFU.RU)</label>
-            <input type="email" class="form-input" id="profile-email-input" value="proverka@urfu.ru" />
-          </div>
-          <div class="grid-2" style="gap:12px;">
-            <div class="form-field">
-              <label>ИНСТИТУТ / КАФЕДРА</label>
-              <input type="text" class="form-input" id="profile-inst-input" value="ИРИТ-РтФ" />
-            </div>
-            <div class="form-field">
-              <label>ГРУППА / СТАТУС</label>
-              <input type="text" class="form-input" id="profile-group-input" value="РИ-160033" />
-            </div>
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn-primary" onclick="showScreen('dashboard')">Перейти в дашборд →</button>
-            <button class="btn-glass" onclick="openAuthModal('register')">Открыть анимированное окно входа</button>
-          </div>
-        </div>
-
-        <div class="glass-card-beige stagger-card" style="padding:32px;">
-          <span class="badge-soft">ПРОФИЛЬ МЕНТОРА И ПРЕПОДАВАТЕЛЯ</span>
-          <h2 style="font-size:23px; margin:10px 0 16px;">Настройки компетенций и консультаций</h2>
-          <div class="form-field">
-            <label>О СЕБЕ КАК О МЕНТОРЕ</label>
-            <textarea class="form-textarea">Помогаю с учебой, разбором первого проекта и подготовкой к собеседованиям.</textarea>
-          </div>
-          <div class="form-field">
-            <label>НАВЫКИ (ЧЕРЕЗ ЗАПЯТУЮ)</label>
-            <input type="text" class="form-input" value="Python, SQL, FastAPI" />
-          </div>
-          <button class="btn-gold" onclick="showToast('Настройки менторства сохранены ✓')">Сохранить настройки ✓</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       ВСПЛЫВАЮЩАЯ ФОРМА АВТОРИЗАЦИИ И РЕГИСТРАЦИИ С АНИМИРОВАННЫМ ПОЯВЛЕНИЕМ
-       (ПОЛНОСТЬЮ ПОВТОРЯЕТ СЦЕНАРИЙ ИЗ ВИДЕО 00:24 - 00:46 И 02:16 - 02:54)
-       ===================================================================== -->
+  <!-- ВСПЛЫВАЮЩАЯ ФОРМА АВТОРИЗАЦИИ И РЕГИСТРАЦИИ С АНИМИРОВАННЫМ ПОЯВЛЕНИЕМ -->
   <div class="auth-modal-backdrop" id="auth-modal-backdrop" onclick="closeAuthModal()">
     <div class="auth-modal-card" onclick="event.stopPropagation()">
       <button class="auth-close-btn" onclick="closeAuthModal()" title="Закрыть">✕</button>
@@ -2575,13 +1020,11 @@
         <p style="font-size:13px; color:var(--text-muted);">Единый вход для студентов, менторов и педагогов кампуса</p>
       </div>
 
-      <!-- Переключатель Вход / Регистрация -->
       <div class="auth-mode-tabs">
         <button class="auth-tab-btn active" id="tab-btn-login" onclick="switchAuthTab('login')">Войти в аккаунт</button>
         <button class="auth-tab-btn" id="tab-btn-register" onclick="switchAuthTab('register')">Создать аккаунт</button>
       </div>
 
-      <!-- Панель 1: Вход -->
       <div class="auth-panel active" id="auth-panel-login">
         <div class="form-field">
           <label>EMAIL УрФУ</label>
@@ -2602,21 +1045,20 @@
         </div>
       </div>
 
-      <!-- Панель 2: Регистрация (как в видео 00:29 и 02:18) -->
       <div class="auth-panel" id="auth-panel-register">
         <div style="display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;">
-          <span style="font-size:11px; color:var(--text-muted); font-weight:700;">Быстрое автозаполнение:</span>
+          <span style="font-size:11px; color:var(--text-muted); font-weight:700;">Автозаполнение:</span>
           <button type="button" class="pill-btn" style="padding:3px 10px; font-size:11px;" onclick="fillDemoUser('Эльдаров Эльдар Эльдарович', 'proverka@urfu.ru', 'ИРИТ-РтФ', 'РИ-160033')">Эльдаров Э. Э.</button>
           <button type="button" class="pill-btn" style="padding:3px 10px; font-size:11px;" onclick="fillDemoUser('Иванов Иван Иванович', 'proverka2@mail.ru', 'ИРИТ-РтФ', 'РИ-160033')">Иванов И. И.</button>
         </div>
 
         <div class="form-field">
           <label>ФИО</label>
-          <input type="text" class="form-input" id="reg-fio" value="Эльдаров Эльдар Эльдарович" placeholder="Иванов Иван Иванович" />
+          <input type="text" class="form-input" id="reg-fio" value="Эльдаров Эльдар Эльдарович" />
         </div>
         <div class="form-field">
           <label>EMAIL УрФУ</label>
-          <input type="email" class="form-input" id="reg-email" value="proverka@urfu.ru" placeholder="your.email@urfu.me" />
+          <input type="email" class="form-input" id="reg-email" value="proverka@urfu.ru" />
         </div>
         <div class="grid-2" style="gap:10px;">
           <div class="form-field">
@@ -2688,417 +1130,6 @@
     </div>
   </div>
 
-  <!-- ФУТЕР -->
-  <footer class="site-footer">
-    <div class="footer-inner">
-      <div>
-        <div class="display-font" style="font-size:19px; color:var(--gold); margin-bottom:8px;">УрФУ × Campus Connect</div>
-        <p style="font-size:13px; opacity:0.85;">
-          ФГАОУ ВО «Уральский федеральный университет имени первого Президента России Б. Н. Ельцина». Конкурсный проект обновления главного цифрового фасада вуза.
-        </p>
-      </div>
-      <div>
-        <strong style="color:var(--white); display:block; margin-bottom:8px;">Студенту и Педагогу</strong>
-        <div style="font-size:13px; display:flex; flex-direction:column; gap:6px;">
-          <span style="cursor:pointer;" onclick="showScreen('homework')">Домашние задания и БРС</span>
-          <span style="cursor:pointer;" onclick="showScreen('campus-map')">Карта корпуса (3D навигатор)</span>
-          <span style="cursor:pointer;" onclick="showScreen('teamup')">UrFU TeamUp</span>
-        </div>
-      </div>
-      <div>
-        <strong style="color:var(--white); display:block; margin-bottom:8px;">Абитуриенту</strong>
-        <div style="font-size:13px; display:flex; flex-direction:column; gap:6px;">
-          <span style="cursor:pointer;" onclick="showScreen('programs')">Калькулятор ЕГЭ</span>
-          <span style="cursor:pointer;" onclick="showScreen('ai-landing')">Программа «Прикладной ИИ»</span>
-          <span style="cursor:pointer;" onclick="showScreen('about')">12 институтов УрФУ</span>
-        </div>
-      </div>
-      <div>
-        <strong style="color:var(--white); display:block; margin-bottom:8px;">Кампус</strong>
-        <p style="font-size:13px;">г. Екатеринбург, ул. Мира, 19<br>Новокольцовский, ул. Универсиады, 7</p>
-      </div>
-    </div>
-  </footer>
-
-  <script>
-    // 1. АНИМИРОВАННЫЙ ПЕРЕХОД МЕЖДУ СТРАНИЦАМИ С ЛУЧОМ ПРОГРЕССА И СМЕНОЙ ФОНА
-    const ambientPhotosByScreen = {
-      'home': 'src/DIP_8550.jpg',
-      'homework': 'src/6571bc0a21495630507812.jpg',
-      'programs': 'src/nov_kampus_ijun_24.jpg',
-      'ai-landing': 'src/DIP_8550.jpg',
-      'dashboard': 'src/oblozhka.jpg',
-      'teamup': 'src/6571bc0a21495630507812.jpg',
-      'mentors': 'src/6571bc0a21495630507812.jpg',
-      'events': 'src/20240604_kampus.jpg',
-      'about': 'src/nov_kampus_ijun_24.jpg',
-      'campus-map': 'src/oblozhka.jpg',
-      'auth-profile': 'src/oblozhka.jpg'
-    };
-
-    function showScreen(id) {
-      const current = document.querySelector('.screen.active');
-      const target = document.getElementById('screen-' + id);
-      if (!target || current === target) return;
-
-      // Анимация верхнего золотого луча перехода
-      const bar = document.getElementById('route-progress-bar');
-      bar.style.opacity = '1';
-      bar.style.width = '72%';
-
-      // Смена полупрозрачной фоновой фотографии кампуса
-      const ambientLayer = document.getElementById('ambient-photo-layer');
-      if (ambientLayer && ambientPhotosByScreen[id]) {
-        ambientLayer.style.backgroundImage = `url('${ambientPhotosByScreen[id]}')`;
-      }
-
-      if (current) {
-        current.classList.remove('visible');
-        setTimeout(() => {
-          current.classList.remove('active');
-          target.classList.add('active');
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              target.classList.add('visible');
-              bar.style.width = '100%';
-              setTimeout(() => {
-                bar.style.opacity = '0';
-                setTimeout(() => { bar.style.width = '0%'; }, 220);
-              }, 240);
-            });
-          });
-        }, 210);
-      } else {
-        target.classList.add('active', 'visible');
-      }
-
-      const mapIndex = {
-        'home': 0, 'homework': 1, 'programs': 2, 'ai-landing': 3,
-        'dashboard': 4, 'teamup': 5, 'mentors': 6, 'events': 7,
-        'about': 8, 'campus-map': 9, 'auth-profile': 10
-      };
-      const tabs = document.querySelectorAll('.proto-tab');
-      tabs.forEach(t => t.classList.remove('active'));
-      if (tabs[mapIndex[id]]) tabs[mapIndex[id]].classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // 2. АНИМИРОВАННОЕ ПРОЯВЛЕНИЕ СЕКЦИЙ ПРИ СКРОЛЛЕ
-    const scrollObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in-view');
-        }
-      });
-    }, { threshold: 0.12 });
-
-    document.querySelectorAll('.reveal-on-scroll').forEach(el => scrollObserver.observe(el));
-
-    // 3. СМЕНА ФОТОГРАФИЙ В HERO-ВИТРИНЕ (ПАПКА SRC)
-    function changeHeroPhoto(srcPath, caption, btn) {
-      const img = document.getElementById('hero-showcase-img');
-      const label = document.getElementById('hero-photo-label');
-      const ambient = document.getElementById('hero-ambient-bg');
-      img.style.opacity = '0.28';
-      setTimeout(() => {
-        img.src = srcPath;
-        label.textContent = caption;
-        if (ambient) ambient.style.backgroundImage = `url('${srcPath}')`;
-        img.style.opacity = '1';
-      }, 170);
-      document.querySelectorAll('.hero-thumb-btn').forEach(b => b.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-    }
-
-    // 4. АНИМИРОВАННОЕ ОКНО АВТОРИЗАЦИИ И РЕГИСТРАЦИИ УрФУ ID
-    function openAuthModal(defaultTab = 'login') {
-      switchAuthTab(defaultTab);
-      document.getElementById('auth-modal-backdrop').classList.add('open');
-    }
-
-    function closeAuthModal() {
-      document.getElementById('auth-modal-backdrop').classList.remove('open');
-    }
-
-    function switchAuthTab(mode) {
-      document.getElementById('tab-btn-login').classList.toggle('active', mode === 'login');
-      document.getElementById('tab-btn-register').classList.toggle('active', mode === 'register');
-      document.getElementById('auth-panel-login').classList.toggle('active', mode === 'login');
-      document.getElementById('auth-panel-register').classList.toggle('active', mode === 'register');
-    }
-
-    function togglePwdVisibility(inputId) {
-      const inp = document.getElementById(inputId);
-      inp.type = inp.type === 'password' ? 'text' : 'password';
-    }
-
-    function fillDemoUser(fio, email, inst, group) {
-      document.getElementById('reg-fio').value = fio;
-      document.getElementById('reg-email').value = email;
-      document.getElementById('reg-inst').value = inst;
-      document.getElementById('reg-group').value = group;
-      showToast('Данные профиля ' + fio + ' подставлены ✓');
-    }
-
-    function performAnimatedLogin(mode) {
-      let fio = 'Эльдаров Эльдар Эльдарович';
-      let inst = 'ИРИТ-РтФ';
-      let group = 'РИ-160033';
-
-      if (mode === 'register') {
-        fio = document.getElementById('reg-fio').value || fio;
-        inst = document.getElementById('reg-inst').value || inst;
-        group = document.getElementById('reg-group').value || group;
-      }
-
-      document.getElementById('dashboard-user-greeting').textContent = 'Привет, ' + fio;
-      document.getElementById('dashboard-user-sub').textContent = `${inst}, группа ${group} • Средний балл БРС: 88.4 • Кампус Новокольцовский`;
-      document.getElementById('header-auth-btn').textContent = '👤 ' + fio.split(' ')[0];
-
-      closeAuthModal();
-      setTimeout(() => {
-        showScreen('dashboard');
-        showToast('Добро пожаловать в Campus Connect, ' + fio + '!');
-      }, 220);
-    }
-
-    // 5. УПРАВЛЕНИЕ МАСШТАБОМ И МАРШРУТАМИ АНИМИРОВАННОЙ КАРТЫ КОРПУСА
-    function setNavigatorScale(scaleFactor, btn) {
-      const stage = document.getElementById('navigator-scale-stage');
-      const pct = (100 / scaleFactor).toFixed(2) + '%';
-      stage.style.width = pct;
-      stage.style.height = pct;
-      stage.style.transform = `scale(${scaleFactor})`;
-
-      btn.parentElement.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const labelPct = Math.round(scaleFactor * 100) + '%';
-      document.getElementById('map-route-text').textContent = `Масштаб карты плавно изменен на ${labelPct} для удобного обзора корпуса`;
-    }
-
-    function highlightCampusRoute(routeTitle, btn) {
-      document.querySelectorAll('.route-chip').forEach(c => c.classList.remove('active'));
-      btn.classList.add('active');
-      const statusBox = document.getElementById('map-route-status');
-      statusBox.style.transform = 'scale(1.04)';
-      document.getElementById('map-route-text').textContent = 'Построен маршрут: ' + routeTitle;
-      setTimeout(() => { statusBox.style.transform = 'scale(1)'; }, 260);
-      showToast('Локация подсвечена на карте: ' + routeTitle);
-    }
-
-    function toggleMapHeight() {
-      document.getElementById('main-map-viewport').classList.toggle('tall-map');
-    }
-
-    function reloadCampusMap() {
-      const iframe = document.getElementById('campus-navigator-iframe');
-      iframe.src = iframe.src;
-      showToast('Интерактивная схема корпуса обновлена ✓');
-    }
-
-    // 6. ПЕРЕКЛЮЧЕНИЕ РОЛЕЙ: СТУДЕНТУ / ПЕДАГОГУ / АБИТУРИЕНТУ
-    let teacherMode = false;
-    function setGlobalRole(role) {
-      document.querySelectorAll('.role-pill-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('role-btn-' + role).classList.add('active');
-
-      const ribbon = document.getElementById('teacher-quick-ribbon');
-      const badge = document.getElementById('hero-role-badge');
-      const desc = document.getElementById('hero-main-desc');
-
-      if (role === 'teacher') {
-        ribbon.style.display = 'block';
-        badge.textContent = '👩‍🏫 Цифровое рабочее место преподавателя и научного руководителя УрФУ';
-        desc.textContent = 'Удобный интерфейс для педагогов: проверка домашних заданий в один клик, синхронизация с ведомостью БРС, расписание потоковых аудиторий и руководство командами.';
-        if (!teacherMode) toggleTeacherHwMode(true);
-        showToast('Включен режим педагога: доступна быстрая оценка ДЗ и журнал БРС');
-      } else if (role === 'abit') {
-        ribbon.style.display = 'none';
-        badge.textContent = '🎓 Абитуриенту 2026 • 9 600+ бюджетных мест в УрФУ';
-        desc.textContent = 'Подбери программу по баллам ЕГЭ, соверши виртуальный тур по стеклянному кампусу в Новокольцовском и подай документы онлайн.';
-        if (teacherMode) toggleTeacherHwMode(false);
-      } else {
-        ribbon.style.display = 'none';
-        badge.textContent = '✨ Пространство света, стекла и технологий • Новокольцовский';
-        desc.textContent = 'Люди. Идеи. События. В одном кампусе. Интерактивная навигация по стеклянным атриумам, домашние задания с авторасчетом БРС и подбор команды в UrFU TeamUp.';
-        if (teacherMode) toggleTeacherHwMode(false);
-      }
-    }
-
-    function toggleTeacherHwMode(forceState) {
-      teacherMode = typeof forceState === 'boolean' ? forceState : !teacherMode;
-      const btn = document.getElementById('hw-mode-toggle-btn');
-      if (btn) {
-        btn.classList.toggle('active', teacherMode);
-        btn.textContent = teacherMode ? '👩‍🏫 Режим педагога: ВКЛЮЧЕН' : '👩‍🏫 Режим проверки (Педагогу)';
-      }
-      document.querySelectorAll('.teacher-grade-btn').forEach(b => {
-        b.style.display = teacherMode ? 'inline-flex' : 'none';
-      });
-    }
-
-    function submitHomework(id) {
-      const st = document.getElementById('hw-st-' + id);
-      const card = st.closest('.hw-item');
-      st.className = 'hw-status review';
-      st.textContent = '👀 На проверке у педагога';
-      card.setAttribute('data-status', 'review');
-      document.getElementById('hw-progress-bar').style.width = '88%';
-      document.getElementById('hw-progress-label').textContent = '88% выполнено';
-      showToast('Домашнее задание отправлено преподавателю на проверку ✓');
-    }
-
-    function gradeHomework(id, pointsText) {
-      const st = document.getElementById('hw-st-' + id);
-      const card = st.closest('.hw-item');
-      st.className = 'hw-status done';
-      st.textContent = '✅ Проверено • ' + pointsText;
-      card.setAttribute('data-status', 'done');
-      document.getElementById('hw-progress-bar').style.width = '96%';
-      document.getElementById('hw-progress-label').textContent = '96% выполнено';
-      document.getElementById('hw-brs-bonus').textContent = '+32.5 балла в БРС';
-      showToast('Оценка выставлена в журнал БРС (' + pointsText + ') ✓');
-    }
-
-    function filterHomework(status, btn) {
-      btn.parentElement.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('#main-hw-grid .hw-item').forEach(item => {
-        const st = item.getAttribute('data-status');
-        item.style.display = (status === 'all' || st === status) ? 'flex' : 'none';
-      });
-    }
-
-    function addStudentSubmission() {
-      const subj = document.getElementById('new-hw-subject').value;
-      const url = document.getElementById('new-hw-url').value;
-      const comm = document.getElementById('new-hw-comment').value;
-      const list = document.getElementById('extra-hw-list');
-      list.innerHTML = `
-        <div class="hw-card">
-          <div style="display:flex; justify-content:space-between;">
-            <span class="badge-soft">${subj}</span>
-            <span class="hw-status review">👀 Отправлено только что</span>
-          </div>
-          <p style="font-size:13.5px;">${comm}</p>
-          <span style="font-size:12px; font-weight:700; color:var(--navy);">🔗 ${url}</span>
-        </div>
-      ` + list.innerHTML;
-      showToast('Решение загружено и отправлено преподавателю ✓');
-    }
-
-    function publishTeacherTask() {
-      const grp = document.getElementById('teacher-group').value;
-      const pts = document.getElementById('teacher-points').value;
-      const title = document.getElementById('teacher-task-title').value;
-      const list = document.getElementById('extra-hw-list');
-      list.innerHTML = `
-        <div class="hw-card" style="border-color:var(--gold);">
-          <div style="display:flex; justify-content:space-between;">
-            <span class="badge-gold">НОВОЕ ЗАДАНИЕ ПЕДАГОГА • ${grp}</span>
-            <span class="hw-status urgent">${pts}</span>
-          </div>
-          <h3 style="font-size:16px;">${title}</h3>
-        </div>
-      ` + list.innerHTML;
-      showToast('Новое домашнее задание опубликовано для потока ' + grp + ' ✓');
-    }
-
-    // 7. ЛАЙТБОКС, КАЛЬКУЛЯТОР ЕГЭ, TEAMUP И GIGACHAT
-    function openLightbox(src, caption) {
-      document.getElementById('lightbox-img').src = src;
-      document.getElementById('lightbox-caption').textContent = caption;
-      document.getElementById('lightbox-modal').classList.add('open');
-    }
-
-    function closeLightbox() {
-      document.getElementById('lightbox-modal').classList.remove('open');
-    }
-
-    function filterByEge(score) {
-      document.getElementById('ege-val').textContent = score;
-      let visible = 0;
-      document.querySelectorAll('.prog-item').forEach(card => {
-        const minScore = parseInt(card.getAttribute('data-score'), 10);
-        if (score >= minScore) {
-          card.style.display = 'block';
-          visible++;
-        } else {
-          card.style.display = 'none';
-        }
-      });
-      document.getElementById('prog-count').textContent = visible;
-    }
-
-    function filterTopic(topic, btn) {
-      btn.parentElement.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      let visible = 0;
-      document.querySelectorAll('.prog-item').forEach(card => {
-        const t = card.getAttribute('data-topic');
-        if (topic === 'all' || t === topic) {
-          card.style.display = 'block';
-          visible++;
-        } else {
-          card.style.display = 'none';
-        }
-      });
-      document.getElementById('prog-count').textContent = visible;
-    }
-
-    function saveTeamUpProfile() {
-      showToast('Профиль студента сохранен в базу UrFU TeamUp ✓');
-    }
-
-    function runTeamUpMatch() {
-      const q = document.getElementById('teamup-query').value;
-      document.getElementById('teamup-ai-result').innerHTML = `
-        <h3 style="margin-bottom:6px;">✨ Кандидат подобран алгоритмом UrFU TeamUp</h3>
-        <p style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">По запросу: «${q}»</p>
-        <p style="font-size:14px;"><strong>Выбран кандидат №1: Максим (ИРИТ-РтФ, совпадение 98%)</strong> — Python, FastAPI, C++, Figma. Средство связи: <span class="badge-gold">@makrol337</span></p>
-      `;
-      showToast('ИИ подобрал оптимального участника в команду ✓');
-    }
-
-    function showToast(msg) {
-      const t = document.getElementById('toast-notice');
-      t.textContent = msg;
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 2800);
-    }
-
-    function toggleAiChat() {
-      document.getElementById('ai-drawer').classList.toggle('open');
-    }
-
-    function sendQuickAi(text) {
-      document.getElementById('ai-input').value = text;
-      sendAiMsg();
-    }
-
-    function sendAiMsg() {
-      const input = document.getElementById('ai-input');
-      const msg = input.value.trim();
-      if (!msg) return;
-      const box = document.getElementById('ai-messages');
-      box.innerHTML += `<div class="msg-user">${msg}</div>`;
-      input.value = '';
-
-      let reply = 'Используй интерактивную карту корпуса с масштабом 85% на главной странице или открой раздел «Домашние задания» для отправки лабораторных в БРС.';
-      if (msg.toLowerCase().includes('где я')) {
-        reply = '🌟 Привет! Ты находишься в системе <strong>Campus Connect Уральского федерального университета (УрФУ)</strong>. Здесь можно узнать информацию о вузе, учебных подразделениях, мероприятиях, общежитиях и многом другом.';
-      } else if (msg.toLowerCase().includes('дз') || msg.toLowerCase().includes('дедлайн')) {
-        reply = '📚 Ближайшие дедлайны: Лабораторная №4 по Прикладному ИИ (до 30 октября, +8 БРС) и Спринт 2 по Проектному практикуму (до 1 ноября, +12 БРС).';
-      } else if (msg.toLowerCase().includes('истори')) {
-        reply = '🏛️ <strong>История УрФУ:</strong> В 1920 году основан Уральский государственный университет. В 2009–2010 годах УГТУ-УПИ и УрГУ объединились в УрФУ, а сегодня открыт новый кампус в Новокольцовском!';
-      }
-
-      setTimeout(() => {
-        box.innerHTML += `<div class="msg-bot">${reply}</div>`;
-        box.scrollTop = box.scrollHeight;
-      }, 220);
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
