@@ -1,5 +1,5 @@
 // =========================================================================
-// 1. ГЛОБАЛЬНОЕ СОСТОЯНИЕ РОЛИ, ПРОФИЛЯ, ДЗ И АВТОРИЗАЦИИ
+// 1. ГЛОБАЛЬНОЕ СОСТОЯНИЕ РОЛИ, ПРОФИЛЯ, ДЗ, КАРТЫ И АВТОРИЗАЦИИ
 // =========================================================================
 const appState = {
   role: 'abit',            // 'abit' (по умолчанию) | 'student' | 'teacher'
@@ -8,8 +8,13 @@ const appState = {
   pendingScreen: null,     // куда перенаправить после успешного входа
   scheduleWeek: 'even',    // 'even' | 'odd'
   scheduleTypeFilter: 'all',
-  teacherOnlyMyClasses: true, // показывать педагогу только его пары
-  activeMapCategory: 'atrium',
+  teacherOnlyMyClasses: true,
+  // Состояние встроенного навигатора корпуса
+  mapMode: 'native',       // 'native' (интерактивный граф этажей) | 'iframe' (внешний сайт Vercel)
+  currentFloor: 1,         // 1 | 2 | 3 | 4
+  activeCategory: 'all',   // 'all' | 'coworking' | 'lecture' | 'labs' | 'dean' | 'wifi' | 'cafe'
+  routeFrom: 'ENTRANCE',   // ID стартовой точки
+  routeTo: 'A-101',        // ID конечной точки
   currentUser: {
     fio: 'Режим Абитуриента',
     email: 'guest@urfu.ru',
@@ -28,7 +33,7 @@ const appState = {
       group: 'РИ-160033',
       maxPoints: 8.0,
       earnedPoints: 0,
-      status: 'urgent', // 'urgent' | 'review' | 'done'
+      status: 'urgent',
       link: 'https://github.com/urfu-ai/cnn-fastapi-lab4',
       comment: ''
     },
@@ -58,7 +63,7 @@ const appState = {
       earnedPoints: 0,
       status: 'review',
       link: 'graph_dijkstra_urfu.py',
-      comment: 'Реализован алгоритм Дейкстры и A* для графа переходов ГУК и Новокольцовского.'
+      comment: 'Реализован алгоритм Дейкстры для графа переходов корпуса.'
     },
     {
       id: 4,
@@ -75,7 +80,6 @@ const appState = {
       comment: '3НФ, миграции PostgreSQL.'
     }
   ],
-  // Дисциплины в зачётке БРС (Личный кабинет)
   brsSubjects: [
     { key: 'ai', name: 'Прикладной ИИ и ML', teacher: 'доц. Соколов А. В.', score: 83.2, max: 100 },
     { key: 'project', name: 'Проектный практикум', teacher: 'В. В. Виткин', score: 89.5, max: 100 },
@@ -84,7 +88,6 @@ const appState = {
   ]
 };
 
-// Закрытые разделы, недоступные без авторизации Студента или Педагога
 const protectedScreens = ['schedule', 'homework', 'dashboard', 'teamup', 'mentors'];
 
 const ambientPhotosByScreen = {
@@ -133,7 +136,651 @@ let currentHeroSlideIndex = 0;
 let activeTransitionTimer = null;
 
 // =========================================================================
-// 2. БАЗА ДАННЫХ НЕДЕЛЬНОГО РАСПИСАНИЯ И ЛОКАЦИЙ КАРТЫ
+// 2. АРХИТЕКТУРНАЯ БАЗА ЭТАЖЕЙ И ГРАФ МАРШРУТОВ (ДВИЖОК НАВИГАТОРА)
+// =========================================================================
+// Координатная сетка SVG: 1000 x 520.
+// Коридорная магистраль на каждом этаже проходит по y = 260 (x от 150 до 850)
+// и центральному вертикальному холлу x = 500.
+const campusRoomsDB = {
+  // --- 1 ЭТАЖ ---
+  'ENTRANCE': {
+    id: 'ENTRANCE', code: 'ВХОД', name: 'Главный вход (Турникеты УрФУ ID)',
+    floor: 1, category: 'service', icon: '🚪',
+    rect: { x: 430, y: 405, w: 140, h: 85 }, door: { x: 500, y: 405 },
+    wifi: 'UrFU-Guest / UrFU-Campus (5 ГГц)',
+    desc: 'Центральная входная группа со стороны площади флагов, пост охраны и турникеты.'
+  },
+  'A-101': {
+    id: 'A-101', code: 'А-101', name: 'Стеклянный атриум А-101 (Главный лекторий)',
+    floor: 1, category: 'lecture', icon: '✨',
+    rect: { x: 350, y: 45, w: 300, h: 165 }, door: { x: 500, y: 210 },
+    wifi: 'UrFU-Campus (Wi-Fi 6 • до 850 Мбит/с)',
+    desc: 'Главный амфитеатр со световым куполом на 450 мест для потоковых лекций и форумов.'
+  },
+  'I-104': {
+    id: 'I-104', code: 'И-104', name: 'Коворкинг 1 этажа «Атриум-Лаунж»',
+    floor: 1, category: 'coworking', icon: '💻',
+    rect: { x: 80, y: 65, w: 230, h: 145 }, door: { x: 195, y: 210 },
+    wifi: 'UrFU-Campus / eduroam (Wi-Fi 6)',
+    desc: 'Открытое пространство с мягкими пуфами, розетками и столами для быстрой работы между парами.'
+  },
+  'I-108': {
+    id: 'I-108', code: 'И-108', name: 'Приёмная комиссия и Студенческий офис',
+    floor: 1, category: 'dean', icon: '🏛️',
+    rect: { x: 690, y: 65, w: 230, h: 145 }, door: { x: 805, y: 210 },
+    wifi: 'UrFU-Guest / UrFU-Campus',
+    desc: 'Выдача студенческих билетов, справок об обучении и консультации абитуриентов.'
+  },
+  'CAFE-1': {
+    id: 'CAFE-1', code: 'КАФЕ', name: 'Кампусная столовая и Кофе-поинт',
+    floor: 1, category: 'cafe', icon: '☕',
+    rect: { x: 80, y: 315, w: 230, h: 145 }, door: { x: 195, y: 315 },
+    wifi: 'UrFU-Guest / UrFU-Campus',
+    desc: 'Горячие обеды, спешелти-кофе и выпечка. 120 посадочных мест.'
+  },
+  'LIB-1': {
+    id: 'LIB-1', code: 'И-112', name: 'Гардероб и Зона локеров И-112',
+    floor: 1, category: 'service', icon: '🧥',
+    rect: { x: 690, y: 315, w: 230, h: 145 }, door: { x: 805, y: 315 },
+    wifi: 'UrFU-Campus',
+    desc: 'Умные ячейки хранения вещей по пропуску УрФУ и просторный гардероб.'
+  },
+
+  // --- 2 ЭТАЖ ---
+  'I-204': {
+    id: 'I-204', code: 'И-204', name: 'Деканат ИРИТ-РтФ и преподавательская И-204',
+    floor: 2, category: 'dean', icon: '🏛️',
+    rect: { x: 80, y: 65, w: 250, h: 145 }, door: { x: 205, y: 210 },
+    wifi: 'UrFU-Campus (5 ГГц)',
+    desc: 'Дирекция института, кураторы курсов, ведомости БРС и защита лабораторных работ.'
+  },
+  'I-210': {
+    id: 'I-210', code: 'И-210', name: 'Коворкинг проектных команд И-210',
+    floor: 2, category: 'coworking', icon: '💻',
+    rect: { x: 370, y: 65, w: 260, h: 145 }, door: { x: 500, y: 210 },
+    wifi: 'UrFU-Campus (Wi-Fi 6 • Макс. сигнал)',
+    desc: 'Проектный коворкинг с маркерными досками и экранами для командных созвонов.'
+  },
+  'I-215': {
+    id: 'I-215', code: 'И-215', name: 'Поточная лекционная аудитория И-215',
+    floor: 2, category: 'lecture', icon: '🎓',
+    rect: { x: 670, y: 65, w: 250, h: 145 }, door: { x: 795, y: 210 },
+    wifi: 'UrFU-Campus (5 ГГц)',
+    desc: 'Аудитория-амфитеатр на 150 человек с двойным проектором и системой звукозаписи лекций.'
+  },
+  'M-324': {
+    id: 'M-324', code: 'М-324', name: 'Аудитория кибербезопасности и ВКС М-324',
+    floor: 2, category: 'lecture', icon: '🛡️',
+    rect: { x: 80, y: 315, w: 250, h: 145 }, door: { x: 205, y: 315 },
+    wifi: 'UrFU-Campus + Выделенная линия',
+    desc: 'Зал для лекций по информационной безопасности и телемостов с базовыми кафедрами.'
+  },
+  'I-220': {
+    id: 'I-220', code: 'И-220', name: 'Союз студентов и Служба ИТ-поддержки',
+    floor: 2, category: 'dean', icon: '🤝',
+    rect: { x: 670, y: 315, w: 250, h: 145 }, door: { x: 795, y: 315 },
+    wifi: 'UrFU-Campus / eduroam',
+    desc: 'Помощь с настройкой корпоративного Wi-Fi, личного кабинета и студенческих инициатив.'
+  },
+
+  // --- 3 ЭТАЖ ---
+  'COWORK-3': {
+    id: 'COWORK-3', code: 'КОВОРКИНГ 3 ЭТ.', name: 'Панорамный коворкинг 3 этаж (Зона TeamUp)',
+    floor: 3, category: 'coworking', icon: '💻',
+    rect: { x: 80, y: 55, w: 410, h: 155 }, door: { x: 285, y: 210 },
+    wifi: 'UrFU-Campus (Wi-Fi 6 • 2 роутера • 950 Мбит/с)',
+    desc: 'Главный панорамный коворкинг кампуса 24/7 для команд проектного практикума и хакатонов.'
+  },
+  'COWORK-3B': {
+    id: 'COWORK-3B', code: 'Б-304', name: 'Тихий коворкинг и капсулы для звонков Б-304',
+    floor: 3, category: 'coworking', icon: '🎧',
+    rect: { x: 530, y: 55, w: 390, h: 155 }, door: { x: 725, y: 210 },
+    wifi: 'UrFU-Campus / eduroam (Wi-Fi 6)',
+    desc: 'Зона тишины с акустическими кабинами для индивидуальной работы и онлайн-собеседований.'
+  },
+  'I-308': {
+    id: 'I-308', code: 'И-308', name: 'Ауд. И-308 (Базы данных и SQL • Комп. класс)',
+    floor: 3, category: 'labs', icon: '🗄️',
+    rect: { x: 80, y: 315, w: 260, h: 145 }, door: { x: 210, y: 315 },
+    wifi: 'UrFU-Campus + Гигабитный LAN',
+    desc: 'Терминальный класс на 32 рабочих места с предустановленными PostgreSQL, Docker и DBeaver.'
+  },
+  'I-312': {
+    id: 'I-312', code: 'И-312', name: 'Центр менторов и питч-зал И-312',
+    floor: 3, category: 'lecture', icon: '🎤',
+    rect: { x: 660, y: 315, w: 260, h: 145 }, door: { x: 790, y: 315 },
+    wifi: 'UrFU-Campus (5 ГГц)',
+    desc: 'Зал для демо-дней проектного практикума, защит перед индустриальными партнерами и встреч с менторами.'
+  },
+
+  // --- 4 ЭТАЖ ---
+  'I-420': {
+    id: 'I-420', code: 'И-420', name: 'Лаборатория Прикладного ИИ и ML (И-420)',
+    floor: 4, category: 'labs', icon: '🔬',
+    rect: { x: 80, y: 60, w: 390, h: 150 }, door: { x: 275, y: 210 },
+    wifi: 'UrFU-Campus (Wi-Fi 6 + 10G LAN к GPU-кластеру)',
+    desc: 'Флагманская лаборатория машинного обучения, LLM и разработки микросервисов на FastAPI.'
+  },
+  'I-415': {
+    id: 'I-415', code: 'И-415', name: 'Лаборатория робототехники и Computer Vision И-415',
+    floor: 4, category: 'labs', icon: '🤖',
+    rect: { x: 530, y: 60, w: 390, h: 150 }, door: { x: 725, y: 210 },
+    wifi: 'UrFU-Campus (5 ГГц)',
+    desc: 'Полигон тестирования автономных роботов, лидаров и систем компьютерного зрения.'
+  },
+  'COWORK-4': {
+    id: 'COWORK-4', code: 'И-410', name: 'R&D Коворкинг исследователей и магистрантов И-410',
+    floor: 4, category: 'coworking', icon: '💻',
+    rect: { x: 80, y: 315, w: 260, h: 145 }, door: { x: 210, y: 315 },
+    wifi: 'eduroam / UrFU-Campus',
+    desc: 'Научный коворкинг для подготовки ВКР, статей и работы над грантовыми проектами.'
+  },
+  'I-405': {
+    id: 'I-405', code: 'И-405', name: 'Серверный центр и GPU-кластер УрФУ И-405',
+    floor: 4, category: 'labs', icon: '🖧',
+    rect: { x: 660, y: 315, w: 260, h: 145 }, door: { x: 790, y: 315 },
+    wifi: 'UrFU-Campus (Технический сегмент)',
+    desc: 'Вычислительное ядро института с серверными стойками для обучения глубоких нейросетей.'
+  }
+};
+
+// Роутеры Wi-Fi 6 на каждом этаже для подсветки режима "Точки Wi-Fi"
+const wifiNodesByFloor = {
+  1: [{ x: 260, y: 260, label: 'Wi-Fi 6 Зап.' }, { x: 500, y: 150, label: 'Wi-Fi 6 Атриум' }, { x: 740, y: 260, label: 'Wi-Fi 6 Вост.' }],
+  2: [{ x: 250, y: 260, label: 'Wi-Fi 6 Деканат' }, { x: 500, y: 260, label: 'Wi-Fi 6 Холл 2 эт.' }, { x: 750, y: 260, label: 'Wi-Fi 6 Лекторий' }],
+  3: [{ x: 280, y: 140, label: 'Wi-Fi 6 Коворкинг А' }, { x: 500, y: 260, label: 'Wi-Fi 6 Холл 3 эт.' }, { x: 720, y: 140, label: 'Wi-Fi 6 Коворкинг Б' }],
+  4: [{ x: 275, y: 140, label: 'Wi-Fi 6 Лаб. ИИ' }, { x: 500, y: 260, label: 'Wi-Fi 6 Холл 4 эт.' }, { x: 725, y: 140, label: 'Wi-Fi 6 Робототехника' }]
+};
+
+// Построение полного графа здания (коридоры + двери аудиторий + межэтажные лестницы/лифты)
+function buildCampusNavigationGraph() {
+  const nodes = {};
+  const edges = {};
+
+  function addNode(id, floor, x, y, label = '') {
+    nodes[id] = { id, floor, x, y, label };
+    if (!edges[id]) edges[id] = [];
+  }
+
+  function addEdge(a, b, weightOverride = null) {
+    if (!nodes[a] || !nodes[b]) return;
+    const dx = nodes[a].x - nodes[b].x;
+    const dy = nodes[a].y - nodes[b].y;
+    const dist = weightOverride !== null ? weightOverride : Math.hypot(dx, dy);
+    edges[a].push({ to: b, weight: dist });
+    edges[b].push({ to: a, weight: dist });
+  }
+
+  // На каждом этаже создаем коридорные узлы и узел лестницы/лифта в центре (x=500, y=340)
+  for (let f = 1; f <= 4; f++) {
+    addNode(`STAIRS_${f}`, f, 500, 345, `Лестница / Лифт (${f} эт.)`);
+    addNode(`H_${f}_CENTER`, f, 500, 260);
+    addNode(`H_${f}_L1`, f, 340, 260);
+    addNode(`H_${f}_L2`, f, 200, 260);
+    addNode(`H_${f}_R1`, f, 660, 260);
+    addNode(`H_${f}_R2`, f, 800, 260);
+
+    addEdge(`STAIRS_${f}`, `H_${f}_CENTER`);
+    addEdge(`H_${f}_CENTER`, `H_${f}_L1`);
+    addEdge(`H_${f}_L1`, `H_${f}_L2`);
+    addEdge(`H_${f}_CENTER`, `H_${f}_R1`);
+    addEdge(`H_${f}_R1`, `H_${f}_R2`);
+  }
+
+  // Соединяем лестницы и лифты между этажами
+  for (let f = 1; f < 4; f++) {
+    addEdge(`STAIRS_${f}`, `STAIRS_${f + 1}`, 120);
+  }
+
+  // Подключаем каждую аудиторию через её дверь к ближайшему узлу коридора на том же этаже
+  Object.values(campusRoomsDB).forEach(room => {
+    addNode(room.id, room.floor, room.door.x, room.door.y, room.name);
+
+    // Для главного входа на 1 этаже связываем напрямую с центральным узлом и лестницей
+    if (room.id === 'ENTRANCE') {
+      addEdge('ENTRANCE', 'STAIRS_1');
+      addEdge('ENTRANCE', 'H_1_CENTER');
+      return;
+    }
+
+    // Ищем ближайший коридорный узел на этаже аудитории
+    const floorHallIds = [`H_${room.floor}_CENTER`, `H_${room.floor}_L1`, `H_${room.floor}_L2`, `H_${room.floor}_R1`, `H_${room.floor}_R2`];
+    let nearestHall = floorHallIds[0];
+    let bestDist = Infinity;
+    floorHallIds.forEach(hId => {
+      const d = Math.abs(nodes[hId].x - room.door.x);
+      if (d < bestDist) {
+        bestDist = d;
+        nearestHall = hId;
+      }
+    });
+
+    // Создаём промежуточную точку коридора ровно напротив двери (y = 260), чтобы линии шли строго под 90 градусов!
+    const doorHallNodeId = `DOOR_HALL_${room.id}`;
+    addNode(doorHallNodeId, room.floor, room.door.x, 260);
+    addEdge(room.id, doorHallNodeId);
+    addEdge(doorHallNodeId, nearestHall);
+  });
+
+  return { nodes, edges };
+}
+
+const campusGraph = buildCampusNavigationGraph();
+
+// Алгоритм Дейкстры для поиска кратчайшего пути между любыми двумя точками кампуса
+function findShortestCampusPath(startId, endId) {
+  const { nodes, edges } = campusGraph;
+  if (!nodes[startId] || !nodes[endId]) return null;
+
+  const dist = {};
+  const prev = {};
+  const visited = new Set();
+
+  Object.keys(nodes).forEach(k => { dist[k] = Infinity; });
+  dist[startId] = 0;
+
+  while (true) {
+    let u = null;
+    let best = Infinity;
+    for (const k in dist) {
+      if (!visited.has(k) && dist[k] < best) {
+        best = dist[k];
+        u = k;
+      }
+    }
+    if (u === null || u === endId) break;
+    visited.add(u);
+
+    (edges[u] || []).forEach(edge => {
+      if (visited.has(edge.to)) return;
+      const alt = dist[u] + edge.weight;
+      if (alt < dist[edge.to]) {
+        dist[edge.to] = alt;
+        prev[edge.to] = u;
+      }
+    });
+  }
+
+  if (dist[endId] === Infinity) return null;
+
+  const path = [];
+  let curr = endId;
+  while (curr) {
+    path.unshift(nodes[curr]);
+    curr = prev[curr];
+  }
+
+  return {
+    path,
+    totalDistanceMeters: Math.max(12, Math.round(dist[endId] * 0.18)),
+    estimatedMinutes: Math.max(1, Math.round(dist[endId] / 340))
+  };
+}
+
+// =========================================================================
+// 3. ОТРИСОВКА ИНТЕРАКТИВНОЙ КАРТЫ ЭТАЖЕЙ, КАТЕГОРИЙ И МАРШРУТОВ
+// =========================================================================
+function renderInteractiveCampusMap() {
+  const floor = appState.currentFloor;
+  const fromId = appState.routeFrom;
+  const toId = appState.routeTo;
+  const activeCat = appState.activeCategory;
+
+  // Вычисляем полный маршрут по графу
+  const routeResult = findShortestCampusPath(fromId, toId);
+  const targetRoom = campusRoomsDB[toId] || campusRoomsDB['A-101'];
+  const startRoom = campusRoomsDB[fromId] || campusRoomsDB['ENTRANCE'];
+
+  // Обновляем селекты Откуда / Куда, если они есть на странице
+  const selFrom = document.getElementById('map-select-from');
+  const selTo = document.getElementById('map-select-to');
+  if (selFrom && selFrom.value !== fromId) selFrom.value = fromId;
+  if (selTo && selTo.value !== toId) selTo.value = toId;
+
+  // Обновляем кнопки этажей (1..4)
+  document.querySelectorAll('.floor-switch-btn').forEach(btn => {
+    const f = parseInt(btn.getAttribute('data-floor'), 10);
+    btn.classList.toggle('active', f === floor);
+  });
+
+  // Собираем комнаты текущего этажа
+  const roomsOnFloor = Object.values(campusRoomsDB).filter(r => r.floor === floor);
+
+  // Строим SVG-схему текущего этажа
+  let svgHtml = `
+    <defs>
+      <pattern id="ArchGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(31,42,68,0.06)" stroke-width="1"/>
+      </pattern>
+      <filter id="GoldGlow" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#C6A75E" flood-opacity="0.55"/>
+      </filter>
+    </defs>
+
+    <!-- Подложка и архитектурная сетка корпуса -->
+    <rect x="0" y="0" width="1000" height="520" fill="#FAF7F2"/>
+    <rect x="0" y="0" width="1000" height="520" fill="url(#ArchGrid)"/>
+
+    <!-- Внешний контур корпуса ИРИТ-РтФ -->
+    <rect x="55" y="35" width="890" height="455" rx="28" fill="rgba(232,220,200,0.38)" stroke="#1F2A44" stroke-width="3.5"/>
+
+    <!-- Главная коридорная галерея этажа -->
+    <rect x="75" y="210" width="850" height="105" rx="14" fill="#FFFFFF" stroke="rgba(31,42,68,0.15)" stroke-width="1.5"/>
+    <text x="500" y="254" text-anchor="middle" fill="rgba(82,96,122,0.45)" font-size="11" font-weight="800" letter-spacing="2">ПЕШЕХОДНАЯ ГАЛЕРЕЯ И ХОЛЛ ${floor} ЭТАЖА</text>
+
+    <!-- Центральный лестнично-лифтовой узел -->
+    <rect x="435" y="315" width="130" height="72" rx="14" fill="rgba(31,42,68,0.09)" stroke="#1F2A44" stroke-width="2" stroke-dasharray="5 3"/>
+    <text x="500" y="346" text-anchor="middle" fill="#1F2A44" font-size="11" font-weight="800">🛗 ЛИФТЫ / ЛЕСТНИЦА</text>
+    <text x="500" y="364" text-anchor="middle" fill="#52607A" font-size="10" font-weight="700">Переход 1–4 этаж</text>
+  `;
+
+  // Отрисовка всех помещений на текущем этаже
+  roomsOnFloor.forEach(room => {
+    const isStart = room.id === fromId;
+    const isTarget = room.id === toId;
+    const isCatMatch = activeCat !== 'all' && room.category === activeCat;
+
+    let fill = 'rgba(255,255,255,0.92)';
+    let stroke = 'rgba(31,42,68,0.28)';
+    let strokeWidth = '2';
+    let filterAttr = '';
+
+    if (room.category === 'coworking') fill = 'rgba(232,220,200,0.65)';
+    if (room.category === 'lecture') fill = 'rgba(255,255,255,0.96)';
+    if (room.category === 'labs') fill = 'rgba(31,42,68,0.06)';
+
+    if (isCatMatch) {
+      fill = 'rgba(223,192,119,0.38)';
+      stroke = '#C6A75E';
+      strokeWidth = '3.5';
+      filterAttr = 'filter="url(#GoldGlow)"';
+    }
+    if (isStart) {
+      fill = 'rgba(30,122,83,0.16)';
+      stroke = '#1E7A53';
+      strokeWidth = '3.5';
+    }
+    if (isTarget) {
+      fill = 'rgba(198,167,94,0.35)';
+      stroke = '#1F2A44';
+      strokeWidth = '4';
+      filterAttr = 'filter="url(#GoldGlow)"';
+    }
+
+    const cx = room.rect.x + room.rect.w / 2;
+    const cy = room.rect.y + room.rect.h / 2;
+
+    svgHtml += `
+      <g class="svg-room-node" style="cursor:pointer;" onclick="selectRoomOnCanvas('${room.id}')">
+        <rect x="${room.rect.x}" y="${room.rect.y}" width="${room.rect.w}" height="${room.rect.h}" rx="16"
+              fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}" ${filterAttr} />
+        <!-- Дверной проём -->
+        <circle cx="${room.door.x}" cy="${room.door.y}" r="5" fill="#C6A75E" stroke="#1F2A44" stroke-width="1.5"/>
+        <!-- Код и название аудитории -->
+        <text x="${cx}" y="${cy - 8}" text-anchor="middle" fill="#1F2A44" font-family="Unbounded, sans-serif" font-size="13" font-weight="800">
+          ${room.icon} ${room.code}
+        </text>
+        <text x="${cx}" y="${cy + 14}" text-anchor="middle" fill="#52607A" font-size="11.5" font-weight="600">
+          ${truncateText(room.name, 34)}
+        </text>
+        ${(isCatMatch || isTarget) ? `
+          <rect x="${cx - 58}" y="${cy + 24}" width="116" height="20" rx="10" fill="#1F2A44"/>
+          <text x="${cx}" y="${cy + 38}" text-anchor="middle" fill="#DFC077" font-size="10" font-weight="800">
+            ${isTarget ? '🎯 ТОЧКА НАЗНАЧЕНИЯ' : '✨ ВЫДЕЛЕНО'}
+          </text>
+        ` : ''}
+      </g>
+    `;
+  });
+
+  // Если выбрана категория Wi-Fi (или всегда мягко) — показываем точки доступа Wi-Fi 6 на этаже
+  const floorWifi = wifiNodesByFloor[floor] || [];
+  floorWifi.forEach(w => {
+    const isWifiHighlight = activeCat === 'wifi';
+    svgHtml += `
+      <g style="cursor:pointer;" onclick="showToast('Точка доступа ${w.label}: сеть UrFU-Campus (Wi-Fi 6, 5 ГГц) работает отлично 📶')">
+        <circle cx="${w.x}" cy="${w.y}" r="${isWifiHighlight ? 28 : 14}" fill="rgba(198,167,94,${isWifiHighlight ? '0.28' : '0.12'})" stroke="#C6A75E" stroke-width="${isWifiHighlight ? 2 : 1}" stroke-dasharray="3 2"/>
+        <circle cx="${w.x}" cy="${w.y}" r="8" fill="#1F2A44" stroke="#C6A75E" stroke-width="2"/>
+        <text x="${w.x}" y="${w.y + 3}" text-anchor="middle" fill="#DFC077" font-size="9" font-weight="800">📶</text>
+        ${isWifiHighlight ? `<text x="${w.x}" y="${w.y - 16}" text-anchor="middle" fill="#1F2A44" font-size="10.5" font-weight="800">${w.label}</text>` : ''}
+      </g>
+    `;
+  });
+
+  // Отрисовка линии маршрута для текущего этажа
+  if (routeResult && routeResult.path.length > 1) {
+    const floorNodes = routeResult.path.filter(n => n.floor === floor);
+    if (floorNodes.length >= 2) {
+      const pts = floorNodes.map(n => `${n.x},${n.y}`).join(' ');
+      svgHtml += `
+        <!-- Подложка и пунктир активного маршрута -->
+        <polyline points="${pts}" fill="none" stroke="rgba(31,42,68,0.22)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="${pts}" fill="none" stroke="#C6A75E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="10 6"/>
+      `;
+      // Маркеры начала и конца сегмента на этом этаже
+      const firstN = floorNodes[0];
+      const lastN = floorNodes[floorNodes.length - 1];
+      svgHtml += `
+        <circle cx="${firstN.x}" cy="${firstN.y}" r="9" fill="#1E7A53" stroke="#FFFFFF" stroke-width="2.5"/>
+        <circle cx="${lastN.x}" cy="${lastN.y}" r="10" fill="#1F2A44" stroke="#DFC077" stroke-width="3"/>
+      `;
+    }
+  }
+
+  // Вставляем сгенерированный чертеж в оба контейнера (на Главной и на экране 3D-карты)
+  const mainSvg = document.getElementById('native-campus-svg');
+  const fullSvg = document.getElementById('native-campus-svg-full');
+  if (mainSvg) mainSvg.innerHTML = svgHtml;
+  if (fullSvg) fullSvg.innerHTML = svgHtml;
+
+  // Обновляем пошаговую навигационную цепочку этажей и инфо-панель
+  updateRouteStepsAndHud(routeResult, startRoom, targetRoom);
+}
+
+function truncateText(str, maxLen) {
+  if (!str) return '';
+  return str.length > maxLen ? str.slice(0, maxLen - 1) + '…' : str;
+}
+
+function updateRouteStepsAndHud(routeResult, startRoom, targetRoom) {
+  const statusText = document.getElementById('map-route-text');
+  const stepsBox = document.getElementById('map-floor-steps-bar');
+  const poiTitle = document.getElementById('map-selected-room-title');
+  const poiDesc = document.getElementById('map-selected-room-desc');
+  const poiMeta = document.getElementById('map-selected-room-meta');
+
+  if (poiTitle) poiTitle.textContent = `${targetRoom.icon} ${targetRoom.name}`;
+  if (poiDesc) poiDesc.textContent = targetRoom.desc;
+  if (poiMeta) {
+    poiMeta.innerHTML = `
+      <span class="badge-gold">${targetRoom.floor} этаж</span>
+      <span class="badge-soft">📶 ${targetRoom.wifi}</span>
+      ${routeResult ? `<span class="badge-soft">🚶 ${routeResult.totalDistanceMeters} м (~${routeResult.estimatedMinutes} мин)</span>` : ''}
+    `;
+  }
+
+  const crossesFloors = startRoom.floor !== targetRoom.floor;
+  if (statusText && routeResult) {
+    statusText.textContent = crossesFloors
+      ? `Маршрут: ${startRoom.code} (${startRoom.floor} эт.) → Лифт/Лестница → ${targetRoom.code} (${targetRoom.floor} эт.) • ${routeResult.totalDistanceMeters} м`
+      : `Маршрут на ${targetRoom.floor} этаже: ${startRoom.code} → ${targetRoom.code} • ${routeResult.totalDistanceMeters} м (~${routeResult.estimatedMinutes} мин)`;
+  }
+
+  if (stepsBox) {
+    if (crossesFloors) {
+      stepsBox.innerHTML = `
+        <span style="font-size:11.5px; font-weight:800; color:var(--navy);">Пошаговый переход по этажам:</span>
+        <button class="pill-btn ${appState.currentFloor === startRoom.floor ? 'active' : ''}" style="padding:4px 12px; font-size:11.5px;" onclick="switchCampusFloor(${startRoom.floor})">
+          Шаг 1: ${startRoom.floor} этаж (${startRoom.code} → Лифт)
+        </button>
+        <span style="font-weight:800; color:var(--gold);">➔</span>
+        <button class="pill-btn ${appState.currentFloor === targetRoom.floor ? 'active' : ''}" style="padding:4px 12px; font-size:11.5px;" onclick="switchCampusFloor(${targetRoom.floor})">
+          Шаг 2: ${targetRoom.floor} этаж (Лифт → ${targetRoom.code})
+        </button>
+      `;
+    } else {
+      stepsBox.innerHTML = `
+        <span style="font-size:11.5px; font-weight:800; color:var(--navy);">Прямой маршрут в пределах ${targetRoom.floor} этажа:</span>
+        <span class="badge-soft">${startRoom.name} ➔ ${targetRoom.name}</span>
+      `;
+    }
+  }
+}
+
+// Переключение этажа (1, 2, 3, 4)
+function switchCampusFloor(floorNum) {
+  appState.currentFloor = floorNum;
+  renderInteractiveCampusMap();
+}
+
+// Клик по аудитории прямо на схеме этажа
+function selectRoomOnCanvas(roomId) {
+  const room = campusRoomsDB[roomId];
+  if (!room) return;
+  if (roomId === 'ENTRANCE') {
+    appState.routeFrom = 'ENTRANCE';
+    showToast('Точка старта установлена: Главный вход (1 этаж)');
+  } else {
+    appState.routeTo = roomId;
+    appState.currentFloor = room.floor;
+    showToast(`Построен маршрут в: ${room.name} (${room.floor} этаж) 🧭`);
+  }
+  renderInteractiveCampusMap();
+}
+
+// Изменение точки Откуда / Куда через выпадающие списки
+function updateCampusRouteEndpoints() {
+  const selFrom = document.getElementById('map-select-from');
+  const selTo = document.getElementById('map-select-to');
+  if (selFrom) appState.routeFrom = selFrom.value;
+  if (selTo) {
+    appState.routeTo = selTo.value;
+    const target = campusRoomsDB[appState.routeTo];
+    if (target) appState.currentFloor = target.floor;
+  }
+  renderInteractiveCampusMap();
+  const target = campusRoomsDB[appState.routeTo];
+  if (target) {
+    showToast(`Маршрут перестроен: → ${target.name} (${target.floor} этаж)`);
+  }
+}
+
+// Клик по кнопкам быстрых категорий ("Коворкинги", "Атриум А-101", "Деканат", "Лаборатории", "Wi-Fi")
+function highlightCampusRoute(routeTitle, btn, categoryKey, targetRoomId) {
+  if (btn && btn.parentElement) {
+    btn.parentElement.querySelectorAll('.route-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  appState.activeCategory = categoryKey || 'all';
+
+  if (targetRoomId && campusRoomsDB[targetRoomId]) {
+    appState.routeTo = targetRoomId;
+    appState.currentFloor = campusRoomsDB[targetRoomId].floor;
+  } else if (categoryKey === 'coworking') {
+    appState.routeTo = 'COWORK-3';
+    appState.currentFloor = 3;
+  } else if (categoryKey === 'dean') {
+    appState.routeTo = 'I-204';
+    appState.currentFloor = 2;
+  } else if (categoryKey === 'labs') {
+    appState.routeTo = 'I-420';
+    appState.currentFloor = 4;
+  } else if (categoryKey === 'lecture') {
+    appState.routeTo = 'A-101';
+    appState.currentFloor = 1;
+  }
+
+  renderInteractiveCampusMap();
+  showToast(`На схеме выделена категория и построен путь: ${routeTitle}`);
+}
+
+// Переключение между встроенным интерактивным навигатором и оригинальным iframe Vercel
+function toggleMapEngineMode(mode) {
+  appState.mapMode = mode || (appState.mapMode === 'native' ? 'iframe' : 'native');
+  const nativeBox = document.getElementById('native-map-stage');
+  const iframeBox = document.getElementById('vercel-iframe-stage');
+  const modeBtn = document.getElementById('toggle-map-engine-btn');
+
+  if (appState.mapMode === 'iframe') {
+    if (nativeBox) nativeBox.style.display = 'none';
+    if (iframeBox) iframeBox.style.display = 'block';
+    if (modeBtn) modeBtn.textContent = '🧭 Вернуться к интерактивной схеме маршрутов';
+    showToast('Включен прямой просмотр виджета campusnavigator-mu.vercel.app');
+  } else {
+    if (nativeBox) nativeBox.style.display = 'block';
+    if (iframeBox) iframeBox.style.display = 'none';
+    if (modeBtn) modeBtn.textContent = '🌐 Режим: Оригинальный виджет Vercel';
+    renderInteractiveCampusMap();
+    showToast('Включена интерактивная поэтажная схема с поиском пути');
+  }
+}
+
+// Переход из карточки расписания прямо к нужной аудитории на карте
+function openRoomOnCampusMap(roomName) {
+  navigateTo('home');
+  setTimeout(() => {
+    const mapBlock = document.getElementById('main-navigator-block');
+    if (mapBlock) mapBlock.scrollIntoView({ behavior: 'smooth' });
+
+    if (appState.mapMode !== 'native') {
+      toggleMapEngineMode('native');
+    }
+
+    const lower = roomName.toLowerCase();
+    let targetId = 'A-101';
+    let cat = 'lecture';
+
+    if (lower.includes('коворкинг')) { targetId = 'COWORK-3'; cat = 'coworking'; }
+    else if (lower.includes('420')) { targetId = 'I-420'; cat = 'labs'; }
+    else if (lower.includes('308')) { targetId = 'I-308'; cat = 'labs'; }
+    else if (lower.includes('204') || lower.includes('деканат')) { targetId = 'I-204'; cat = 'dean'; }
+    else if (lower.includes('324')) { targetId = 'M-324'; cat = 'lecture'; }
+    else if (lower.includes('101') || lower.includes('атриум')) { targetId = 'A-101'; cat = 'lecture'; }
+
+    const chipBtn = document.querySelector(`.route-chip[data-map-cat="${cat}"]`);
+    highlightCampusRoute(roomName, chipBtn, cat, targetId);
+  }, 550);
+}
+
+function copyWifiCredentials(ssid, authInfo) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(`Сеть: ${ssid} | Вход: ${authInfo}`).catch(() => {});
+  }
+  showToast(`Параметры сети «${ssid}» скопированы! (${authInfo}) 📶`);
+}
+
+function setNavigatorScale(scaleFactor, btn) {
+  const stage = document.getElementById('navigator-scale-stage');
+  const pct = (100 / scaleFactor).toFixed(2) + '%';
+  stage.style.width = pct;
+  stage.style.height = pct;
+  stage.style.transform = `scale(${scaleFactor})`;
+
+  btn.parentElement.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const labelPct = Math.round(scaleFactor * 100) + '%';
+  document.getElementById('map-route-text').textContent = `Масштаб карты плавно изменен на ${labelPct} для удобного обзора корпуса`;
+}
+
+function toggleMapHeight() {
+  document.getElementById('main-map-viewport').classList.toggle('tall-map');
+}
+
+function reloadCampusMap() {
+  appState.routeFrom = 'ENTRANCE';
+  appState.routeTo = 'A-101';
+  appState.currentFloor = 1;
+  appState.activeCategory = 'all';
+  renderInteractiveCampusMap();
+  const iframe = document.getElementById('campus-navigator-iframe');
+  if (iframe) iframe.src = iframe.src;
+  showToast('Маршрут и схема корпуса сброшены к 1 этажу ✓');
+}
+
+// =========================================================================
+// 4. БАЗА ДАННЫХ НЕДЕЛЬНОГО РАСПИСАНИЯ (С ФИЛЬТРОМ ПАР ПЕДАГОГА)
 // =========================================================================
 const timeSlots = [
   { pair: '1 пара', time: '08:30 – 10:05' },
@@ -152,7 +799,6 @@ const weekDays = [
   { key: 'sat', name: 'СБ', date: '31 окт' }
 ];
 
-// Расписание по слотам (индекс пары 0..4 и день недели)
 const weeklyLessonsData = {
   '0_mon': {
     type: 'lecture', typeLabel: 'Лекция',
@@ -252,19 +898,16 @@ const weeklyLessonsData = {
   }
 };
 
-// Проверка: принадлежит ли пара авторизованному педагогу
 function isLessonTaughtByCurrentUser(lessonTeacher) {
   if (!appState.currentUser || !appState.currentUser.fio) return false;
   const userFio = appState.currentUser.fio.trim().toLowerCase();
   const teacherStr = lessonTeacher.toLowerCase();
 
-  // Извлекаем фамилию (первое слово с длиной > 2 символов, не являющееся должностью)
   const words = userFio.split(/\s+/).filter(w => w.length > 2 && !['доц.', 'проф.', 'преп.'].includes(w));
   const surname = words[0] || 'соколов';
 
   if (teacherStr.includes(surname)) return true;
 
-  // Если педагог ввел нестандартное ФИО при регистрации, сопоставляем его с основным профилем (доц. Соколов А. В.)
   const knownSurnames = ['соколов', 'мельников', 'виткин', 'орлова', 'громов'];
   const matchesKnown = knownSurnames.some(k => userFio.includes(k));
   if (!matchesKnown && teacherStr.includes('соколов')) {
@@ -273,7 +916,6 @@ function isLessonTaughtByCurrentUser(lessonTeacher) {
   return false;
 }
 
-// Отрисовка недельной сетки расписания (с фильтрацией пар для Педагога)
 function renderWeeklySchedule() {
   const grid = document.getElementById('week-grid-table');
   if (!grid) return;
@@ -281,7 +923,6 @@ function renderWeeklySchedule() {
   const isTeacher = appState.role === 'teacher';
   let html = '';
 
-  // Верхняя шапка таблицы (Угол + 6 дней недели Пн–Сб)
   html += `
     <div class="week-col-header" style="background:rgba(31,42,68,0.88); display:flex; flex-direction:column; justify-content:center;">
       <span class="day-name" style="color:var(--gold);">ВРЕМЯ</span>
@@ -298,7 +939,6 @@ function renderWeeklySchedule() {
     `;
   });
 
-  // Строки по временным слотам (1..5 пара)
   timeSlots.forEach((slot, sIdx) => {
     html += `
       <div class="time-slot-cell">
@@ -312,8 +952,6 @@ function renderWeeklySchedule() {
       const item = weeklyLessonsData[key];
       const matchesWeek = item && (!item.weeks || item.weeks.includes(appState.scheduleWeek));
       const matchesType = item && (appState.scheduleTypeFilter === 'all' || item.type === appState.scheduleTypeFilter);
-
-      // КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ №1: Если роль "педагог", показываем только пары этого педагога
       const matchesTeacher = !isTeacher || !appState.teacherOnlyMyClasses || (item && isLessonTaughtByCurrentUser(item.teacher));
 
       if (item && matchesWeek && matchesType && matchesTeacher) {
@@ -337,7 +975,7 @@ function renderWeeklySchedule() {
               </div>
               <div>
                 <div class="lesson-person" style="margin-bottom:6px;">${personLine}</div>
-                <button class="lesson-room-btn" onclick="openRoomOnCampusMap('${item.room}')" title="Показать аудиторию на 3D-карте корпуса">
+                <button class="lesson-room-btn" onclick="openRoomOnCampusMap('${item.room}')" title="Построить маршрут в аудиторию на карте корпуса">
                   📍 ${item.room} ↗
                 </button>
               </div>
@@ -381,27 +1019,8 @@ function filterScheduleType(type, btn) {
   renderWeeklySchedule();
 }
 
-function openRoomOnCampusMap(roomName) {
-  navigateTo('home');
-  setTimeout(() => {
-    const mapBlock = document.getElementById('main-navigator-block');
-    if (mapBlock) mapBlock.scrollIntoView({ behavior: 'smooth' });
-
-    // Автоматически определяем категорию пина на карте по названию аудитории
-    let category = 'atrium';
-    const lower = roomName.toLowerCase();
-    if (lower.includes('коворкинг')) category = 'coworking';
-    else if (lower.includes('лаборатор') || lower.includes('420') || lower.includes('308')) category = 'labs';
-    else if (lower.includes('деканат') || lower.includes('204')) category = 'dean';
-    else if (lower.includes('атриум') || lower.includes('101') || lower.includes('324')) category = 'atrium';
-
-    const matchingBtn = document.querySelector(`.route-chip[data-map-cat="${category}"]`);
-    highlightCampusRoute(`Маршрут из расписания: ${roomName}`, matchingBtn, category);
-  }, 550);
-}
-
 // =========================================================================
-// 3. НАВИГАЦИЯ С ПРОВЕРКОЙ АВТОРИЗАЦИИ И ПЛАВНЫМ ПЕРЕХОДОМ
+// 5. НАВИГАЦИЯ МЕЖДУ ЭКРАНАМИ И РОЛЕВАЯ АВТОРИЗАЦИЯ
 // =========================================================================
 function navigateTo(screenId, navBtn) {
   if (!appState.isAuthenticated && protectedScreens.includes(screenId)) {
@@ -469,9 +1088,6 @@ function navigateTo(screenId, navBtn) {
   }, 950);
 }
 
-// =========================================================================
-// 4. РОЛЕВАЯ ЛОГИКА: АБИТУРИЕНТ ↔ СТУДЕНТ ↔ ПЕДАГОГ
-// =========================================================================
 function requestRoleSwitch(targetRole) {
   if (targetRole === 'abit') {
     logoutToAbiturient();
@@ -561,7 +1177,6 @@ function logoutToAbiturient() {
   showToast('Вы вернулись в стартовый режим Абитуриента 🎓');
 }
 
-// Синхронизация всего контента сайта под активную роль
 function applyRoleUI(role, userData) {
   document.querySelectorAll('.role-pill-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('role-btn-' + role).classList.add('active');
@@ -620,14 +1235,8 @@ function applyRoleUI(role, userData) {
     document.getElementById('profile-inst-field').value = userData.inst;
     document.getElementById('profile-group-field').value = userData.group;
 
-    const studentFormCard = document.getElementById('hw-student-form-card');
-    const teacherFormCard = document.getElementById('hw-teacher-form-card');
-
     if (role === 'student') {
       teacherRibbon.style.display = 'none';
-      if (studentFormCard) studentFormCard.style.opacity = '1';
-      if (teacherFormCard) teacherFormCard.style.opacity = '0.85';
-
       document.getElementById('topbar-role-indicator').textContent = `Студент • ${userData.group}`;
       badge.textContent = `⚡ Личное пространство студента • ${userData.inst} (${userData.group})`;
       heading.innerHTML = `Привет, <span class="gold-highlight">${parts[1] || parts[0]}!</span> Твой кампус готов к учёбе.`;
@@ -635,13 +1244,9 @@ function applyRoleUI(role, userData) {
       document.getElementById('home-hw-section-title').textContent = '📚 Мои домашние задания и трекер семестра';
       document.getElementById('schedule-role-badge').textContent = `РАСПИСАНИЕ НЕДЕЛИ • ГРУППА ${userData.group}`;
       document.getElementById('schedule-main-title').textContent = `Расписание занятий группы ${userData.group}`;
-      document.getElementById('schedule-main-sub').textContent = 'Нажми на любую аудиторию в карточке пары, чтобы мгновенно подсветить её на 3D-карте корпуса';
+      document.getElementById('schedule-main-sub').textContent = 'Нажми на любую аудиторию в карточке пары, чтобы мгновенно построить маршрут на карте корпуса';
     } else if (role === 'teacher') {
       teacherRibbon.style.display = 'block';
-      if (studentFormCard) studentFormCard.style.opacity = '0.85';
-      if (teacherFormCard) teacherFormCard.style.opacity = '1';
-
-      // Считаем количество пар, которые ведет именно этот педагог
       const myLessonsCount = Object.values(weeklyLessonsData).filter(l => isLessonTaughtByCurrentUser(l.teacher)).length;
       const reviewCount = appState.homeworks.filter(h => h.status === 'review' || h.status === 'urgent').length;
 
@@ -669,6 +1274,7 @@ function applyRoleUI(role, userData) {
 
   renderWeeklySchedule();
   renderAllHomeworksAndDashboard();
+  renderInteractiveCampusMap();
 }
 
 function handleProfileClick() {
@@ -680,7 +1286,7 @@ function handleProfileClick() {
 }
 
 // =========================================================================
-// 5. ЕДИНАЯ СИСТЕМА ДОМАШНИХ ЗАДАНИЙ, ОЦЕНОК ПЕДАГОГА И ЛИЧНОГО КАБИНЕТА
+// 6. ЕДИНАЯ СИСТЕМА ДОМАШНИХ ЗАДАНИЙ И ЛИЧНОГО КАБИНЕТА (БРС)
 // =========================================================================
 function renderAllHomeworksAndDashboard(activeFilter = 'all') {
   const isTeacher = appState.role === 'teacher';
@@ -692,7 +1298,6 @@ function renderAllHomeworksAndDashboard(activeFilter = 'all') {
   const totalEarnedBrs = hws.reduce((acc, h) => acc + (Number(h.earnedPoints) || 0), 0);
   const progressPct = hws.length > 0 ? Math.min(100, Math.round(((doneCount + reviewCount * 0.5) / hws.length) * 100)) : 80;
 
-  // 1. Обновляем прогресс-бар и счётчики на главной витрине
   const progLabel = document.getElementById('hw-progress-label');
   const progBar = document.getElementById('hw-progress-bar');
   const brsBonus = document.getElementById('hw-brs-bonus');
@@ -703,7 +1308,6 @@ function renderAllHomeworksAndDashboard(activeFilter = 'all') {
   const filterAllBtn = document.getElementById('hw-filter-all-btn');
   if (filterAllBtn) filterAllBtn.textContent = `Все (${hws.length})`;
 
-  // Если активна роль студента — обновляем Hero-описание с актуальным числом ДЗ
   if (appState.role === 'student') {
     const avgBrs = calculateAverageBrs();
     const desc = document.getElementById('hero-main-desc');
@@ -720,7 +1324,6 @@ function renderAllHomeworksAndDashboard(activeFilter = 'all') {
     }
   }
 
-  // 2. Рендерим карточки в #main-hw-grid (Главная) и #extra-hw-list (Экран ДЗ)
   const mainGrid = document.getElementById('main-hw-grid');
   const extraList = document.getElementById('extra-hw-list');
 
@@ -767,14 +1370,9 @@ function renderAllHomeworksAndDashboard(activeFilter = 'all') {
     `;
   };
 
-  if (mainGrid) {
-    mainGrid.innerHTML = hws.map(buildHwCardHTML).join('');
-  }
-  if (extraList) {
-    extraList.innerHTML = hws.map(buildHwCardHTML).join('');
-  }
+  if (mainGrid) mainGrid.innerHTML = hws.map(buildHwCardHTML).join('');
+  if (extraList) extraList.innerHTML = hws.map(buildHwCardHTML).join('');
 
-  // 3. КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ №2: Обновляем Личный кабинет (screen-dashboard)
   renderPersonalCabinetDashboard();
 }
 
@@ -811,7 +1409,6 @@ function renderPersonalCabinetDashboard() {
     hwSummaryText.textContent = `Активных: ${urgentCount} • На проверке: ${reviewCount} • Проверено: ${doneCount} (+${(14.5 + totalEarnedBrs).toFixed(1)} БРС)`;
   }
 
-  // Отрисовка баллов БРС по предметам
   if (brsListEl) {
     brsListEl.innerHTML = appState.brsSubjects.map(subj => {
       const cappedScore = Math.min(100, subj.score).toFixed(1);
@@ -825,7 +1422,6 @@ function renderPersonalCabinetDashboard() {
     }).join('');
   }
 
-  // Отрисовка ленты домашних заданий и оценок прямо в Личном кабинете (screen-dashboard)
   if (cabinetHwFeed) {
     cabinetHwFeed.innerHTML = appState.homeworks.map(hw => {
       let badgeHtml = `<span class="hw-status urgent">🔥 Выдано педагогом (${hw.deadline})</span>`;
@@ -848,7 +1444,6 @@ function renderPersonalCabinetDashboard() {
     }).join('');
   }
 
-  // Обновление сегодняшних пар (Вторник) в Личном кабинете с учетом роли
   if (todayLessonsEl) {
     const tueKeys = ['0_tue', '1_tue', '2_tue', '3_tue', '4_tue'];
     const tueLessons = tueKeys
@@ -888,7 +1483,6 @@ function gradeHomework(id, maxPoints) {
   hw.earnedPoints = pts;
   hw.deadline = `✅ Проверено • +${pts.toFixed(1)} БРС`;
 
-  // Начисляем баллы в соответствующий предмет зачётки БРС в Личном кабинете
   const subj = appState.brsSubjects.find(s => s.key === hw.brsSubjectKey) || appState.brsSubjects[0];
   if (subj) {
     subj.score = Math.min(100, Number((subj.score + pts).toFixed(1)));
@@ -966,158 +1560,6 @@ function publishTeacherTask() {
 }
 
 // =========================================================================
-// 6. ИНТЕРАКТИВНАЯ КАРТА КОРПУСА С ВЫДЕЛЕНИЕМ ЗОН И МАРШРУТОВ
-// =========================================================================
-const campusMapZonesData = {
-  'atrium': {
-    badge: '1 ЭТАЖ • ЦЕНТРАЛЬНОЕ ЯДРО',
-    title: '✨ Стеклянный атриум и главный лекторий А-101',
-    desc: 'Главный вход со стороны площади флагов, 3 уровня галерей со световым куполом и амфитеатр на 450 мест.',
-    wifi: 'UrFU-Campus (5 ГГц • 650 Мбит/с)',
-    pinX: '48%', pinY: '52%',
-    svgPath: 'M 180 410 Q 320 330 480 265',
-    stageTransform: 'scale(0.92) translate(-2%, -2%)'
-  },
-  'coworking': {
-    badge: '3 ЭТАЖ • КРЫЛО Б • 24/7',
-    title: '💻 Панорамные коворкинги и зона UrFU TeamUp',
-    desc: 'Выделены 3 коворкинг-зоны: тихий зал с панорамными окнами, переговорные капсулы для команд и зона с розетками у каждого стола.',
-    wifi: 'UrFU-Campus / eduroam (Wi-Fi 6 • Макс. сигнал)',
-    pinX: '68%', pinY: '34%',
-    svgPath: 'M 180 410 Q 420 350 680 175',
-    stageTransform: 'scale(0.96) translate(-6%, 2%)'
-  },
-  'dean': {
-    badge: '2 ЭТАЖ • АДМИНИСТРАТИВНОЕ КРЫЛО',
-    title: '🏛️ Деканат ИРИТ-РтФ, преподавательская и студсовет (И-204)',
-    desc: 'Приём студентов по вопросам БРС, справок, индивидуальных траекторий и консультаций с кураторами курсов.',
-    wifi: 'UrFU-Campus (5 ГГц • Стабильный)',
-    pinX: '32%', pinY: '40%',
-    svgPath: 'M 180 410 Q 230 300 320 205',
-    stageTransform: 'scale(0.94) translate(3%, 1%)'
-  },
-  'labs': {
-    badge: '4 ЭТАЖ • НАУЧНЫЙ КЛАСТЕР',
-    title: '🔬 Лаборатория Прикладного ИИ и робототехники (И-420 / И-308)',
-    desc: 'Серверная стойка с GPU-ускорителями, рабочие станции для компьютерного зрения, робототехники и дипломных проектов.',
-    wifi: 'UrFU-Campus + Гигабитный Ethernet',
-    pinX: '62%', pinY: '64%',
-    svgPath: 'M 180 410 Q 410 410 620 325',
-    stageTransform: 'scale(0.95) translate(-5%, -5%)'
-  },
-  'wifi': {
-    badge: 'ПОКРЫТИЕ 100% • БЕСШОВНЫЙ РОУМИНГ',
-    title: '📶 Точки доступа Wi-Fi 6 (UrFU-Campus / eduroam / UrFU-Guest)',
-    desc: 'Высокоскоростные роутеры размещены в атриуме, всех коворкингах, коридорах и лекционных залах. Инструкция по подключению расположена ниже.',
-    wifi: 'До 1 Гбит/с по всему кампусу',
-    pinX: '52%', pinY: '45%',
-    svgPath: 'M 180 410 Q 350 280 520 230',
-    stageTransform: 'scale(0.85) translate(0%, 0%)'
-  }
-};
-
-function highlightCampusRoute(routeTitle, btn, categoryKey) {
-  if (btn && btn.parentElement) {
-    btn.parentElement.querySelectorAll('.route-chip').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-  }
-
-  // Определяем ключ категории
-  let cat = categoryKey;
-  if (!cat) {
-    const t = routeTitle.toLowerCase();
-    if (t.includes('коворкинг')) cat = 'coworking';
-    else if (t.includes('деканат') || t.includes('204')) cat = 'dean';
-    else if (t.includes('лаборатор') || t.includes('420')) cat = 'labs';
-    else if (t.includes('wi-fi') || t.includes('вай-фай')) cat = 'wifi';
-    else cat = 'atrium';
-  }
-  appState.activeMapCategory = cat;
-  const zone = campusMapZonesData[cat] || campusMapZonesData['atrium'];
-
-  // Обновляем статусную строку
-  const statusBox = document.getElementById('map-route-status');
-  const routeText = document.getElementById('map-route-text');
-  if (statusBox) {
-    statusBox.style.transform = 'scale(1.04)';
-    setTimeout(() => { statusBox.style.transform = 'scale(1)'; }, 260);
-  }
-  if (routeText) {
-    routeText.textContent = `Выделена зона на карте: ${zone.title}`;
-  }
-
-  // Плавная фокусировка сцены карты
-  const stage = document.getElementById('navigator-scale-stage');
-  if (stage) {
-    stage.style.transform = zone.stageTransform;
-  }
-
-  // Подсвечиваем маркеры и карточку объекта поверх самой карты
-  updateMapVisualOverlay(cat, zone);
-  showToast(`На карте выделена зона: ${zone.title}`);
-}
-
-function updateMapVisualOverlay(activeCat, zone) {
-  // Подсвечиваем пины на карте (активный пин увеличивается и пульсирует золотым кольцом)
-  document.querySelectorAll('.campus-map-pin').forEach(pin => {
-    const pinCat = pin.getAttribute('data-pin-cat');
-    const isSelected = pinCat === activeCat || activeCat === 'wifi';
-    pin.style.opacity = isSelected ? '1' : '0.42';
-    pin.style.transform = isSelected ? 'translate(-50%, -50%) scale(1.18)' : 'translate(-50%, -50%) scale(0.9)';
-    pin.style.zIndex = isSelected ? '10' : '4';
-  });
-
-  // Обновляем SVG-линию маршрута от входа до выбранной точки
-  const routePath = document.getElementById('map-svg-route-line');
-  if (routePath && zone.svgPath) {
-    routePath.setAttribute('d', zone.svgPath);
-  }
-
-  // Обновляем всплывающую информационную карточку выбранного объекта на самой карте
-  const cardBadge = document.getElementById('map-poi-badge');
-  const cardTitle = document.getElementById('map-poi-title');
-  const cardDesc = document.getElementById('map-poi-desc');
-  const cardWifi = document.getElementById('map-poi-wifi');
-
-  if (cardBadge) cardBadge.textContent = zone.badge;
-  if (cardTitle) cardTitle.textContent = zone.title;
-  if (cardDesc) cardDesc.textContent = zone.desc;
-  if (cardWifi) cardWifi.textContent = `📶 ${zone.wifi}`;
-}
-
-function copyWifiCredentials(ssid, authInfo) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(`Сеть: ${ssid} | Вход: ${authInfo}`).catch(() => {});
-  }
-  showToast(`Параметры сети «${ssid}» скопированы! (${authInfo}) 📶`);
-}
-
-function setNavigatorScale(scaleFactor, btn) {
-  const stage = document.getElementById('navigator-scale-stage');
-  const pct = (100 / scaleFactor).toFixed(2) + '%';
-  stage.style.width = pct;
-  stage.style.height = pct;
-  stage.style.transform = `scale(${scaleFactor})`;
-
-  btn.parentElement.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-
-  const labelPct = Math.round(scaleFactor * 100) + '%';
-  document.getElementById('map-route-text').textContent = `Масштаб карты плавно изменен на ${labelPct} для удобного обзора корпуса`;
-}
-
-function toggleMapHeight() {
-  document.getElementById('main-map-viewport').classList.toggle('tall-map');
-}
-
-function reloadCampusMap() {
-  const iframe = document.getElementById('campus-navigator-iframe');
-  iframe.src = iframe.src;
-  highlightCampusRoute('Стеклянный атриум (1 этаж) • Главный лекторий А-101', document.querySelector('.route-chip[data-map-cat="atrium"]'), 'atrium');
-  showToast('Интерактивная схема корпуса и маркеры обновлены ✓');
-}
-
-// =========================================================================
 // 7. ПАНОРАМЫ КАМПУСА, ПОИСК, КАЛЬКУЛЯТОР ЕГЭ, TEAMUP И ИИ-ЧАТ
 // =========================================================================
 function changeHeroPhoto(slideIndex, btn) {
@@ -1188,11 +1630,8 @@ function handleQuickSearch(query) {
     navigateTo('homework');
   } else if (q.includes('егэ') || q.includes('програм') || q.includes('балл')) {
     navigateTo('programs');
-  } else if (q.includes('карт') || q.includes('атриум') || q.includes('коворк') || q.includes('wi-fi') || q.includes('вай')) {
-    navigateTo('home');
-    setTimeout(() => {
-      document.getElementById('main-navigator-block').scrollIntoView({ behavior: 'smooth' });
-    }, 300);
+  } else if (q.includes('карт') || q.includes('атриум') || q.includes('коворк') || q.includes('wi-fi') || q.includes('вай') || q.includes('420') || q.includes('204')) {
+    openRoomOnCampusMap(query);
   } else {
     navigateTo('programs');
     showToast('Результаты поиска по запросу: «' + query + '»');
@@ -1299,7 +1738,7 @@ function sendAiMsg() {
   box.innerHTML += `<div class="msg-user">${msg}</div>`;
   input.value = '';
 
-  let reply = 'Вы можете рассчитать баллы ЕГЭ в каталоге программ или войти через УрФУ ID для доступа к расписанию недели и домашним заданиям.';
+  let reply = 'Вы можете рассчитать баллы ЕГЭ в каталоге программ, построить маршрут по этажам корпуса на карте или войти через УрФУ ID.';
   const lower = msg.toLowerCase();
   if (lower.includes('распис')) {
     reply = '🗓️ Недельное расписание (Пн–Сб) автоматически адаптируется под роль: студент видит все пары группы, а педагог — только свои лекции и лабораторные!';
@@ -1317,7 +1756,6 @@ function sendAiMsg() {
   }, 220);
 }
 
-// Инициализация при загрузке: сайт встречает нас в роли Абитуриента
 document.addEventListener('DOMContentLoaded', () => {
   applyRoleUI('abit', null);
 });
