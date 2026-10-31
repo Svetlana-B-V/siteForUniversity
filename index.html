@@ -19,16 +19,15 @@
     <div class="ambient-orb orb-3"></div>
   </div>
 
-  <!-- ЕДИНЫЙ КАРКАС ПРИЛОЖЕНИЯ (РАСКРЫВАЮЩИЙСЯ САЙДБАР СЛЕВА + РАБОЧАЯ ОБЛАСТЬ СПРАВА) -->
+  <!-- ЕДИНЫЙ КАРКАС ПРИЛОЖЕНИЯ -->
   <div class="workspace-wrapper">
 
-    <!-- РАСКРЫВАЮЩАЯСЯ БОКОВАЯ НАВИГАЦИЯ (MINI ↔ FULL ПО НАВЕДЕНИЮ И КНОПКЕ) -->
+    <!-- РАСКРЫВАЮЩАЯСЯ БОКОВАЯ НАВИГАЦИЯ -->
     <aside class="smart-sidebar" id="smart-sidebar">
       <button class="sidebar-pin-btn" id="sidebar-pin-btn" onclick="toggleSidebarPin()" title="Закрепить / открепить меню">
         ⇄
       </button>
 
-      <!-- Верхний блок профиля в золотом кольце (По умолчанию: Гость / Абитуриент) -->
       <div class="sidebar-profile" onclick="handleProfileClick()" title="Авторизация / Профиль УрФУ ID">
         <div class="avatar-ring">
           <div class="avatar-circle" id="sidebar-avatar-initials">АБ</div>
@@ -40,7 +39,6 @@
         </div>
       </div>
 
-      <!-- Список всех 11 разделов (1–6 открыты абитуриенту, 7–11 требуют входа Студента/Педагога) -->
       <nav class="sidebar-menu" aria-label="Основная навигация по 11 страницам">
         <button class="nav-item active" data-screen="home" onclick="navigateTo('home', this)">
           <span class="nav-icon">🏛️</span>
@@ -72,7 +70,6 @@
           <span class="nav-text">Об УрФУ и кампусе</span>
         </button>
 
-        <!-- Внутренние разделы вуза (защищены авторизацией УрФУ ID) -->
         <button class="nav-item protected-nav" data-screen="schedule" data-protected="true" onclick="navigateTo('schedule', this)">
           <span class="nav-icon">🗓️</span>
           <span class="nav-text">Расписание недели <em class="lock-tag">🔒</em></span>
@@ -99,7 +96,6 @@
         </button>
       </nav>
 
-      <!-- Нижний блок сайдбара: Активные пользователи (+70) и мини-карта связей кампуса -->
       <div class="sidebar-footer-widgets">
         <div class="active-users-label">СЕЙЧАС В КАМПУСЕ ОНЛАЙН</div>
         <div class="active-users-row" onclick="navigateTo('mentors', document.querySelector('[data-screen=mentors]'))">
@@ -133,7 +129,7 @@
     <!-- ПРАВАЯ ОСНОВНАЯ РАБОЧАЯ ОБЛАСТЬ -->
     <div class="main-stage">
 
-      <!-- КОМПАКТНАЯ СТЕКЛЯННАЯ ВЕРХНЯЯ ПАНЕЛЬ: ПОИСК + ПЕРЕКЛЮЧАТЕЛЬ РОЛЕЙ + УрФУ ID -->
+      <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
       <header class="compact-glass-topbar">
         <div class="brand-compact" onclick="navigateTo('home', document.querySelector('[data-screen=home]'))">
           <svg viewBox="0 0 112 112" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -150,12 +146,11 @@
 
         <div class="topbar-search">
           <span>🔍</span>
-          <input type="text" id="Quick-search-input" placeholder="Поиск по кампусу: направление ЕГЭ, аудитория, расписание, преподаватель..." onkeydown="if(event.key==='Enter') handleQuickSearch(this.value)" />
+          <input type="text" id="Quick-search-input" placeholder="Поиск по кампусу: И-420, коворкинг, Wi-Fi, направление ЕГЭ, расписание..." onkeydown="if(event.key==='Enter') handleQuickSearch(this.value)" />
           <kbd>⌘K</kbd>
         </div>
 
         <div class="topbar-controls">
-          <!-- По умолчанию активна роль «Абитуриенту». Переход в «Студенту» или «Педагогу» требует входа! -->
           <div class="role-pills" title="Для перехода в режим Студента или Педагога потребуется авторизация">
             <button class="role-pill-btn active" id="role-btn-abit" onclick="requestRoleSwitch('abit')">Абитуриенту</button>
             <button class="role-pill-btn" id="role-btn-student" onclick="requestRoleSwitch('student')">🔒 Студенту</button>
@@ -166,14 +161,13 @@
         </div>
       </header>
 
-      <!-- КОНТЕЙНЕР БЕСШОВНОГО ПЕРЕКРЫТИЯ ЭКРАНОВ -->
+      <!-- КОНТЕЙНЕР ЭКРАНОВ -->
       <div class="screens-viewport" id="screens-viewport">
 
         <!-- ===============================================================
-             ЭКРАН 1: ГЛАВНАЯ СТРАНИЦА (АДАПТИРУЕТСЯ ПОД РОЛЬ: АБИТУРИЕНТ / СТУДЕНТ / ПЕДАГОГ)
+             ЭКРАН 1: ГЛАВНАЯ СТРАНИЦА
              =============================================================== -->
         <section id="screen-home" class="screen active visible">
-          <!-- HERO-БЛОК С КИНЕМАТОГРАФИЧНЫМ ПЕРЕХОДОМ ТИПОГРАФИКИ И ФОНА -->
           <div class="hero-glass-stage parallax-layer" data-depth="1">
             <div class="hero-ambient-bg" id="hero-ambient-bg"></div>
 
@@ -186,15 +180,13 @@
                 Выбери свою индивидуальную траекторию из 350+ программ, рассчитай шансы по баллам ЕГЭ и познакомься с новым стеклянным кампусом в Новокольцовском. Для доступа к расписанию, ДЗ и БРС войди как студент или педагог.
               </p>
 
-              <!-- Кнопки действий в Hero для Абитуриента (меняются при входе Студента/Педагога) -->
               <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;" id="hero-cta-group">
                 <button class="btn-gold" onclick="navigateTo('programs', document.querySelector('[data-screen=programs]'))">🧮 Калькулятор ЕГЭ и программы</button>
                 <button class="btn-primary" onclick="document.getElementById('abiturient-steps-block').scrollIntoView({behavior:'smooth'})">🚀 Как поступить в 4 шага</button>
-                <button class="btn-glass" onclick="document.getElementById('main-navigator-block').scrollIntoView({behavior:'smooth'})">🗺️ Карта корпуса (85%)</button>
+                <button class="btn-glass" onclick="document.getElementById('main-navigator-block').scrollIntoView({behavior:'smooth'})">🗺️ Карта корпуса и Wi-Fi</button>
               </div>
             </div>
 
-            <!-- Правая витрина с оптическим расфокус-переходом и круглой золотой кнопкой -->
             <div class="hero-photo-showcase">
               <img id="hero-showcase-img" class="hero-main-img" src="src/oblozhka.jpg" alt="Новый кампус УрФУ" />
               <div class="hero-img-overlay"></div>
@@ -247,10 +239,7 @@
             </div>
           </div>
 
-          <!-- =============================================================
-               БЛОК 1 (ТОЛЬКО ДЛЯ АБИТУРИЕНТА): ТРЕКЕР ПОСТУПЛЕНИЯ И СТИПЕНДИЙ
-               (У абитуриента нет ДЗ и БРС — вместо них навигатор поступления!)
-               ============================================================= -->
+          <!-- БЛОК 1 (ТОЛЬКО ДЛЯ АБИТУРИЕНТА) -->
           <div id="abiturient-steps-block" class="role-exclusive-abit parallax-layer" data-depth="2">
             <div class="section-head">
               <div>
@@ -284,36 +273,31 @@
             </div>
           </div>
 
-          <!-- =============================================================
-               БЛОК 2 (ТОЛЬКО ДЛЯ ПЕДАГОГА ПОСЛЕ АВТОРИЗАЦИИ): ПАНЕЛЬ ПРЕПОДАВАТЕЛЯ
-               ============================================================= -->
+          <!-- БЛОК 2 (ТОЛЬКО ДЛЯ ПЕДАГОГА) -->
           <div id="teacher-quick-ribbon" class="glass-card-navy parallax-layer" data-depth="2" style="margin-top:22px; display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
               <div>
                 <span class="badge-gold">РАБОЧЕЕ МЕСТО ПРЕПОДАВАТЕЛЯ УрФУ</span>
-                <h3 style="font-size:20px; margin-top:8px;">Управление курсами, расписанием потоков и ведомостью БРС</h3>
-                <p style="font-size:13.5px; color:var(--beige);">Вы вошли как: <strong>доц. Соколов Алексей Викторович (ИРИТ-РтФ)</strong> • На проверке 4 работы группы РИ-160033</p>
+                <h3 style="font-size:20px; margin-top:8px;">Управление курсами, личным расписанием и ведомостью БРС</h3>
+                <p style="font-size:13.5px; color:var(--beige);" id="teacher-ribbon-user-desc">Вы вошли как: <strong>доц. Соколов Алексей Викторович (ИРИТ-РтФ)</strong></p>
               </div>
               <div style="display:flex; gap:10px; flex-wrap:wrap;">
                 <button class="btn-gold" onclick="navigateTo('schedule', document.querySelector('[data-screen=schedule]'))">🗓️ Мои пары на неделе</button>
-                <button class="btn-glass" style="background:rgba(255,255,255,0.14); color:var(--cream); border-color:var(--gold);" onclick="showToast('Ведомость БРС выгружена в формате XLSX ✓')">Выгрузить ведомость БРС</button>
+                <button class="btn-glass" style="background:rgba(255,255,255,0.14); color:var(--cream); border-color:var(--gold);" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))">+ Выдать ДЗ потоку</button>
               </div>
             </div>
           </div>
 
-          <!-- =============================================================
-               БЛОК 3 (ТОЛЬКО ДЛЯ АВТОРИЗОВАННЫХ СТУДЕНТОВ И ПЕДАГОГОВ):
-               ДОМАШНИЕ ЗАДАНИЯ И ТРЕКЕР СЕМЕСТРА (СКРЫТ У АБИТУРИЕНТА!)
-               ============================================================= -->
+          <!-- БЛОК 3 (ДЛЯ СТУДЕНТОВ И ПЕДАГОГОВ): ДЗ И БРС -->
           <div id="authenticated-homework-section" style="display:none;">
             <div id="main-homework-block" class="section-head parallax-layer" data-depth="2">
               <div>
                 <h2 id="home-hw-section-title">📚 Мои домашние задания и трекер семестра</h2>
-                <p class="section-sub" id="home-hw-section-sub">Сдавай лабораторные и проекты в один клик — баллы БРС начисляются автоматически после проверки педагогом</p>
+                <p class="section-sub" id="home-hw-section-sub">Все новые задания и оценки педагога мгновенно отображаются здесь и в Личном кабинете БРС</p>
               </div>
               <div style="display:flex; gap:10px; align-items:center;">
-                <button class="btn-gold" onclick="navigateTo('schedule', document.querySelector('[data-screen=schedule]'))">🗓️ Расписание недели →</button>
-                <button class="btn-primary" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))">Все задания →</button>
+                <button class="btn-gold" onclick="navigateTo('dashboard', document.querySelector('[data-screen=dashboard]'))">⚡ В Личный кабинет БРС →</button>
+                <button class="btn-primary" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))">Все задания / Выдать ДЗ →</button>
               </div>
             </div>
 
@@ -335,146 +319,205 @@
                 </div>
 
                 <div class="filter-pills">
-                  <button class="pill-btn active" onclick="filterHomework('all', this)">Все (4)</button>
+                  <button class="pill-btn active" id="hw-filter-all-btn" onclick="filterHomework('all', this)">Все (4)</button>
                   <button class="pill-btn" onclick="filterHomework('urgent', this)">Горит дедлайн</button>
                   <button class="pill-btn" onclick="filterHomework('review', this)">На проверке</button>
                   <button class="pill-btn" onclick="filterHomework('done', this)">Сдано</button>
                 </div>
               </div>
 
-              <div class="grid-2" id="main-hw-grid">
-                <div class="hw-card hw-item" data-status="urgent">
-                  <div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                      <span class="badge-soft">Прикладной ИИ и ML • ИРИТ-РтФ</span>
-                      <span class="hw-status urgent" id="hw-st-1">🔥 До 30 октября, 23:59</span>
-                    </div>
-                    <h3 style="font-size:17px; margin-bottom:6px;">Лабораторная №4: Обучение сверточной нейросети и деплой на FastAPI</h3>
-                    <p style="font-size:13px; color:var(--text-muted);">
-                      Преподаватель: доц. Соколов А. В. • Прикрепите ссылку на GitHub-репозиторий и отчет в PDF. Максимум: <strong>+8 баллов БРС</strong>.
-                    </p>
-                  </div>
-                  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
-                    <input type="text" id="hw-link-1" class="form-input" style="flex:1; padding:8px 12px; font-size:13px;" value="https://github.com/urfu-ai/cnn-fastapi-lab4" />
-                    <button class="btn-primary student-submit-btn" style="padding:9px 16px; font-size:12.5px;" onclick="submitHomework(1)">Сдать работу ✓</button>
-                    <button class="btn-gold teacher-grade-btn" style="display:none; padding:9px 14px; font-size:12px;" onclick="gradeHomework(1, '+8.0 БРС')">Оценить: 8/8 БРС</button>
-                  </div>
-                </div>
-
-                <div class="hw-card hw-item" data-status="urgent">
-                  <div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                      <span class="badge-soft">Проектный практикум • Команда</span>
-                      <span class="hw-status urgent" id="hw-st-2">⏳ До 1 ноября, 18:00</span>
-                    </div>
-                    <h3 style="font-size:17px; margin-bottom:6px;">Спринт 2: Интерактивный прототип и дизайн-система фасада УрФУ</h3>
-                    <p style="font-size:13px; color:var(--text-muted);">
-                      Куратор: В. В. Виткин • Загрузите ссылку на макеты в Figma и проведите тестирование сценариев. <strong>+12 баллов БРС</strong>.
-                    </p>
-                  </div>
-                  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
-                    <input type="text" id="hw-link-2" class="form-input" style="flex:1; padding:8px 12px; font-size:13px;" value="https://figma.com/file/urfu-glass-redesign" />
-                    <button class="btn-primary student-submit-btn" style="padding:9px 16px; font-size:12.5px;" onclick="submitHomework(2)">Сдать работу ✓</button>
-                    <button class="btn-gold teacher-grade-btn" style="display:none; padding:9px 14px; font-size:12px;" onclick="gradeHomework(2, '+12.0 БРС')">Оценить: 12/12 БРС</button>
-                  </div>
-                </div>
-
-                <div class="hw-card hw-item" data-status="review">
-                  <div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                      <span class="badge-soft">Алгоритмы и структуры данных</span>
-                      <span class="hw-status review" id="hw-st-3">👀 На проверке у педагога</span>
-                    </div>
-                    <h3 style="font-size:17px; margin-bottom:6px;">Домашнее задание №3: Поиск кратчайшего пути в графе корпусов</h3>
-                    <p style="font-size:13px; color:var(--text-muted);">
-                      Отправлено 24 октября • Автотесты пройдены (18/18). Ожидается подтверждение преподавателя.
-                    </p>
-                  </div>
-                  <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
-                    <span style="font-size:12.5px; font-weight:700; color:var(--navy);">📎 graph_dijkstra_urfu.py</span>
-                    <button class="btn-gold teacher-grade-btn" style="display:none; padding:8px 14px; font-size:12px;" onclick="gradeHomework(3, '+6.0 БРС')">Выставить 6/6 в БРС</button>
-                  </div>
-                </div>
-
-                <div class="hw-card hw-item" data-status="done">
-                  <div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                      <span class="badge-soft">Базы данных и SQL</span>
-                      <span class="hw-status done" id="hw-st-4">✅ Проверено • +10.0 БРС</span>
-                    </div>
-                    <h3 style="font-size:17px; margin-bottom:6px;">Проектирование схемы БД для сервиса менторов Campus Connect</h3>
-                    <p style="font-size:13px; color:var(--text-muted);">
-                      Комментарий педагога: «Отличная нормализация таблиц и индексов, баллы зачислены в итоговый рейтинг семестра».
-                    </p>
-                  </div>
-                  <div style="display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid rgba(31,42,68,0.08);">
-                    <span style="font-size:12.5px; color:var(--success); font-weight:700;">В ведомости БРС: 10 из 10</span>
-                    <span class="badge-gold">Зачтено</span>
-                  </div>
-                </div>
-              </div>
+              <div class="grid-2" id="main-hw-grid"></div>
             </div>
           </div>
 
-          <!-- ВСТРОЕННАЯ АНИМИРОВАННАЯ КАРТА КОРПУСА С ПРОЗРАЧНЫМ ФОНОМ И УДОБНЫМ МАСШТАБОМ -->
+          <!-- =============================================================
+               ВСТРОЕННЫЙ ПОЭТАЖНЫЙ НАВИГАТОР КОРПУСА С ПОИСКОМ ПУТИ (1–4 ЭТАЖ)
+               ============================================================= -->
           <div id="main-navigator-block" class="section-head parallax-layer" data-depth="2">
             <div>
-              <h2>🗺️ Анимированный навигатор корпуса УрФУ</h2>
-              <p class="section-sub">Полупрозрачный стеклянный интерфейс `campusnavigator-mu.vercel.app` с удобным масштабом 85% и быстрыми маршрутами</p>
+              <h2>🗺️ Интерактивный навигатор корпуса УрФУ (Этажи 1–4 и маршруты)</h2>
+              <p class="section-sub">Выбирай этаж, кликай на любую аудиторию или категорию («Коворкинги», «Лаборатории», «Деканат») — алгоритм построит маршрут по коридорам и лестницам</p>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn-glass" id="toggle-map-engine-btn" onclick="toggleMapEngineMode()">🌐 Режим: Оригинальный виджет Vercel</button>
               <button class="btn-glass" onclick="toggleMapHeight()">⤢ Развернуть по высоте</button>
-              <a href="https://campusnavigator-mu.vercel.app/" target="_blank" rel="noopener" class="btn-gold" style="text-decoration:none;">Открыть в новой вкладке ↗</a>
             </div>
           </div>
 
           <div class="navigator-glass-shell parallax-layer" data-depth="3">
+            <!-- Верхняя панель управления этажами и точками маршрута Откуда -> Куда -->
             <div class="navigator-top-hud">
-              <div class="radar-badge">
-                <span class="radar-dot"></span>
-                <span>Интерактивная схема корпуса • Новокольцовский / ГУК</span>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span style="font-size:12px; font-weight:800; color:var(--navy);">ЭТАЖ:</span>
+                <div class="scale-controls">
+                  <button class="scale-btn floor-switch-btn active" data-floor="1" onclick="switchCampusFloor(1)">1 этаж</button>
+                  <button class="scale-btn floor-switch-btn" data-floor="2" onclick="switchCampusFloor(2)">2 этаж</button>
+                  <button class="scale-btn floor-switch-btn" data-floor="3" onclick="switchCampusFloor(3)">3 этаж</button>
+                  <button class="scale-btn floor-switch-btn" data-floor="4" onclick="switchCampusFloor(4)">4 этаж</button>
+                </div>
               </div>
 
-              <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                <span style="font-size:12px; font-weight:700; color:var(--text-muted);">Масштаб обзора:</span>
-                <div class="scale-controls">
-                  <button class="scale-btn" onclick="setNavigatorScale(0.75, this)">75% Весь корпус</button>
-                  <button class="scale-btn active" onclick="setNavigatorScale(0.85, this)">85% Оптимально</button>
-                  <button class="scale-btn" onclick="setNavigatorScale(1.0, this)">100% Крупно</button>
-                </div>
-                <button class="pill-btn" style="padding:6px 12px; font-size:12px;" onclick="reloadCampusMap()">↻ Сбросить вид</button>
+              <!-- Выбор Откуда и Куда -->
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex:1; justify-content:center;">
+                <span style="font-size:11.5px; font-weight:800; color:var(--text-muted);">ОТКУДА:</span>
+                <select id="map-select-from" class="form-input" style="width:auto; padding:6px 10px; font-size:12px;" onchange="updateCampusRouteEndpoints()">
+                  <option value="ENTRANCE">🚪 Главный вход (1 эт.)</option>
+                  <option value="A-101">✨ Атриум А-101 (1 эт.)</option>
+                  <option value="I-104">💻 Коворкинг И-104 (1 эт.)</option>
+                  <option value="CAFE-1">☕ Столовая и кафе (1 эт.)</option>
+                  <option value="I-204">🏛️ Деканат И-204 (2 эт.)</option>
+                  <option value="I-210">💻 Коворкинг И-210 (2 эт.)</option>
+                  <option value="COWORK-3">💻 Панорамный коворкинг (3 эт.)</option>
+                  <option value="I-308">🗄️ Ауд. И-308 (3 эт.)</option>
+                  <option value="I-420">🔬 Лаборатория ИИ И-420 (4 эт.)</option>
+                </select>
+
+                <span style="font-weight:800; color:var(--gold);">➔</span>
+
+                <span style="font-size:11.5px; font-weight:800; color:var(--text-muted);">КУДА:</span>
+                <select id="map-select-to" class="form-input" style="width:auto; padding:6px 10px; font-size:12px;" onchange="updateCampusRouteEndpoints()">
+                  <option value="A-101">✨ Стеклянный атриум А-101 (1 эт.)</option>
+                  <option value="I-104">💻 Коворкинг «Атриум-Лаунж» И-104 (1 эт.)</option>
+                  <option value="I-108">🏛️ Приёмная комиссия И-108 (1 эт.)</option>
+                  <option value="CAFE-1">☕ Кампусное кафе (1 эт.)</option>
+                  <option value="I-204">🏛️ Деканат ИРИТ-РтФ И-204 (2 эт.)</option>
+                  <option value="I-210">💻 Проектный коворкинг И-210 (2 эт.)</option>
+                  <option value="I-215">🎓 Лекторий И-215 (2 эт.)</option>
+                  <option value="M-324">🛡️ Ауд. М-324 Кибербез (2 эт.)</option>
+                  <option value="COWORK-3">💻 Панорамный коворкинг 3 этаж (TeamUp)</option>
+                  <option value="COWORK-3B">🎧 Тихий коворкинг Б-304 (3 эт.)</option>
+                  <option value="I-308">🗄️ Комп. класс И-308 (3 эт.)</option>
+                  <option value="I-312">🎤 Центр менторов И-312 (3 эт.)</option>
+                  <option value="I-420">🔬 Лаборатория ИИ и ML И-420 (4 эт.)</option>
+                  <option value="I-415">🤖 Лаборатория робототехники И-415 (4 эт.)</option>
+                  <option value="COWORK-4">💻 R&D Коворкинг И-410 (4 эт.)</option>
+                </select>
               </div>
+
+              <button class="pill-btn" style="padding:6px 12px; font-size:12px;" onclick="reloadCampusMap()">↻ Сброс</button>
             </div>
 
+            <!-- Кнопки категорий (при клике выделяют все объекты категории на этаже и строят маршрут) -->
             <div class="navigator-route-pills">
               <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button class="route-chip active" onclick="highlightCampusRoute('Стеклянный атриум (1 этаж) • Главный лекторий А-101', this)">✨ Стеклянный атриум А-101</button>
-                <button class="route-chip" onclick="highlightCampusRoute('Панорамный коворкинг (3 этаж, крыло Б) • Зона TeamUp', this)">💻 Коворкинг 3 этаж</button>
-                <button class="route-chip" onclick="highlightCampusRoute('Деканат ИРИТ-РтФ и преподавательская (2 этаж, И-204)', this)">🏛️ Деканат И-204</button>
-                <button class="route-chip" onclick="highlightCampusRoute('Лаборатория Прикладного ИИ и робототехники (ауд. И-420)', this)">🔬 Лаборатория И-420</button>
+                <button class="route-chip active" data-map-cat="lecture" onclick="highlightCampusRoute('Стеклянный атриум А-101 (1 этаж)', this, 'lecture', 'A-101')">✨ Атриум А-101 и лектории</button>
+                <button class="route-chip" data-map-cat="coworking" onclick="highlightCampusRoute('Панорамный коворкинг (3 этаж) и зоны коворкинга', this, 'coworking', 'COWORK-3')">💻 Коворкинги (4 зоны)</button>
+                <button class="route-chip" data-map-cat="dean" onclick="highlightCampusRoute('Деканат ИРИТ-РтФ (2 этаж, ауд. И-204)', this, 'dean', 'I-204')">🏛️ Деканат И-204</button>
+                <button class="route-chip" data-map-cat="labs" onclick="highlightCampusRoute('Лаборатория Прикладного ИИ (4 этаж, ауд. И-420)', this, 'labs', 'I-420')">🔬 Лаборатория И-420</button>
+                <button class="route-chip" data-map-cat="cafe" onclick="highlightCampusRoute('Кампусная столовая и Кофе-поинт (1 этаж)', this, 'cafe', 'CAFE-1')">☕ Кафе и столовая</button>
+                <button class="route-chip" data-map-cat="wifi" onclick="highlightCampusRoute('Карта покрытия роутеров Wi-Fi 6', this, 'wifi')">📶 Точки Wi-Fi 6</button>
               </div>
-              <span class="badge-gold">Живая 2D/3D навигация</span>
+              <span class="badge-gold">Алгоритм Дейкстры 2D/3D</span>
             </div>
 
+            <!-- Пошаговая цепочка перехода между этажами -->
+            <div id="map-floor-steps-bar" style="background:rgba(255,255,255,0.75); padding:8px 14px; border-radius:12px; margin-bottom:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;"></div>
+
+            <!-- Сцена карты (Нативный интерактивный чертеж этажа ИЛИ чистый iframe Vercel) -->
             <div class="navigator-viewport" id="main-map-viewport">
-              <div class="navigator-scale-stage" id="navigator-scale-stage">
-                <iframe
-                  id="campus-navigator-iframe"
-                  src="https://campusnavigator-mu.vercel.app/"
-                  title="Интерактивная карта корпуса УрФУ — Campus Navigator"
-                  loading="lazy"
-                  allow="fullscreen; geolocation"
-                ></iframe>
+              <!-- Режим 1: Нативный интерактивный поэтажный план с рабочими путями -->
+              <div id="native-map-stage" style="width:100%; height:100%;">
+                <svg id="native-campus-svg" viewBox="0 0 1000 520" preserveAspectRatio="xMidYMid meet" style="width:100%; height:100%; display:block;"></svg>
+              </div>
+
+              <!-- Режим 2: Чистый оригинальный виджет Vercel без блокирующих клики оверлеев -->
+              <div id="vercel-iframe-stage" style="width:100%; height:100%; display:none;">
+                <div class="navigator-scale-stage" id="navigator-scale-stage">
+                  <iframe
+                    id="campus-navigator-iframe"
+                    src="https://campusnavigator-mu.vercel.app/"
+                    title="Интерактивная карта корпуса УрФУ — Campus Navigator"
+                    loading="lazy"
+                    allow="fullscreen; geolocation"
+                  ></iframe>
+                </div>
               </div>
 
               <div class="map-floating-status" id="map-route-status">
                 <span>🧭</span>
-                <span id="map-route-text">Активная локация: Стеклянный атриум А-101 (масштаб 85% для полного обзора корпуса)</span>
+                <span id="map-route-text">Активный маршрут: Главный вход → Стеклянный атриум А-101</span>
+              </div>
+            </div>
+
+            <!-- Информационная карточка выбранной аудитории под картой -->
+            <div style="margin-top:12px; background:rgba(255,255,255,0.82); border-radius:16px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+              <div>
+                <strong style="font-size:15px; color:var(--navy); display:block;" id="map-selected-room-title">✨ Стеклянный атриум А-101 (Главный лекторий)</strong>
+                <span style="font-size:12.5px; color:var(--text-muted);" id="map-selected-room-desc">Главный амфитеатр со световым куполом на 450 мест для потоковых лекций и форумов.</span>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;" id="map-selected-room-meta">
+                <span class="badge-gold">1 этаж</span>
+                <span class="badge-soft">📶 UrFU-Campus (Wi-Fi 6)</span>
               </div>
             </div>
           </div>
 
-          <!-- ГАЛЕРЕЯ СВЕТА И СТЕКЛА НОВОГО КАМПУСА (ВСЕ 5 ФОТО ИЗ ПАПКИ SRC) -->
+          <!-- =============================================================
+               ОТДЕЛЬНЫЙ БЛОК РЯДОМ С КАРТОЙ: ИНСТРУКЦИЯ ПО ПОДКЛЮЧЕНИЮ К WI-FI
+               ============================================================= -->
+          <div id="campus-wifi-guide" class="glass-card-beige parallax-layer" data-depth="3" style="margin-top:22px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-bottom:18px;">
+              <div>
+                <span class="badge-gold">БЕСШОВНЫЙ WI-FI 6 В НОВОКОЛЬЦОВСКОМ И ГУКе</span>
+                <h3 style="font-size:21px; margin-top:6px; color:var(--navy);">📶 Инструкция по подключению к сети Wi-Fi кампуса УрФУ</h3>
+                <p style="font-size:13.5px; color:var(--text-muted);">Единая сеть работает во всех лекционных залах, коворкингах, атриуме и жилых корпусах без повторной авторизации</p>
+              </div>
+              <button class="btn-primary" onclick="highlightCampusRoute('Карта покрытия роутеров Wi-Fi 6', document.querySelector('.route-chip[data-map-cat=wifi]'), 'wifi')">
+                📍 Показать роутеры Wi-Fi на схеме этажа ↑
+              </button>
+            </div>
+
+            <div class="grid-3">
+              <div class="glass-card">
+                <div class="tag-row">
+                  <span class="badge-gold">ДЛЯ СТУДЕНТОВ И ПЕДАГОГОВ</span>
+                  <span class="badge-soft">До 1 Гбит/с</span>
+                </div>
+                <h3 style="font-size:17px; margin-bottom:8px;">1. Сеть «UrFU-Campus»</h3>
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">
+                  <strong>Шаг 1:</strong> Выберите сеть <strong>UrFU-Campus</strong> в списке Wi-Fi.<br>
+                  <strong>Шаг 2:</strong> Укажите метод EAP: <strong>PEAP</strong> (проверка подлинности MSCHAPv2, сертификат: <em>«Не проверять»</em>).<br>
+                  <strong>Шаг 3:</strong> Введите корпоративный логин УрФУ ID (<code>@urfu.me</code> или <code>@urfu.ru</code>) и пароль.
+                </p>
+                <button class="btn-glass" style="padding:7px 14px; font-size:12px; width:100%;" onclick="copyWifiCredentials('UrFU-Campus', 'Логин УрФУ ID (@urfu.me / @urfu.ru), PEAP / MSCHAPv2')">
+                  📋 Скопировать настройки UrFU-Campus
+                </button>
+              </div>
+
+              <div class="glass-card">
+                <div class="tag-row">
+                  <span class="badge-soft">ДЛЯ АБИТУРИЕНТОВ И ГОСТЕЙ</span>
+                  <span class="badge-gold">По номеру телефона</span>
+                </div>
+                <h3 style="font-size:17px; margin-bottom:8px;">2. Гостевая сеть «UrFU-Guest»</h3>
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">
+                  <strong>Шаг 1:</strong> Подключитесь к открытой сети <strong>UrFU-Guest</strong>.<br>
+                  <strong>Шаг 2:</strong> В открывшемся окне браузера (Captive Portal) укажите номер телефона.<br>
+                  <strong>Шаг 3:</strong> Подтвердите вход кодом из СМС или звонком — доступ активен 24 часа.
+                </p>
+                <button class="btn-glass" style="padding:7px 14px; font-size:12px; width:100%;" onclick="copyWifiCredentials('UrFU-Guest', 'Авторизация по СМС через портал гостя')">
+                  📋 Скопировать инструкцию для гостей
+                </button>
+              </div>
+
+              <div class="glass-card">
+                <div class="tag-row">
+                  <span class="badge-soft">МЕЖДУНАРОДНЫЙ РОУМИНГ</span>
+                  <span class="badge-gold">Ауд. И-220</span>
+                </div>
+                <h3 style="font-size:17px; margin-bottom:8px;">3. Сеть «eduroam» и помощь</h3>
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">
+                  <strong>Роуминг:</strong> Сеть <strong>eduroam</strong> доступна для сотрудников и студентов вузов-партнёров по учётной записи УрФУ.<br>
+                  <strong>ИТ-поддержка:</strong> Помощь с настройкой сертификатов на 2 этаже в ауд. <strong>И-220</strong>.
+                </p>
+                <button class="btn-gold" style="padding:7px 14px; font-size:12px; width:100%; justify-content:center;" onclick="highlightCampusRoute('Служба ИТ-поддержки (2 этаж, И-220)', null, 'dean', 'I-220')">
+                  🧭 Построить маршрут в ИТ-поддержку (И-220)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ГАЛЕРЕЯ СВЕТА И СТЕКЛА НОВОГО КАМПУСА -->
           <div class="section-head parallax-layer" data-depth="2">
             <div>
               <h2>✨ Архитектура света и стекла: кампус в деталях</h2>
@@ -540,7 +583,6 @@
             </div>
           </div>
 
-          <!-- ТЕМНО-СИНЯЯ ПОЛУПРОЗРАЧНАЯ ПОЛОСА ЦИФР УНИВЕРСИТЕТА -->
           <div class="navy-stats-bar parallax-layer" data-depth="2">
             <div class="navy-stat-box">
               <div>🏛️</div>
@@ -566,7 +608,7 @@
         </section>
 
         <!-- ===============================================================
-             ЭКРАН 2: КАТАЛОГ ПРОГРАММ + КАЛЬКУЛЯТОР ЕГЭ (ДОСТУПЕН АБИТУРИЕНТУ)
+             ЭКРАН 2: КАТАЛОГ ПРОГРАММ + КАЛЬКУЛЯТОР ЕГЭ
              =============================================================== -->
         <section id="screen-programs" class="screen">
           <div class="page-banner parallax-layer" data-depth="1">
@@ -700,22 +742,28 @@
           <div class="page-banner parallax-layer" data-depth="1">
             <img class="page-banner-bg" src="src/DIP_8550.jpg" alt="Стеклянный атриум" />
             <div>
-              <h1 class="morph-headline">Интерактивный навигатор корпуса УрФУ</h1>
-              <p id="full-map-subtitle">Полноэкранная схема этажей `campusnavigator-mu.vercel.app` в полупрозрачном стеклянном фрейме</p>
+              <h1 class="morph-headline">Поэтажный навигатор корпуса УрФУ и виджет Vercel</h1>
+              <p id="full-map-subtitle">Интерактивный план 1–4 этажей с алгоритмом поиска пути + оригинальное приложение `campusnavigator-mu.vercel.app`</p>
             </div>
-            <a href="https://campusnavigator-mu.vercel.app/" target="_blank" rel="noopener" class="btn-gold" style="text-decoration:none;">Открыть в новой вкладке ↗</a>
+            <a href="https://campusnavigator-mu.vercel.app/" target="_blank" rel="noopener" class="btn-gold" style="text-decoration:none;">Открыть Vercel в новой вкладке ↗</a>
           </div>
 
           <div class="navigator-glass-shell parallax-layer" data-depth="2">
-            <div class="navigator-viewport tall-map">
-              <div class="navigator-scale-stage" style="width:117.65%; height:117.65%; transform:scale(0.85);">
-                <iframe
-                  src="https://campusnavigator-mu.vercel.app/"
-                  title="Полная карта корпуса УрФУ"
-                  loading="lazy"
-                  allow="fullscreen; geolocation"
-                ></iframe>
+            <div class="navigator-top-hud">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:12px; font-weight:800; color:var(--navy);">ВЫБЕРИТЕ ЭТАЖ:</span>
+                <div class="scale-controls">
+                  <button class="scale-btn floor-switch-btn active" data-floor="1" onclick="switchCampusFloor(1)">1 этаж</button>
+                  <button class="scale-btn floor-switch-btn" data-floor="2" onclick="switchCampusFloor(2)">2 этаж</button>
+                  <button class="scale-btn floor-switch-btn" data-floor="3" onclick="switchCampusFloor(3)">3 этаж</button>
+                  <button class="scale-btn floor-switch-btn" data-floor="4" onclick="switchCampusFloor(4)">4 этаж</button>
+                </div>
               </div>
+              <span class="badge-gold">Кликните на любую аудиторию для построения маршрута</span>
+            </div>
+
+            <div class="navigator-viewport tall-map">
+              <svg id="native-campus-svg-full" viewBox="0 0 1000 520" preserveAspectRatio="xMidYMid meet" style="width:100%; height:100%; display:block;"></svg>
             </div>
           </div>
         </section>
@@ -775,7 +823,6 @@
 
         <!-- ===============================================================
              ЭКРАН 7 (ЗАКРЫТЫЙ): НЕДЕЛЬНОЕ РАСПИСАНИЕ ЗАНЯТИЙ (ПН – СБ)
-             С УКАЗАНИЕМ ВРЕМЕНИ, ИМЕНИ ПРЕПОДАВАТЕЛЯ И АУДИТОРИИ
              =============================================================== -->
         <section id="screen-schedule" class="screen">
           <div class="page-banner parallax-layer" data-depth="1">
@@ -783,7 +830,7 @@
             <div>
               <span class="badge-gold" id="schedule-role-badge">РАСПИСАНИЕ НЕДЕЛИ • ГРУППА РИ-160033</span>
               <h1 class="morph-headline" style="margin-top:8px;" id="schedule-main-title">Календарная сетка занятий на неделю</h1>
-              <p id="schedule-main-sub">Нажми на любую аудиторию в карточке пары, чтобы мгновенно подсветить её на 3D-карте корпуса</p>
+              <p id="schedule-main-sub">Нажми на любую аудиторию в карточке пары, чтобы мгновенно построить маршрут на карте корпуса</p>
             </div>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <button class="btn-gold" id="week-even-btn" onclick="switchScheduleWeek('even', this)">Чётная неделя (26–31 окт)</button>
@@ -791,7 +838,6 @@
             </div>
           </div>
 
-          <!-- Панель фильтров расписания и легенда -->
           <div class="glass-card-beige parallax-layer" data-depth="2" style="margin-bottom:22px; padding:16px 22px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
               <div class="filter-pills">
@@ -808,11 +854,8 @@
             </div>
           </div>
 
-          <!-- СЕТКА РАСПИСАНИЯ НЕДЕЛИ (ВРЕМЕННЫЕ СЛОТЫ × 6 ДНЕЙ ПН–СБ) -->
           <div class="week-schedule-shell parallax-layer" data-depth="3">
-            <div class="week-grid-table" id="week-grid-table">
-              <!-- Генерируется динамически в app.js с учетом роли (Студент / Педагог) и четности недели -->
-            </div>
+            <div class="week-grid-table" id="week-grid-table"></div>
           </div>
         </section>
 
@@ -825,13 +868,12 @@
             <div>
               <span class="badge-gold">УЧЕБНЫЙ ХАБ • СТУДЕНТ ↔ ПЕДАГОГ</span>
               <h1 class="morph-headline" style="margin-top:8px;">Домашние задания, проекты и журнал БРС</h1>
-              <p>Прозрачный трекер дедлайнов для студента и конструктор заданий для преподавателя</p>
+              <p>Любое выданное задание или оценка сразу отображаются в Личном кабинете студента</p>
             </div>
-            <button class="btn-gold" onclick="navigateTo('schedule', document.querySelector('[data-screen=schedule]'))">🗓️ Открыть расписание недели</button>
+            <button class="btn-gold" onclick="navigateTo('dashboard', document.querySelector('[data-screen=dashboard]'))">⚡ Проверить в Личном кабинете →</button>
           </div>
 
           <div class="grid-2 parallax-layer" data-depth="2">
-            <!-- Форма для студента -->
             <div class="glass-card" id="hw-student-form-card">
               <span class="badge-soft">СТУДЕНТУ • БЫСТРАЯ ОТПРАВКА РЕШЕНИЯ</span>
               <h3 style="font-size:20px; margin:10px 0 14px;">Отправить домашнее задание на проверку</h3>
@@ -854,14 +896,13 @@
               <button class="btn-primary" onclick="addStudentSubmission()">Отправить работу в БРС →</button>
             </div>
 
-            <!-- Форма для педагога -->
             <div class="glass-card-beige" id="hw-teacher-form-card">
               <span class="badge-gold">ПЕДАГОГУ • СОЗДАНИЕ ЗАДАНИЯ ДЛЯ ПОТОКА</span>
               <h3 style="font-size:20px; margin:10px 0 14px;">Выдать новое задание группе / потоку</h3>
               <div class="grid-2" style="gap:12px;">
                 <div class="form-field">
                   <label>ПОТОК / ГРУППА</label>
-                  <input type="text" class="form-input" id="teacher-group" value="РИ-160033, РИ-230912" />
+                  <input type="text" class="form-input" id="teacher-group" value="РИ-160033" />
                 </div>
                 <div class="form-field">
                   <label>ВЕС В БРС (БАЛЛЫ)</label>
@@ -872,22 +913,29 @@
                 <label>НАЗВАНИЕ И КРИТЕРИИ ЗАДАНИЯ</label>
                 <textarea class="form-textarea" id="teacher-task-title">Лабораторная работа №5: Интеграция LLM-ассистента с базой знаний кампуса УрФУ.</textarea>
               </div>
-              <button class="btn-gold" onclick="publishTeacherTask()">Опубликовать задание для студентов ✓</button>
+              <button class="btn-gold" onclick="publishTeacherTask()">Опубликовать задание в ЛК студентов ✓</button>
             </div>
           </div>
 
-          <div id="extra-hw-list" style="margin-top:22px;" class="grid-2 parallax-layer" data-depth="3"></div>
+          <div class="section-head parallax-layer" data-depth="2" style="margin-top:28px;">
+            <div>
+              <h2>📋 Все активные задания и работы потока</h2>
+              <p class="section-sub">В режиме Студента доступно прикрепление ссылки на решение, в режиме Педагога — выставление баллов в БРС</p>
+            </div>
+          </div>
+
+          <div id="extra-hw-list" style="margin-top:16px;" class="grid-2 parallax-layer" data-depth="3"></div>
         </section>
 
         <!-- ===============================================================
-             ЭКРАН 9 (ЗАКРЫТЫЙ): ДАШБОРД И БРС CAMPUS CONNECT
+             ЭКРАН 9 (ЗАКРЫТЫЙ): ЛИЧНЫЙ КАБИНЕТ (ДАШБОРД И БРС)
              =============================================================== -->
         <section id="screen-dashboard" class="screen">
           <div class="page-banner parallax-layer" data-depth="1">
             <img class="page-banner-bg" src="src/oblozhka.jpg" alt="Кампус" />
             <div>
               <h1 class="morph-headline" id="dashboard-user-greeting">Привет, Эльдаров Эльдар Эльдарович</h1>
-              <p id="dashboard-user-sub">ИРИТ-РтФ, группа РИ-160033 • Средний балл БРС: 88.4 • Кампус Новокольцовский</p>
+              <p id="dashboard-user-sub">ИРИТ-РтФ, группа РИ-160033 • Средний балл БРС: 87.8 • Кампус Новокольцовский</p>
             </div>
             <button class="btn-gold" onclick="navigateTo('schedule', document.querySelector('[data-screen=schedule]'))">🗓️ Расписание на неделю</button>
           </div>
@@ -895,11 +943,11 @@
           <div class="grid-3 parallax-layer" data-depth="2" style="margin-bottom:24px;">
             <div class="glass-card" onclick="navigateTo('schedule', document.querySelector('[data-screen=schedule]'))" style="cursor:pointer;">
               <strong>🗓️ Недельное расписание</strong>
-              <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">Сетка Пн–Сб с именами преподавателей и аудиториями</p>
+              <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">Сетка Пн–Сб с фильтрацией по вашей роли и аудиториями</p>
             </div>
             <div class="glass-card" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))" style="cursor:pointer;">
-              <strong>📚 Домашние задания</strong>
-              <p style="font-size:13px; color:var(--text-muted); margin-top:4px;">2 работы ждут отправки • +24.5 балла в БРС</p>
+              <strong>📚 Домашние задания в ЛК</strong>
+              <p style="font-size:13px; color:var(--text-muted); margin-top:4px;" id="dashboard-hw-summary-text">Активных: 2 • На проверке: 1 • Проверено: 1</p>
             </div>
             <div class="glass-card" onclick="navigateTo('teamup', document.querySelector('[data-screen=teamup]'))" style="cursor:pointer;">
               <strong>🤖 UrFU TeamUp</strong>
@@ -913,35 +961,24 @@
                 <h3>📊 Балльно-рейтинговая зачетка (БРС)</h3>
                 <span class="badge-gold">Семестр Осень 2026</span>
               </div>
-              <div style="display:flex; flex-direction:column; gap:10px; font-size:13.5px;">
-                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; display:flex; justify-content:space-between;">
-                  <span><strong>Прикладной ИИ и ML</strong> (доц. Соколов А. В.)</span>
-                  <strong style="color:var(--success);">91.2 / 100</strong>
-                </div>
-                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; display:flex; justify-content:space-between;">
-                  <span><strong>Проектный практикум</strong> (В. В. Виткин)</span>
-                  <strong style="color:var(--success);">89.5 / 100</strong>
-                </div>
-                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; display:flex; justify-content:space-between;">
-                  <span><strong>Алгоритмы и структуры данных</strong> (проф. Мельников И. П.)</span>
-                  <strong style="color:var(--navy);">84.6 / 100</strong>
-                </div>
-              </div>
+              <div style="display:flex; flex-direction:column; gap:10px; font-size:13.5px;" id="dashboard-brs-list"></div>
             </div>
 
             <div class="glass-card">
               <h3 style="margin-bottom:12px;">📅 Ближайшие пары сегодня (Вторник)</h3>
-              <div style="display:flex; flex-direction:column; gap:10px; font-size:13.5px;">
-                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; border-left:4px solid var(--gold);">
-                  <strong>10:15 – 11:50 • Прикладной ИИ и ML (Лекция)</strong>
-                  <div style="color:var(--text-muted); font-size:12px;">👤 доц. Соколов А. В. • 📍 Стеклянный атриум А-101</div>
-                </div>
-                <div style="padding:10px 14px; background:rgba(255,255,255,0.75); border-radius:12px; border-left:4px solid var(--navy);">
-                  <strong>12:15 – 13:50 • Проектный практикум (Практика)</strong>
-                  <div style="color:var(--text-muted); font-size:12px;">👤 В. В. Виткин • 📍 Панорамный коворкинг 3 этаж</div>
-                </div>
-              </div>
+              <div style="display:flex; flex-direction:column; gap:10px; font-size:13.5px;" id="dashboard-today-lessons"></div>
             </div>
+          </div>
+
+          <div class="glass-card-beige parallax-layer" data-depth="3" style="margin-top:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+              <div>
+                <span class="badge-gold">СИНХРОНИЗАЦИЯ ПЕДАГОГ ↔ СТУДЕНТ</span>
+                <h3 style="font-size:19px; margin-top:4px;">📋 Назначенные педагогом задания и работы в Личном кабинете</h3>
+              </div>
+              <button class="btn-primary" onclick="navigateTo('homework', document.querySelector('[data-screen=homework]'))">Перейти к сдаче / проверке →</button>
+            </div>
+            <div id="dashboard-cabinet-hw-feed" style="display:flex; flex-direction:column; gap:10px;"></div>
           </div>
         </section>
 
@@ -1012,7 +1049,7 @@
               <span class="badge-soft">НАУЧНЫЙ РУКОВОДИТЕЛЬ</span>
               <h3 style="margin:10px 0 6px;">Соколов Алексей Викторович</h3>
               <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">Доцент ИРИТ-РтФ • Консультации по курсовым, ВКР и публикациям в лаборатории ИИ.</p>
-              <button class="btn-primary" onclick="showToast('Вы записаны на консультацию в Чт 16:00 (ауд. И-420) ✓')">Записаться в слот</button>
+              <button class="btn-primary" onclick="showToast('Вы записаны на консультацию в Чт 14:15 (ауд. И-204) ✓')">Записаться в слот</button>
             </div>
 
             <div class="glass-card">
@@ -1062,7 +1099,7 @@
 
       </div>
 
-      <!-- ФУТЕР ВНУТРИ РАБОЧЕЙ ЗОНЫ -->
+      <!-- ФУТЕР -->
       <footer class="site-footer">
         <div class="footer-inner">
           <div>
@@ -1097,9 +1134,7 @@
     </div>
   </div>
 
-  <!-- =====================================================================
-       ВСПЛЫВАЮЩАЯ ФОРМА АВТОРИЗАЦИИ УрФУ ID С ВЫБОРОМ РОЛИ (СТУДЕНТ / ПЕДАГОГ)
-       ===================================================================== -->
+  <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ -->
   <div class="auth-modal-backdrop" id="auth-modal-backdrop" onclick="closeAuthModal()">
     <div class="auth-modal-card" onclick="event.stopPropagation()">
       <button class="auth-close-btn" onclick="closeAuthModal()" title="Закрыть">✕</button>
@@ -1114,7 +1149,6 @@
         </p>
       </div>
 
-      <!-- Выбор роли при входе: Студент или Педагог -->
       <div class="auth-role-selector">
         <button type="button" class="auth-role-option active" id="modal-role-student" onclick="selectModalRole('student')">
           ⚡ Я Студент УрФУ
@@ -1129,7 +1163,6 @@
         <button class="auth-tab-btn" id="tab-btn-register" onclick="switchAuthTab('register')">Создать аккаунт</button>
       </div>
 
-      <!-- Быстрые демо-профили для мгновенной проверки жюри -->
       <div style="display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
         <span style="font-size:11px; color:var(--text-muted); font-weight:700;">Быстрый демо-вход:</span>
         <button type="button" class="pill-btn" style="padding:4px 10px; font-size:11px;" onclick="quickDemoLogin('student')">⚡ Студент (Эльдаров Э. • РИ-160033)</button>
@@ -1189,7 +1222,7 @@
     </div>
   </div>
 
-  <!-- ЛАЙТБОКС ДЛЯ УВЕЛИЧЕНИЯ ФОТОГРАФИЙ КАМПУСА ИЗ ПАПКИ SRC -->
+  <!-- ЛАЙТБОКС -->
   <div class="lightbox-modal" id="lightbox-modal" onclick="closeLightbox()">
     <div class="lightbox-box" onclick="event.stopPropagation()">
       <img id="lightbox-img" src="src/oblozhka.jpg" alt="Просмотр фото кампуса" />
@@ -1200,27 +1233,27 @@
     </div>
   </div>
 
-  <!-- ВСПЛЫВАЮЩЕЕ УВЕДОМЛЕНИЕ (TOAST) -->
+  <!-- TOAST -->
   <div class="toast-notice" id="toast-notice">Действие выполнено ✓</div>
 
-  <!-- ПЛАВАЮЩИЙ GIGACHAT ПОМОЩНИК -->
+  <!-- GIGACHAT ПОМОЩНИК -->
   <button class="ai-fab" onclick="toggleAiChat()" title="GigaChat Помощник УрФУ">💬</button>
 
   <div class="ai-drawer" id="ai-drawer">
     <div class="ai-header">
       <div>
         <strong style="font-size:14px;">🤖 GigaChat Помощник УрФУ</strong>
-        <div style="font-size:11px; color:var(--gold);">Поступление, расписание, ДЗ и история</div>
+        <div style="font-size:11px; color:var(--gold);">Поступление, расписание, Wi-Fi и ДЗ</div>
       </div>
       <button onclick="toggleAiChat()" style="background:none; border:none; color:var(--cream); font-size:18px; cursor:pointer;">✕</button>
     </div>
     <div class="ai-messages" id="ai-messages">
       <div class="msg-bot">
-        Привет! Сейчас сайт открыт в режиме <strong>Абитуриента</strong>. Я могу подсказать проходные баллы ЕГЭ, а если ты авторизуешься через УрФУ ID — покажу расписание пар и дедлайны ДЗ!
+        Привет! Сейчас сайт открыт в режиме <strong>Абитуриента</strong>. Я могу подсказать проходные баллы ЕГЭ, как подключить Wi-Fi в кампусе, а после входа в УрФУ ID — расписание пар и дедлайны ДЗ!
       </div>
     </div>
     <div style="display:flex; gap:6px; padding:8px 12px; flex-wrap:wrap; border-top:1px solid var(--beige);">
-      <button class="pill-btn" style="font-size:11px; padding:4px 10px;" onclick="sendQuickAi('Как поступить в УрФУ?')">Поступление</button>
+      <button class="pill-btn" style="font-size:11px; padding:4px 10px;" onclick="sendQuickAi('Как подключить Wi-Fi?')">Wi-Fi в кампусе</button>
       <button class="pill-btn" style="font-size:11px; padding:4px 10px;" onclick="sendQuickAi('Покажи расписание недели')">Расписание</button>
       <button class="pill-btn" style="font-size:11px; padding:4px 10px;" onclick="sendQuickAi('Расскажи мне про историю ВУЗа')">История УрФУ</button>
     </div>
