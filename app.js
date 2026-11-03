@@ -14,7 +14,7 @@ const appState = {
   currentFloor: 1,         // 1 | 2 | 3 | 4
   activeCategory: 'all',   // 'all' | 'coworking' | 'lecture' | 'labs' | 'dean' | 'wifi' | 'cafe'
   routeFrom: 'ENTRANCE',   // ID стартовой точки
-  routeTo: 'A-101',        // ID конечной точки
+  routeTo: 'G103',        // ID конечной точки
   currentUser: {
     fio: 'Режим Абитуриента',
     email: 'guest@urfu.ru',
@@ -136,169 +136,514 @@ let currentHeroSlideIndex = 0;
 let activeTransitionTimer = null;
 
 // =========================================================================
-// 2. АРХИТЕКТУРНАЯ БАЗА ЭТАЖЕЙ И ГРАФ МАРШРУТОВ (ДВИЖОК НАВИГАТОРА)
+// 2. АРХИТЕКТУРНАЯ БАЗА 1–3 ЭТАЖЕЙ И ГРАФ МАРШРУТОВ ПО ПЛАНАМ КОРПУСА
 // =========================================================================
-// Координатная сетка SVG: 1000 x 520.
-// Коридорная магистраль на каждом этаже проходит по y = 260 (x от 150 до 850)
-// и центральному вертикальному холлу x = 500.
+// Картинки этажей 
+const FLOOR_IMAGES = {
+  1: 'src/floor-1.jpg',
+  2: 'src/floor-2.jpg',
+  3: 'src/floor-3.jpg',
+  4: 'src/floor-3.jpg' // резервный план для кнопки 4 этажа на вкладке 3D-карты
+};
+
+// Состояние камеры для Pan & Zoom (translate3d + scale как в campusnavigator-mu.vercel.app)
+const mapCamera = {
+  scale: 1,
+  minScale: 0.85,
+  maxScale: 3.2,
+  x: 0,
+  y: 0,
+  isDragging: false,
+  startX: 0,
+  startY: 0,
+  searchQuery: ''
+};
+
+// Координаты привязаны к нормализованной сетке 1000 x 1000 поверх floor-1.jpg, floor-2.jpg, floor-3.jpg
 const campusRoomsDB = {
-  // --- 1 ЭТАЖ ---
+  // ==================== 1 ЭТАЖ ====================
   'ENTRANCE': {
-    id: 'ENTRANCE', code: 'ВХОД', name: 'Главный вход (Турникеты УрФУ ID)',
+    id: 'ENTRANCE', code: 'ВХОД', name: 'Главный вход и фойе 1 этажа',
     floor: 1, category: 'service', icon: '🚪',
-    rect: { x: 430, y: 405, w: 140, h: 85 }, door: { x: 500, y: 405 },
-    wifi: 'UrFU-Guest / UrFU-Campus (5 ГГц)',
-    desc: 'Центральная входная группа со стороны площади флагов, пост охраны и турникеты.'
+    x: 425, y: 185, hub: 'W_1_N',
+    wifi: 'UrFU-Guest / UrFU-Campus (Wi-Fi 6)',
+    desc: 'Входная группа учебного корпуса, турникеты УрФУ ID и проход к основным гардеробам.'
   },
-  'A-101': {
-    id: 'A-101', code: 'А-101', name: 'Стеклянный атриум А-101 (Главный лекторий)',
-    floor: 1, category: 'lecture', icon: '✨',
-    rect: { x: 350, y: 45, w: 300, h: 165 }, door: { x: 500, y: 210 },
-    wifi: 'UrFU-Campus (Wi-Fi 6 • до 850 Мбит/с)',
-    desc: 'Главный амфитеатр со световым куполом на 450 мест для потоковых лекций и форумов.'
+  'SBER': {
+    id: 'SBER', code: 'СБЕР', name: 'Образовательное пространство СБЕР',
+    floor: 1, category: 'coworking', icon: '🟢',
+    x: 285, y: 102, hub: 'W_1_F_TOP',
+    wifi: 'UrFU-Campus (Wi-Fi 6 • до 900 Мбит/с)',
+    desc: 'Брендированная зона и коворкинг Сбера в северном крыле 1 этажа.'
   },
-  'I-104': {
-    id: 'I-104', code: 'И-104', name: 'Коворкинг 1 этажа «Атриум-Лаунж»',
-    floor: 1, category: 'coworking', icon: '💻',
-    rect: { x: 80, y: 65, w: 230, h: 145 }, door: { x: 195, y: 210 },
-    wifi: 'UrFU-Campus / eduroam (Wi-Fi 6)',
-    desc: 'Открытое пространство с мягкими пуфами, розетками и столами для быстрой работы между парами.'
-  },
-  'I-108': {
-    id: 'I-108', code: 'И-108', name: 'Приёмная комиссия и Студенческий офис',
-    floor: 1, category: 'dean', icon: '🏛️',
-    rect: { x: 690, y: 65, w: 230, h: 145 }, door: { x: 805, y: 210 },
-    wifi: 'UrFU-Guest / UrFU-Campus',
-    desc: 'Выдача студенческих билетов, справок об обучении и консультации абитуриентов.'
-  },
-  'CAFE-1': {
-    id: 'CAFE-1', code: 'КАФЕ', name: 'Кампусная столовая и Кофе-поинт',
-    floor: 1, category: 'cafe', icon: '☕',
-    rect: { x: 80, y: 315, w: 230, h: 145 }, door: { x: 195, y: 315 },
-    wifi: 'UrFU-Guest / UrFU-Campus',
-    desc: 'Горячие обеды, спешелти-кофе и выпечка. 120 посадочных мест.'
-  },
-  'LIB-1': {
-    id: 'LIB-1', code: 'И-112', name: 'Гардероб и Зона локеров И-112',
+  'WARDROBE-MAIN': {
+    id: 'WARDROBE-MAIN', code: 'Гардероб', name: 'Центральный гардероб (Сектор F/G)',
     floor: 1, category: 'service', icon: '🧥',
-    rect: { x: 690, y: 315, w: 230, h: 145 }, door: { x: 805, y: 315 },
+    x: 362, y: 158, hub: 'W_1_F_MID',
     wifi: 'UrFU-Campus',
-    desc: 'Умные ячейки хранения вещей по пропуску УрФУ и просторный гардероб.'
+    desc: 'Просторный гардероб на 1 этаже рядом с главным входом и пространством Сбера.'
   },
-
-  // --- 2 ЭТАЖ ---
-  'I-204': {
-    id: 'I-204', code: 'И-204', name: 'Деканат ИРИТ-РтФ и преподавательская И-204',
-    floor: 2, category: 'dean', icon: '🏛️',
-    rect: { x: 80, y: 65, w: 250, h: 145 }, door: { x: 205, y: 210 },
-    wifi: 'UrFU-Campus (5 ГГц)',
-    desc: 'Дирекция института, кураторы курсов, ведомости БРС и защита лабораторных работ.'
+  'G101': {
+    id: 'G101', code: 'G101', name: 'Большая поточная аудитория G101',
+    floor: 1, category: 'lecture', icon: '🎓',
+    x: 690, y: 185, hub: 'W_1_NE',
+    wifi: 'UrFU-Campus (Wi-Fi 6)',
+    desc: 'Просторный зал в секторе G для потоковых лекций и презентаций.'
   },
-  'I-210': {
-    id: 'I-210', code: 'И-210', name: 'Коворкинг проектных команд И-210',
-    floor: 2, category: 'coworking', icon: '💻',
-    rect: { x: 370, y: 65, w: 260, h: 145 }, door: { x: 500, y: 210 },
-    wifi: 'UrFU-Campus (Wi-Fi 6 • Макс. сигнал)',
-    desc: 'Проектный коворкинг с маркерными досками и экранами для командных созвонов.'
+  'G103': {
+    id: 'G103', code: 'G103', name: 'Зрительный зал G103',
+    floor: 1, category: 'lecture', icon: '🎭',
+    x: 545, y: 285, hub: 'W_1_NE',
+    wifi: 'UrFU-Campus (Wi-Fi 6 • 2 точки доступа)',
+    desc: 'Главный зрительный зал 1 этажа для конференций, форумов и общеуниверситетских событий.'
   },
-  'I-215': {
-    id: 'I-215', code: 'И-215', name: 'Поточная лекционная аудитория И-215',
-    floor: 2, category: 'lecture', icon: '🎓',
-    rect: { x: 670, y: 65, w: 250, h: 145 }, door: { x: 795, y: 210 },
-    wifi: 'UrFU-Campus (5 ГГц)',
-    desc: 'Аудитория-амфитеатр на 150 человек с двойным проектором и системой звукозаписи лекций.'
-  },
-  'M-324': {
-    id: 'M-324', code: 'М-324', name: 'Аудитория кибербезопасности и ВКС М-324',
-    floor: 2, category: 'lecture', icon: '🛡️',
-    rect: { x: 80, y: 315, w: 250, h: 145 }, door: { x: 205, y: 315 },
-    wifi: 'UrFU-Campus + Выделенная линия',
-    desc: 'Зал для лекций по информационной безопасности и телемостов с базовыми кафедрами.'
-  },
-  'I-220': {
-    id: 'I-220', code: 'И-220', name: 'Союз студентов и Служба ИТ-поддержки',
-    floor: 2, category: 'dean', icon: '🤝',
-    rect: { x: 670, y: 315, w: 250, h: 145 }, door: { x: 795, y: 315 },
-    wifi: 'UrFU-Campus / eduroam',
-    desc: 'Помощь с настройкой корпоративного Wi-Fi, личного кабинета и студенческих инициатив.'
-  },
-
-  // --- 3 ЭТАЖ ---
-  'COWORK-3': {
-    id: 'COWORK-3', code: 'КОВОРКИНГ 3 ЭТ.', name: 'Панорамный коворкинг 3 этаж (Зона TeamUp)',
-    floor: 3, category: 'coworking', icon: '💻',
-    rect: { x: 80, y: 55, w: 410, h: 155 }, door: { x: 285, y: 210 },
-    wifi: 'UrFU-Campus (Wi-Fi 6 • 2 роутера • 950 Мбит/с)',
-    desc: 'Главный панорамный коворкинг кампуса 24/7 для команд проектного практикума и хакатонов.'
-  },
-  'COWORK-3B': {
-    id: 'COWORK-3B', code: 'Б-304', name: 'Тихий коворкинг и капсулы для звонков Б-304',
-    floor: 3, category: 'coworking', icon: '🎧',
-    rect: { x: 530, y: 55, w: 390, h: 155 }, door: { x: 725, y: 210 },
+  'UCSB': {
+    id: 'UCSB', code: 'УЦСБ', name: 'Лаунж и коворкинг УЦСБ (Сектор E)',
+    floor: 1, category: 'coworking', icon: '🔶',
+    x: 192, y: 355, hub: 'W_1_E_MID',
     wifi: 'UrFU-Campus / eduroam (Wi-Fi 6)',
-    desc: 'Зона тишины с акустическими кабинами для индивидуальной работы и онлайн-собеседований.'
+    desc: 'Брендированное пространство компании УЦСБ в крыле E для работы и отдыха между парами.'
   },
-  'I-308': {
-    id: 'I-308', code: 'И-308', name: 'Ауд. И-308 (Базы данных и SQL • Комп. класс)',
-    floor: 3, category: 'labs', icon: '🗄️',
-    rect: { x: 80, y: 315, w: 260, h: 145 }, door: { x: 210, y: 315 },
-    wifi: 'UrFU-Campus + Гигабитный LAN',
-    desc: 'Терминальный класс на 32 рабочих места с предустановленными PostgreSQL, Docker и DBeaver.'
+  'E105': {
+    id: 'E105', code: 'E105', name: 'Аудитория E105',
+    floor: 1, category: 'labs', icon: '📘',
+    x: 122, y: 275, hub: 'W_1_E_TOP',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория на 1 этаже в крыле E.'
   },
-  'I-312': {
-    id: 'I-312', code: 'И-312', name: 'Центр менторов и питч-зал И-312',
-    floor: 3, category: 'lecture', icon: '🎤',
-    rect: { x: 660, y: 315, w: 260, h: 145 }, door: { x: 790, y: 315 },
-    wifi: 'UrFU-Campus (5 ГГц)',
-    desc: 'Зал для демо-дней проектного практикума, защит перед индустриальными партнерами и встреч с менторами.'
+  'E104': {
+    id: 'E104', code: 'E104', name: 'Аудитория E104',
+    floor: 1, category: 'labs', icon: '📘',
+    x: 120, y: 318, hub: 'W_1_E_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Семинарская аудитория напротив коворкинга УЦСБ.'
+  },
+  'E103': {
+    id: 'E103', code: 'E103', name: 'Аудитория E103',
+    floor: 1, category: 'labs', icon: '📘',
+    x: 120, y: 358, hub: 'W_1_E_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория в секторе E на 1 этаже.'
+  },
+  'E102': {
+    id: 'E102', code: 'E102', name: 'Аудитория E102',
+    floor: 1, category: 'labs', icon: '📘',
+    x: 120, y: 396, hub: 'W_1_E_BOT',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория в секторе E на 1 этаже.'
+  },
+  'E101': {
+    id: 'E101', code: 'E101', name: 'Аудитория E101',
+    floor: 1, category: 'labs', icon: '📘',
+    x: 120, y: 425, hub: 'W_1_E_BOT',
+    wifi: 'UrFU-Campus',
+    desc: 'Аудитория в южной части сектора E (1 этаж).'
+  },
+  'D117': {
+    id: 'D117', code: 'D117', name: 'Аудитория D117',
+    floor: 1, category: 'labs', icon: '🔬',
+    x: 68, y: 485, hub: 'W_1_SW',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория в секторе D (1 этаж).'
+  },
+  'D115': {
+    id: 'D115', code: 'D115', name: 'Аудитория D115',
+    floor: 1, category: 'labs', icon: '🔬',
+    x: 52, y: 526, hub: 'W_1_D_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Лабораторный и практический кабинет в крыле D.'
+  },
+  'D113': {
+    id: 'D113', code: 'D113', name: 'Аудитория D113',
+    floor: 1, category: 'labs', icon: '🔬',
+    x: 45, y: 575, hub: 'W_1_D_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебный блок D113–D114 на 1 этаже.'
+  },
+  'D110': {
+    id: 'D110', code: 'D110', name: 'Аудитория D110',
+    floor: 1, category: 'labs', icon: '🔬',
+    x: 45, y: 636, hub: 'W_1_D_BOT',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория D110 (1 этаж, сектор D).'
+  },
+  'D108': {
+    id: 'D108', code: 'D108', name: 'Аудитория D108',
+    floor: 1, category: 'labs', icon: '🔬',
+    x: 52, y: 682, hub: 'W_1_D_BOT',
+    wifi: 'UrFU-Campus',
+    desc: 'Аудитория для практических занятий в секторе D.'
+  },
+  'D102': {
+    id: 'D102', code: 'D102', name: 'Кабинет D102',
+    floor: 1, category: 'dean', icon: '🏛️',
+    x: 182, y: 596, hub: 'W_1_D_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Административно-учебный блок D101–D102 на 1 этаже.'
+  },
+  'CANTEEN': {
+    id: 'CANTEEN', code: 'Столовая', name: 'Кампусная столовая и кафе (Сектор H)',
+    floor: 1, category: 'cafe', icon: '☕',
+    x: 852, y: 368, hub: 'W_1_H_MID',
+    wifi: 'UrFU-Guest / UrFU-Campus',
+    desc: 'Большая столовая корпуса в восточном крыле 1 этажа. Горячие обеды, выпечка и кофе.'
+  },
+  'NAUMEN': {
+    id: 'NAUMEN', code: 'NAUMEN', name: 'Проектный коворкинг NAUMEN (Сектор I)',
+    floor: 1, category: 'coworking', icon: '🟠',
+    x: 588, y: 618, hub: 'W_1_I_MID',
+    wifi: 'UrFU-Campus (Wi-Fi 6 • Макс. сигнал)',
+    desc: 'Открытое брендированное пространство NAUMEN в центральном атриуме 1 этажа для командной работы.'
+  },
+  'I105': {
+    id: 'I105', code: 'I105', name: 'Аудитория I105',
+    floor: 1, category: 'labs', icon: '💻',
+    x: 525, y: 508, hub: 'W_1_SE',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория в северной части сектора I (1 этаж).'
+  },
+  'I104': {
+    id: 'I104', code: 'I104', name: 'Аудитория I104',
+    floor: 1, category: 'labs', icon: '💻',
+    x: 512, y: 565, hub: 'W_1_I_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Аудитория рядом с коворкингом NAUMEN (1 этаж).'
+  },
+  'I103': {
+    id: 'I103', code: 'I103', name: 'Аудитория I103',
+    floor: 1, category: 'labs', icon: '💻',
+    x: 512, y: 632, hub: 'W_1_I_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебный класс I103 в секторе I (1 этаж).'
+  },
+  'I101': {
+    id: 'I101', code: 'I101', name: 'Аудитория I101',
+    floor: 1, category: 'labs', icon: '💻',
+    x: 662, y: 608, hub: 'W_1_I_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Компьютерный и семинарский класс I101 (1 этаж).'
+  },
+  'I102': {
+    id: 'I102', code: 'I102', name: 'Аудитория I102',
+    floor: 1, category: 'labs', icon: '💻',
+    x: 662, y: 665, hub: 'W_1_I_BOT',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория I102 (1 этаж).'
+  },
+  'YANDEX': {
+    id: 'YANDEX', code: 'Яндекс', name: 'Образовательное пространство Яндекс (Сектор J)',
+    floor: 1, category: 'coworking', icon: '🔴',
+    x: 500, y: 788, hub: 'W_1_J_MID',
+    wifi: 'UrFU-Campus (Wi-Fi 6 • до 950 Мбит/с)',
+    desc: 'Пространство Яндекса на 1 этаже для лекций, митапов и работы над алгоритмическими задачами.'
+  },
+  'K119': {
+    id: 'K119', code: 'K119', name: 'Аудитория K119 (Сектор J/K)',
+    floor: 1, category: 'labs', icon: '💻',
+    x: 500, y: 846, hub: 'W_1_J_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Просторная аудитория рядом с зоной Яндекса на 1 этаже.'
+  },
+  'K117': {
+    id: 'K117', code: 'K117', name: 'Аудитория K117',
+    floor: 1, category: 'labs', icon: '💻',
+    x: 500, y: 905, hub: 'W_1_J_BOT',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория K117 в южном крыле 1 этажа.'
+  },
+  'LOUNGE-1': {
+    id: 'LOUNGE-1', code: 'Отдых', name: 'Комната отдыха (Сектор J)',
+    floor: 1, category: 'cafe', icon: '🛋️',
+    x: 395, y: 942, hub: 'W_1_J_BOT',
+    wifi: 'UrFU-Campus',
+    desc: 'Тихая зона отдыха для студентов и преподавателей в южной части сектора J.'
+  },
+  'KONTUR': {
+    id: 'KONTUR', code: 'Контур', name: 'Коворкинг СКБ Контур (Сектор K)',
+    floor: 1, category: 'coworking', icon: '🟢',
+    x: 672, y: 845, hub: 'W_1_K_MID',
+    wifi: 'UrFU-Campus (Wi-Fi 6 • Гигабитный холл)',
+    desc: 'Флагманский коворкинг Контура в секторе K на 1 этаже для проектного практикума и хакатонов.'
+  },
+  'K103': {
+    id: 'K103', code: 'K103', name: 'Аудитория K103',
+    floor: 1, category: 'labs', icon: '🗄️',
+    x: 742, y: 812, hub: 'W_1_K_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория напротив коворкинга Контур на 1 этаже.'
+  },
+  'K104': {
+    id: 'K104', code: 'K104', name: 'Аудитория K104',
+    floor: 1, category: 'labs', icon: '🗄️',
+    x: 742, y: 882, hub: 'W_1_K_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Практическая аудитория в крыле K на 1 этаже.'
+  },
+  'SELF-STUDY': {
+    id: 'SELF-STUDY', code: 'СРС', name: 'Зона для самостоятельной работы (Сектор K)',
+    floor: 1, category: 'coworking', icon: '📖',
+    x: 712, y: 965, hub: 'W_1_K_BOT',
+    wifi: 'UrFU-Campus / eduroam',
+    desc: 'Специализированная зона в южном торце крыла K для подготовки к занятиям и командных созвонов.'
   },
 
-  // --- 4 ЭТАЖ ---
-  'I-420': {
-    id: 'I-420', code: 'И-420', name: 'Лаборатория Прикладного ИИ и ML (И-420)',
-    floor: 4, category: 'labs', icon: '🔬',
-    rect: { x: 80, y: 60, w: 390, h: 150 }, door: { x: 275, y: 210 },
-    wifi: 'UrFU-Campus (Wi-Fi 6 + 10G LAN к GPU-кластеру)',
-    desc: 'Флагманская лаборатория машинного обучения, LLM и разработки микросервисов на FastAPI.'
+  // ==================== 2 ЭТАЖ ====================
+  'ACT-HALL': {
+    id: 'ACT-HALL', code: 'Актовый зал', name: 'Актовый зал корпуса (2 этаж)',
+    floor: 2, category: 'lecture', icon: '🎭',
+    x: 538, y: 310, hub: 'W_2_NE',
+    wifi: 'UrFU-Campus (Wi-Fi 6)',
+    desc: 'Главный актовый зал на 2 этаже для торжественных мероприятий, защит и потоковых лекций.'
   },
-  'I-415': {
-    id: 'I-415', code: 'И-415', name: 'Лаборатория робототехники и Computer Vision И-415',
-    floor: 4, category: 'labs', icon: '🤖',
-    rect: { x: 530, y: 60, w: 390, h: 150 }, door: { x: 725, y: 210 },
+  'F207': {
+    id: 'F207', code: 'F207', name: 'Аудитория F207',
+    floor: 2, category: 'labs', icon: '💻',
+    x: 355, y: 72, hub: 'W_2_F_TOP',
+    wifi: 'UrFU-Campus',
+    desc: 'Просторная угловая аудитория в северном крыле F на 2 этаже.'
+  },
+  'F209': {
+    id: 'F209', code: 'F209', name: 'Аудитория F209',
+    floor: 2, category: 'labs', icon: '💻',
+    x: 362, y: 175, hub: 'W_2_F_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория в секторе F на 2 этаже.'
+  },
+  'F203': {
+    id: 'F203', code: 'F203', name: 'Аудитория F203',
+    floor: 2, category: 'labs', icon: '💻',
+    x: 215, y: 115, hub: 'W_2_F_TOP',
+    wifi: 'UrFU-Campus',
+    desc: 'Компьютерный и семинарский класс F203 (2 этаж).'
+  },
+  'E203': {
+    id: 'E203', code: 'E203', name: 'Аудитория E203',
+    floor: 2, category: 'lecture', icon: '🎓',
+    x: 145, y: 300, hub: 'W_2_E_TOP',
+    wifi: 'UrFU-Campus',
+    desc: 'Большая учебная аудитория в крыле E на 2 этаже.'
+  },
+  'E204': {
+    id: 'E204', code: 'E204', name: 'Аудитория E204 (Дирекция / Деканат)',
+    floor: 2, category: 'dean', icon: '🏛️',
+    x: 272, y: 345, hub: 'W_2_E_MID',
     wifi: 'UrFU-Campus (5 ГГц)',
-    desc: 'Полигон тестирования автономных роботов, лидаров и систем компьютерного зрения.'
+    desc: 'Административный и учебный кабинет E204 в секторе E на 2 этаже.'
   },
-  'COWORK-4': {
-    id: 'COWORK-4', code: 'И-410', name: 'R&D Коворкинг исследователей и магистрантов И-410',
-    floor: 4, category: 'coworking', icon: '💻',
-    rect: { x: 80, y: 315, w: 260, h: 145 }, door: { x: 210, y: 315 },
-    wifi: 'eduroam / UrFU-Campus',
-    desc: 'Научный коворкинг для подготовки ВКР, статей и работы над грантовыми проектами.'
+  'E205': {
+    id: 'E205', code: 'E205', name: 'Аудитория E205',
+    floor: 2, category: 'labs', icon: '💻',
+    x: 272, y: 418, hub: 'W_2_E_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Практическая аудитория в крыле E на 2 этаже.'
   },
-  'I-405': {
-    id: 'I-405', code: 'И-405', name: 'Серверный центр и GPU-кластер УрФУ И-405',
-    floor: 4, category: 'labs', icon: '🖧',
-    rect: { x: 660, y: 315, w: 260, h: 145 }, door: { x: 790, y: 315 },
-    wifi: 'UrFU-Campus (Технический сегмент)',
-    desc: 'Вычислительное ядро института с серверными стойками для обучения глубоких нейросетей.'
+  'D206': {
+    id: 'D206', code: 'D206', name: 'Большая аудитория D206',
+    floor: 2, category: 'lecture', icon: '🎓',
+    x: 52, y: 528, hub: 'W_2_SW',
+    wifi: 'UrFU-Campus',
+    desc: 'Поточная аудитория в западном крыле D на 2 этаже.'
+  },
+  'D204': {
+    id: 'D204', code: 'D204', name: 'Большая аудитория D204',
+    floor: 2, category: 'lecture', icon: '🎓',
+    x: 55, y: 685, hub: 'W_2_D_BOT',
+    wifi: 'UrFU-Campus',
+    desc: 'Просторная лекционно-практическая аудитория в южной части сектора D (2 этаж).'
+  },
+  'H203': {
+    id: 'H203', code: 'H203', name: 'Аудитория H203',
+    floor: 2, category: 'labs', icon: '🔬',
+    x: 662, y: 352, hub: 'W_2_H_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория в восточном крыле H рядом с Актовым залом.'
+  },
+  'H204': {
+    id: 'H204', code: 'H204', name: 'Аудитория H204',
+    floor: 2, category: 'labs', icon: '🔬',
+    x: 795, y: 350, hub: 'W_2_H_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Лабораторная аудитория H204 (2 этаж, сектор H).'
+  },
+  'H205': {
+    id: 'H205', code: 'H205', name: 'Аудитория H205',
+    floor: 2, category: 'labs', icon: '🔬',
+    x: 800, y: 430, hub: 'W_2_H_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Практическая аудитория H205 (2 этаж, сектор H).'
+  },
+  'I202': {
+    id: 'I202', code: 'I202', name: 'Аудитория I202',
+    floor: 2, category: 'labs', icon: '💻',
+    x: 508, y: 578, hub: 'W_2_I_MID',
+    wifi: 'UrFU-Campus (Wi-Fi 6)',
+    desc: 'Компьютерный и проектный класс I202 в центральном секторе 2 этажа.'
+  },
+  'I201': {
+    id: 'I201', code: 'I201', name: 'Аудитория I201',
+    floor: 2, category: 'labs', icon: '💻',
+    x: 508, y: 642, hub: 'W_2_I_MID',
+    wifi: 'UrFU-Campus (Wi-Fi 6)',
+    desc: 'Учебная аудитория I201 в центральном секторе 2 этажа.'
+  },
+  'J201': {
+    id: 'J201', code: 'J201', name: 'Аудитория J201',
+    floor: 2, category: 'labs', icon: '📘',
+    x: 432, y: 795, hub: 'W_2_J_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Семинарская аудитория в крыле J на 2 этаже.'
+  },
+  'J204': {
+    id: 'J204', code: 'J204', name: 'Аудитория J204',
+    floor: 2, category: 'labs', icon: '📘',
+    x: 425, y: 925, hub: 'W_2_J_BOT',
+    wifi: 'UrFU-Campus',
+    desc: 'Угловая аудитория в южной части крыла J (2 этаж).'
+  },
+  'K203': {
+    id: 'K203', code: 'K203', name: 'Специализированная лаборатория K203',
+    floor: 2, category: 'labs', icon: '🌸',
+    x: 732, y: 762, hub: 'W_2_K_MID',
+    wifi: 'UrFU-Campus + Выделенная линия',
+    desc: 'Выделенный лабораторный кластер K203–K207 в розовом секторе крыла K (2 этаж).'
+  },
+  'K204': {
+    id: 'K204', code: 'K204', name: 'Лаборатория ИИ и разработки K204',
+    floor: 2, category: 'labs', icon: '🌸',
+    x: 732, y: 812, hub: 'W_2_K_MID',
+    wifi: 'UrFU-Campus (Wi-Fi 6 + LAN)',
+    desc: 'Ключевая лаборатория розового крыла K на 2 этаже для практик по программированию и ИИ.'
+  },
+  'K205': {
+    id: 'K205', code: 'K205', name: 'Компьютерный класс K205',
+    floor: 2, category: 'labs', icon: '🌸',
+    x: 732, y: 878, hub: 'W_2_K_MID',
+    wifi: 'UrFU-Campus (Wi-Fi 6 + LAN)',
+    desc: 'Компьютерный класс в выделенном секторе K203–K207 на 2 этаже.'
+  },
+
+  // ==================== 3 ЭТАЖ ====================
+  'CLUB-HALL': {
+    id: 'CLUB-HALL', code: 'Зал клуба', name: 'Зрительный зал клуба (3 этаж)',
+    floor: 3, category: 'lecture', icon: '🎬',
+    x: 545, y: 310, hub: 'W_3_NE',
+    wifi: 'UrFU-Campus (Wi-Fi 6)',
+    desc: 'Большой зрительный зал клуба на 3 этаже для презентаций проектов, демо-дней и творческих встреч.'
+  },
+  'F316': {
+    id: 'F316', code: 'F316', name: 'Аудитория F316',
+    floor: 3, category: 'labs', icon: '💻',
+    x: 362, y: 148, hub: 'W_3_F_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория в северном крыле F на 3 этаже.'
+  },
+  'J317': {
+    id: 'J317', code: 'J317', name: 'Аудитория J317 (Сектор F)',
+    floor: 3, category: 'labs', icon: '💻',
+    x: 362, y: 182, hub: 'W_3_F_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Семинарская и проектная аудитория J317 на 3 этаже.'
+  },
+  'E302': {
+    id: 'E302', code: 'E302', name: 'Аудитория E302',
+    floor: 3, category: 'labs', icon: '📘',
+    x: 128, y: 365, hub: 'W_3_E_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория в западном крыле E на 3 этаже.'
+  },
+  'E303': {
+    id: 'E303', code: 'E303', name: 'Аудитория E303',
+    floor: 3, category: 'labs', icon: '📘',
+    x: 272, y: 345, hub: 'W_3_E_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Лабораторный класс E303 на 3 этаже.'
+  },
+  'E304': {
+    id: 'E304', code: 'E304', name: 'Аудитория E304',
+    floor: 3, category: 'labs', icon: '📘',
+    x: 272, y: 415, hub: 'W_3_E_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Аудитория E304 для практических занятий и командных разборов.'
+  },
+  'D303': {
+    id: 'D303', code: 'D303', name: 'Аудитория D303',
+    floor: 3, category: 'lecture', icon: '🎓',
+    x: 40, y: 595, hub: 'W_3_D_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Аудитория в западном крыле D на 3 этаже.'
+  },
+  'D301': {
+    id: 'D301', code: 'D301', name: 'Аудитория D301',
+    floor: 3, category: 'labs', icon: '🔬',
+    x: 192, y: 602, hub: 'W_3_D_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Практический кабинет D301 на 3 этаже.'
+  },
+  'H301': {
+    id: 'H301', code: 'H301', name: 'Большая аудитория H301',
+    floor: 3, category: 'lecture', icon: '🎓',
+    x: 660, y: 445, hub: 'W_3_H_MID',
+    wifi: 'UrFU-Campus (Wi-Fi 6)',
+    desc: 'Просторная лекционная и проектная аудитория в секторе H на 3 этаже.'
+  },
+  'H303': {
+    id: 'H303', code: 'H303', name: 'Аудитория H303',
+    floor: 3, category: 'labs', icon: '🔬',
+    x: 800, y: 348, hub: 'W_3_H_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория в восточном крыле H (3 этаж).'
+  },
+  'H304': {
+    id: 'H304', code: 'H304', name: 'Аудитория H304',
+    floor: 3, category: 'labs', icon: '🔬',
+    x: 805, y: 415, hub: 'W_3_H_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Компьютерный и лабораторный класс H304 (3 этаж).'
+  },
+  'I304': {
+    id: 'I304', code: 'I304', name: 'Аудитория I304',
+    floor: 3, category: 'labs', icon: '💻',
+    x: 512, y: 518, hub: 'W_3_I_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория в центральном крыле I на 3 этаже.'
+  },
+  'I306': {
+    id: 'I306', code: 'I306', name: 'Аудитория I306 (Базы данных и ИИ)',
+    floor: 3, category: 'labs', icon: '🗄️',
+    x: 658, y: 605, hub: 'W_3_I_MID',
+    wifi: 'UrFU-Campus + Гигабитный LAN',
+    desc: 'Терминальный класс I306 в центральном секторе 3 этажа.'
+  },
+  'J308': {
+    id: 'J308', code: 'J308', name: 'Аудитория J308',
+    floor: 3, category: 'labs', icon: '📘',
+    x: 292, y: 745, hub: 'W_3_J_MID',
+    wifi: 'UrFU-Campus',
+    desc: 'Учебная аудитория в секторе J на 3 этаже.'
+  },
+  'K304': {
+    id: 'K304', code: 'K304', name: 'Лаборатория K304 (Сектор K)',
+    floor: 3, category: 'labs', icon: '🤖',
+    x: 732, y: 810, hub: 'W_3_K_MID',
+    wifi: 'UrFU-Campus (Wi-Fi 6)',
+    desc: 'Лаборатория прикладной разработки и ИИ в крыле K на 3 этаже.'
+  },
+  'K305': {
+    id: 'K305', code: 'K305', name: 'Лаборатория K305 (Сектор K)',
+    floor: 3, category: 'labs', icon: '🤖',
+    x: 732, y: 872, hub: 'W_3_K_MID',
+    wifi: 'UrFU-Campus (Wi-Fi 6)',
+    desc: 'Компьютерная лаборатория K305 в южной части крыла K на 3 этаже.'
   }
 };
 
-// Роутеры Wi-Fi 6 на каждом этаже для подсветки режима "Точки Wi-Fi"
-const wifiNodesByFloor = {
-  1: [{ x: 260, y: 260, label: 'Wi-Fi 6 Зап.' }, { x: 500, y: 150, label: 'Wi-Fi 6 Атриум' }, { x: 740, y: 260, label: 'Wi-Fi 6 Вост.' }],
-  2: [{ x: 250, y: 260, label: 'Wi-Fi 6 Деканат' }, { x: 500, y: 260, label: 'Wi-Fi 6 Холл 2 эт.' }, { x: 750, y: 260, label: 'Wi-Fi 6 Лекторий' }],
-  3: [{ x: 280, y: 140, label: 'Wi-Fi 6 Коворкинг А' }, { x: 500, y: 260, label: 'Wi-Fi 6 Холл 3 эт.' }, { x: 720, y: 140, label: 'Wi-Fi 6 Коворкинг Б' }],
-  4: [{ x: 275, y: 140, label: 'Wi-Fi 6 Лаб. ИИ' }, { x: 500, y: 260, label: 'Wi-Fi 6 Холл 4 эт.' }, { x: 725, y: 140, label: 'Wi-Fi 6 Робототехника' }]
-};
-
-// Построение полного графа здания (коридоры + двери аудиторий + межэтажные лестницы/лифты)
+// Построение реального восьмиугольного графа коридоров и 5 межэтажных лестниц (Этажи 1–3)
 function buildCampusNavigationGraph() {
   const nodes = {};
   const edges = {};
 
-  function addNode(id, floor, x, y, label = '') {
-    nodes[id] = { id, floor, x, y, label };
+  function addNode(id, floor, x, y, label = '', isStair = false) {
+    nodes[id] = { id, floor, x, y, label, isStair };
     if (!edges[id]) edges[id] = [];
   }
 
@@ -311,55 +656,89 @@ function buildCampusNavigationGraph() {
     edges[b].push({ to: a, weight: dist });
   }
 
-  // На каждом этаже создаем коридорные узлы и узел лестницы/лифта в центре (x=500, y=340)
-  for (let f = 1; f <= 4; f++) {
-    addNode(`STAIRS_${f}`, f, 500, 345, `Лестница / Лифт (${f} эт.)`);
-    addNode(`H_${f}_CENTER`, f, 500, 260);
-    addNode(`H_${f}_L1`, f, 340, 260);
-    addNode(`H_${f}_L2`, f, 200, 260);
-    addNode(`H_${f}_R1`, f, 660, 260);
-    addNode(`H_${f}_R2`, f, 800, 260);
+  // На каждом из 3 этажей создаем 5 реальных лестничных узлов и коридорные галереи каждого сектора
+  for (let f = 1; f <= 3; f++) {
+    // 5 основных узлов с лестницами (отмечены штриховкой на планах floor-1..3)
+    addNode(`STAIR_${f}_NW`, f, 260, 260, `Лестница СЗ (сектор E/F, ${f} эт.)`, true);
+    addNode(`STAIR_${f}_SW`, f, 170, 490, `Лестница ЮЗ (сектор D/E, ${f} эт.)`, true);
+    addNode(`STAIR_${f}_NE`, f, 625, 245, `Лестница СВ (у зала G/H, ${f} эт.)`, true);
+    addNode(`STAIR_${f}_SE`, f, 655, 520, `Лестница ЮВ (сектор H/I, ${f} эт.)`, true);
+    addNode(`STAIR_${f}_S`,  f, 512, 735, `Центральная южная лестница (сектор I/J/K, ${f} эт.)`, true);
 
-    addEdge(`STAIRS_${f}`, `H_${f}_CENTER`);
-    addEdge(`H_${f}_CENTER`, `H_${f}_L1`);
-    addEdge(`H_${f}_L1`, `H_${f}_L2`);
-    addEdge(`H_${f}_CENTER`, `H_${f}_R1`);
-    addEdge(`H_${f}_R1`, `H_${f}_R2`);
+    // Коридорные точки по крыльям F, E, D, G, H, I, J, K
+    addNode(`W_${f}_F_TOP`, f, 285, 85);
+    addNode(`W_${f}_F_MID`, f, 315, 195);
+    addNode(`W_${f}_N`,     f, 455, 205);
+    addNode(`W_${f}_NE`,    f, 625, 245);
+
+    addNode(`W_${f}_E_TOP`, f, 205, 290);
+    addNode(`W_${f}_E_MID`, f, 215, 365);
+    addNode(`W_${f}_E_BOT`, f, 200, 435);
+    addNode(`W_${f}_SW`,    f, 170, 490);
+
+    addNode(`W_${f}_D_MID`, f, 140, 575);
+    addNode(`W_${f}_D_BOT`, f, 145, 690);
+    addNode(`W_${f}_S_WEST`,f, 355, 695);
+
+    addNode(`W_${f}_H_MID`, f, 735, 395);
+    addNode(`W_${f}_SE`,    f, 655, 520);
+
+    addNode(`W_${f}_I_MID`, f, 588, 600);
+    addNode(`W_${f}_I_BOT`, f, 588, 695);
+
+    addNode(`W_${f}_J_MID`, f, 395, 815);
+    addNode(`W_${f}_J_BOT`, f, 395, 910);
+
+    addNode(`W_${f}_K_MID`, f, 655, 825);
+    addNode(`W_${f}_K_BOT`, f, 655, 925);
+
+    // Связи внутри этажа по коридорам
+    addEdge(`W_${f}_F_TOP`, `W_${f}_F_MID`);
+    addEdge(`W_${f}_F_MID`, `STAIR_${f}_NW`);
+    addEdge(`W_${f}_F_MID`, `W_${f}_N`);
+    addEdge(`W_${f}_N`,     `STAIR_${f}_NE`);
+    addEdge(`STAIR_${f}_NE`,`W_${f}_NE`);
+
+    addEdge(`STAIR_${f}_NW`, `W_${f}_E_TOP`);
+    addEdge(`W_${f}_E_TOP`,  `W_${f}_E_MID`);
+    addEdge(`W_${f}_E_MID`,  `W_${f}_E_BOT`);
+    addEdge(`W_${f}_E_BOT`,  `STAIR_${f}_SW`);
+    addEdge(`STAIR_${f}_SW`, `W_${f}_SW`);
+
+    addEdge(`STAIR_${f}_SW`, `W_${f}_D_MID`);
+    addEdge(`W_${f}_D_MID`,  `W_${f}_D_BOT`);
+    addEdge(`W_${f}_D_BOT`,  `W_${f}_S_WEST`);
+    addEdge(`W_${f}_S_WEST`, `STAIR_${f}_S`);
+
+    addEdge(`STAIR_${f}_NE`, `W_${f}_H_MID`);
+    addEdge(`W_${f}_H_MID`,  `STAIR_${f}_SE`);
+    addEdge(`STAIR_${f}_SE`, `W_${f}_SE`);
+
+    addEdge(`STAIR_${f}_SE`, `W_${f}_I_MID`);
+    addEdge(`W_${f}_I_MID`,  `W_${f}_I_BOT`);
+    addEdge(`W_${f}_I_BOT`,  `STAIR_${f}_S`);
+
+    addEdge(`STAIR_${f}_S`,  `W_${f}_J_MID`);
+    addEdge(`W_${f}_J_MID`,  `W_${f}_J_BOT`);
+
+    addEdge(`STAIR_${f}_S`,  `W_${f}_K_MID`);
+    addEdge(`W_${f}_K_MID`,  `W_${f}_K_BOT`);
   }
 
-  // Соединяем лестницы и лифты между этажами
-  for (let f = 1; f < 4; f++) {
-    addEdge(`STAIRS_${f}`, `STAIRS_${f + 1}`, 120);
-  }
-
-  // Подключаем каждую аудиторию через её дверь к ближайшему узлу коридора на том же этаже
-  Object.values(campusRoomsDB).forEach(room => {
-    addNode(room.id, room.floor, room.door.x, room.door.y, room.name);
-
-    // Для главного входа на 1 этаже связываем напрямую с центральным узлом и лестницей
-    if (room.id === 'ENTRANCE') {
-      addEdge('ENTRANCE', 'STAIRS_1');
-      addEdge('ENTRANCE', 'H_1_CENTER');
-      return;
-    }
-
-    // Ищем ближайший коридорный узел на этаже аудитории
-    const floorHallIds = [`H_${room.floor}_CENTER`, `H_${room.floor}_L1`, `H_${room.floor}_L2`, `H_${room.floor}_R1`, `H_${room.floor}_R2`];
-    let nearestHall = floorHallIds[0];
-    let bestDist = Infinity;
-    floorHallIds.forEach(hId => {
-      const d = Math.abs(nodes[hId].x - room.door.x);
-      if (d < bestDist) {
-        bestDist = d;
-        nearestHall = hId;
-      }
+  // Межэтажные переходы по всем 5 лестницам (1 <-> 2 <-> 3 этаж)
+  const stairSuffixes = ['NW', 'SW', 'NE', 'SE', 'S'];
+  for (let f = 1; f < 3; f++) {
+    stairSuffixes.forEach(s => {
+      addEdge(`STAIR_${f}_${s}`, `STAIR_${f + 1}_${s}`, 180);
     });
+  }
 
-    // Создаём промежуточную точку коридора ровно напротив двери (y = 260), чтобы линии шли строго под 90 градусов!
-    const doorHallNodeId = `DOOR_HALL_${room.id}`;
-    addNode(doorHallNodeId, room.floor, room.door.x, 260);
-    addEdge(room.id, doorHallNodeId);
-    addEdge(doorHallNodeId, nearestHall);
+  // Привязываем каждую комнату к её коридорному хабу
+  Object.values(campusRoomsDB).forEach(room => {
+    addNode(room.id, room.floor, room.x, room.y, room.name);
+    if (room.hub && nodes[room.hub]) {
+      addEdge(room.id, room.hub);
+    }
   });
 
   return { nodes, edges };
@@ -367,7 +746,6 @@ function buildCampusNavigationGraph() {
 
 const campusGraph = buildCampusNavigationGraph();
 
-// Алгоритм Дейкстры для поиска кратчайшего пути между любыми двумя точками кампуса
 function findShortestCampusPath(startId, endId) {
   const { nodes, edges } = campusGraph;
   if (!nodes[startId] || !nodes[endId]) return null;
@@ -412,174 +790,197 @@ function findShortestCampusPath(startId, endId) {
 
   return {
     path,
-    totalDistanceMeters: Math.max(12, Math.round(dist[endId] * 0.18)),
-    estimatedMinutes: Math.max(1, Math.round(dist[endId] / 340))
+    totalDistanceMeters: Math.max(15, Math.round(dist[endId] * 0.22)),
+    estimatedMinutes: Math.max(1, Math.round(dist[endId] / 310))
   };
 }
 
 // =========================================================================
-// 3. ОТРИСОВКА ИНТЕРАКТИВНОЙ КАРТЫ ЭТАЖЕЙ, КАТЕГОРИЙ И МАРШРУТОВ
+// 3. ОТРИСОВКА КАРТЫ, ПИНЫ, SVG-МАРШРУТ И PAN/ZOOM КАМЕРЫ
 // =========================================================================
+function applyMapCameraTransform(smooth = false) {
+  ['mapWrapper', 'mapWrapperFull'].forEach(id => {
+    const wrapper = document.getElementById(id);
+    if (!wrapper) return;
+    wrapper.classList.toggle('smooth-pan', smooth);
+    wrapper.style.transform = `translate3d(${mapCamera.x}px, ${mapCamera.y}px, 0px) scale(${mapCamera.scale})`;
+  });
+  const zoomBadge = document.getElementById('map-zoom-indicator');
+  if (zoomBadge) {
+    zoomBadge.textContent = `Масштаб: ${Math.round(mapCamera.scale * 100)}%`;
+  }
+}
+
+function zoomCampusMap(delta) {
+  mapCamera.scale = Math.min(mapCamera.maxScale, Math.max(mapCamera.minScale, +(mapCamera.scale + delta).toFixed(2)));
+  applyMapCameraTransform(true);
+}
+
+function populateMapRouteSelects() {
+  const selFrom = document.getElementById('map-select-from');
+  const selTo = document.getElementById('map-select-to');
+  if (!selFrom || !selTo || selFrom.options.length > 0) return;
+
+  const rooms = Object.values(campusRoomsDB);
+  [1, 2, 3].forEach(floorNum => {
+    const groupFrom = document.createElement('optgroup');
+    groupFrom.label = `${floorNum} этаж`;
+    const groupTo = document.createElement('optgroup');
+    groupTo.label = `${floorNum} этаж`;
+
+    rooms.filter(r => r.floor === floorNum).forEach(r => {
+      const opt1 = new Option(`${r.icon} ${r.code} — ${r.name}`, r.id);
+      const opt2 = new Option(`${r.icon} ${r.code} — ${r.name}`, r.id);
+      groupFrom.appendChild(opt1);
+      groupTo.appendChild(opt2);
+    });
+
+    selFrom.appendChild(groupFrom);
+    selTo.appendChild(groupTo);
+  });
+}
+
 function renderInteractiveCampusMap() {
+  populateMapRouteSelects();
+
+  if (!campusRoomsDB[appState.routeFrom]) appState.routeFrom = 'ENTRANCE';
+  if (!campusRoomsDB[appState.routeTo]) appState.routeTo = 'G103';
+
   const floor = appState.currentFloor;
   const fromId = appState.routeFrom;
   const toId = appState.routeTo;
   const activeCat = appState.activeCategory;
+  const query = (mapCamera.searchQuery || '').toLowerCase();
 
-  // Вычисляем полный маршрут по графу
-  const routeResult = findShortestCampusPath(fromId, toId);
-  const targetRoom = campusRoomsDB[toId] || campusRoomsDB['A-101'];
-  const startRoom = campusRoomsDB[fromId] || campusRoomsDB['ENTRANCE'];
+  // 1. Обновляем подложку этажа (img#floorMap)
+  const imgSrc = FLOOR_IMAGES[floor] || FLOOR_IMAGES[1];
+  ['floorMap', 'floorMapFull'].forEach(imgId => {
+    const imgEl = document.getElementById(imgId);
+    if (imgEl && imgEl.getAttribute('src') !== imgSrc) {
+      imgEl.setAttribute('src', imgSrc);
+      imgEl.setAttribute('alt', `План ${floor} этажа`);
+    }
+  });
 
-  // Обновляем селекты Откуда / Куда, если они есть на странице
+  // 2. Синхронизируем селекты и кнопки этажей
   const selFrom = document.getElementById('map-select-from');
   const selTo = document.getElementById('map-select-to');
   if (selFrom && selFrom.value !== fromId) selFrom.value = fromId;
   if (selTo && selTo.value !== toId) selTo.value = toId;
 
-  // Обновляем кнопки этажей (1..4)
   document.querySelectorAll('.floor-switch-btn').forEach(btn => {
     const f = parseInt(btn.getAttribute('data-floor'), 10);
     btn.classList.toggle('active', f === floor);
   });
 
-  // Собираем комнаты текущего этажа
+  // 3. Вычисляем маршрут по графу
+  const routeResult = findShortestCampusPath(fromId, toId);
+  const startRoom = campusRoomsDB[fromId];
+  const targetRoom = campusRoomsDB[toId];
+
+  // 4. Отрисовываем интерактивные пины в #markersContainer
   const roomsOnFloor = Object.values(campusRoomsDB).filter(r => r.floor === floor);
-
-  // Строим SVG-схему текущего этажа
-  let svgHtml = `
-    <defs>
-      <pattern id="ArchGrid" width="40" height="40" patternUnits="userSpaceOnUse">
-        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(31,42,68,0.06)" stroke-width="1"/>
-      </pattern>
-      <filter id="GoldGlow" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#C6A75E" flood-opacity="0.55"/>
-      </filter>
-    </defs>
-
-    <!-- Подложка и архитектурная сетка корпуса -->
-    <rect x="0" y="0" width="1000" height="520" fill="#FAF7F2"/>
-    <rect x="0" y="0" width="1000" height="520" fill="url(#ArchGrid)"/>
-
-    <!-- Внешний контур корпуса ИРИТ-РтФ -->
-    <rect x="55" y="35" width="890" height="455" rx="28" fill="rgba(232,220,200,0.38)" stroke="#1F2A44" stroke-width="3.5"/>
-
-    <!-- Главная коридорная галерея этажа -->
-    <rect x="75" y="210" width="850" height="105" rx="14" fill="#FFFFFF" stroke="rgba(31,42,68,0.15)" stroke-width="1.5"/>
-    <text x="500" y="254" text-anchor="middle" fill="rgba(82,96,122,0.45)" font-size="11" font-weight="800" letter-spacing="2">ПЕШЕХОДНАЯ ГАЛЕРЕЯ И ХОЛЛ ${floor} ЭТАЖА</text>
-
-    <!-- Центральный лестнично-лифтовой узел -->
-    <rect x="435" y="315" width="130" height="72" rx="14" fill="rgba(31,42,68,0.09)" stroke="#1F2A44" stroke-width="2" stroke-dasharray="5 3"/>
-    <text x="500" y="346" text-anchor="middle" fill="#1F2A44" font-size="11" font-weight="800">🛗 ЛИФТЫ / ЛЕСТНИЦА</text>
-    <text x="500" y="364" text-anchor="middle" fill="#52607A" font-size="10" font-weight="700">Переход 1–4 этаж</text>
-  `;
-
-  // Отрисовка всех помещений на текущем этаже
-  roomsOnFloor.forEach(room => {
+  const pinsHtml = roomsOnFloor.map(room => {
     const isStart = room.id === fromId;
-    const isTarget = room.id === toId;
-    const isCatMatch = activeCat !== 'all' && room.category === activeCat;
+    const isEnd = room.id === toId;
+    const matchesCat = activeCat === 'all' || room.category === activeCat;
+    const matchesSearch = !query || room.code.toLowerCase().includes(query) || room.name.toLowerCase().includes(query);
 
-    let fill = 'rgba(255,255,255,0.92)';
-    let stroke = 'rgba(31,42,68,0.28)';
-    let strokeWidth = '2';
-    let filterAttr = '';
+    let stateClass = '';
+    if (isStart) stateClass = 'pin-start';
+    else if (isEnd) stateClass = 'pin-end';
+    else if ((activeCat !== 'all' && matchesCat) || (query && matchesSearch)) stateClass = 'pin-highlight';
+    else if ((activeCat !== 'all' && !matchesCat) || (query && !matchesSearch)) stateClass = 'pin-dimmed';
 
-    if (room.category === 'coworking') fill = 'rgba(232,220,200,0.65)';
-    if (room.category === 'lecture') fill = 'rgba(255,255,255,0.96)';
-    if (room.category === 'labs') fill = 'rgba(31,42,68,0.06)';
-
-    if (isCatMatch) {
-      fill = 'rgba(223,192,119,0.38)';
-      stroke = '#C6A75E';
-      strokeWidth = '3.5';
-      filterAttr = 'filter="url(#GoldGlow)"';
-    }
-    if (isStart) {
-      fill = 'rgba(30,122,83,0.16)';
-      stroke = '#1E7A53';
-      strokeWidth = '3.5';
-    }
-    if (isTarget) {
-      fill = 'rgba(198,167,94,0.35)';
-      stroke = '#1F2A44';
-      strokeWidth = '4';
-      filterAttr = 'filter="url(#GoldGlow)"';
-    }
-
-    const cx = room.rect.x + room.rect.w / 2;
-    const cy = room.rect.y + room.rect.h / 2;
-
-    svgHtml += `
-      <g class="svg-room-node" style="cursor:pointer;" onclick="selectRoomOnCanvas('${room.id}')">
-        <rect x="${room.rect.x}" y="${room.rect.y}" width="${room.rect.w}" height="${room.rect.h}" rx="16"
-              fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}" ${filterAttr} />
-        <!-- Дверной проём -->
-        <circle cx="${room.door.x}" cy="${room.door.y}" r="5" fill="#C6A75E" stroke="#1F2A44" stroke-width="1.5"/>
-        <!-- Код и название аудитории -->
-        <text x="${cx}" y="${cy - 8}" text-anchor="middle" fill="#1F2A44" font-family="Unbounded, sans-serif" font-size="13" font-weight="800">
-          ${room.icon} ${room.code}
-        </text>
-        <text x="${cx}" y="${cy + 14}" text-anchor="middle" fill="#52607A" font-size="11.5" font-weight="600">
-          ${truncateText(room.name, 34)}
-        </text>
-        ${(isCatMatch || isTarget) ? `
-          <rect x="${cx - 58}" y="${cy + 24}" width="116" height="20" rx="10" fill="#1F2A44"/>
-          <text x="${cx}" y="${cy + 38}" text-anchor="middle" fill="#DFC077" font-size="10" font-weight="800">
-            ${isTarget ? '🎯 ТОЧКА НАЗНАЧЕНИЯ' : '✨ ВЫДЕЛЕНО'}
-          </text>
-        ` : ''}
-      </g>
+    return `
+      <button type="button"
+              class="map-room-pin ${stateClass}"
+              style="left: ${(room.x / 10).toFixed(2)}%; top: ${(room.y / 10).toFixed(2)}%;"
+              onclick="selectRoomOnCanvas('${room.id}')"
+              title="${room.name}">
+        <span>${room.icon}</span>
+        <span>${room.code}</span>
+      </button>
     `;
+  }).join('');
+
+  ['markersContainer', 'markersContainerFull'].forEach(cId => {
+    const container = document.getElementById(cId);
+    if (container) container.innerHTML = pinsHtml;
   });
 
-  // Если выбрана категория Wi-Fi (или всегда мягко) — показываем точки доступа Wi-Fi 6 на этаже
-  const floorWifi = wifiNodesByFloor[floor] || [];
-  floorWifi.forEach(w => {
-    const isWifiHighlight = activeCat === 'wifi';
-    svgHtml += `
-      <g style="cursor:pointer;" onclick="showToast('Точка доступа ${w.label}: сеть UrFU-Campus (Wi-Fi 6, 5 ГГц) работает отлично 📶')">
-        <circle cx="${w.x}" cy="${w.y}" r="${isWifiHighlight ? 28 : 14}" fill="rgba(198,167,94,${isWifiHighlight ? '0.28' : '0.12'})" stroke="#C6A75E" stroke-width="${isWifiHighlight ? 2 : 1}" stroke-dasharray="3 2"/>
-        <circle cx="${w.x}" cy="${w.y}" r="8" fill="#1F2A44" stroke="#C6A75E" stroke-width="2"/>
-        <text x="${w.x}" y="${w.y + 3}" text-anchor="middle" fill="#DFC077" font-size="9" font-weight="800">📶</text>
-        ${isWifiHighlight ? `<text x="${w.x}" y="${w.y - 16}" text-anchor="middle" fill="#1F2A44" font-size="10.5" font-weight="800">${w.label}</text>` : ''}
-      </g>
-    `;
-  });
+  // 5. Отрисовываем SVG-линию маршрута на текущем этаже (#routeSvg)
+  let svgHtml = '';
+  let stairTransitionNode = null;
 
-  // Отрисовка линии маршрута для текущего этажа
   if (routeResult && routeResult.path.length > 1) {
-    const floorNodes = routeResult.path.filter(n => n.floor === floor);
-    if (floorNodes.length >= 2) {
-      const pts = floorNodes.map(n => `${n.x},${n.y}`).join(' ');
+    // Разбиваем путь на непрерывные сегменты текущего этажа
+    const segments = [];
+    let currentSeg = [];
+
+    routeResult.path.forEach((node, idx) => {
+      if (node.floor === floor) {
+        currentSeg.push(node);
+        const nextNode = routeResult.path[idx + 1];
+        if (nextNode && nextNode.floor !== floor) {
+          stairTransitionNode = { fromFloor: floor, toFloor: nextNode.floor, stairNode: node };
+        }
+      } else if (currentSeg.length > 0) {
+        segments.push(currentSeg);
+        currentSeg = [];
+      }
+    });
+    if (currentSeg.length > 0) segments.push(currentSeg);
+
+    segments.forEach(seg => {
+      if (seg.length >= 2) {
+        const pts = seg.map(n => `${n.x},${n.y}`).join(' ');
+        svgHtml += `
+          <polyline class="route-path-glow" points="${pts}" />
+          <polyline class="route-path-line" points="${pts}" />
+        `;
+      }
+      const firstN = seg[0];
+      const lastN = seg[seg.length - 1];
       svgHtml += `
-        <!-- Подложка и пунктир активного маршрута -->
-        <polyline points="${pts}" fill="none" stroke="rgba(31,42,68,0.22)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-        <polyline points="${pts}" fill="none" stroke="#C6A75E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="10 6"/>
+        <circle cx="${firstN.x}" cy="${firstN.y}" r="11" fill="#1E7A53" stroke="#FFFFFF" stroke-width="3.5" />
+        <circle cx="${lastN.x}" cy="${lastN.y}" r="13" fill="#1F2A44" stroke="#DFC077" stroke-width="4" />
       `;
-      // Маркеры начала и конца сегмента на этом этаже
-      const firstN = floorNodes[0];
-      const lastN = floorNodes[floorNodes.length - 1];
-      svgHtml += `
-        <circle cx="${firstN.x}" cy="${firstN.y}" r="9" fill="#1E7A53" stroke="#FFFFFF" stroke-width="2.5"/>
-        <circle cx="${lastN.x}" cy="${lastN.y}" r="10" fill="#1F2A44" stroke="#DFC077" stroke-width="3"/>
-      `;
-    }
+    });
   }
 
-  // Вставляем сгенерированный чертеж в оба контейнера (на Главной и на экране 3D-карты)
-  const mainSvg = document.getElementById('native-campus-svg');
-  const fullSvg = document.getElementById('native-campus-svg-full');
-  if (mainSvg) mainSvg.innerHTML = svgHtml;
-  if (fullSvg) fullSvg.innerHTML = svgHtml;
+  ['routeSvg', 'routeSvgFull'].forEach(sId => {
+    const svgEl = document.getElementById(sId);
+    if (svgEl) svgEl.innerHTML = svgHtml;
+  });
 
-  // Обновляем пошаговую навигационную цепочку этажей и инфо-панель
+  // 6. Показываем подсказку межэтажного перехода (#stairMessageContainer)
+  ['stairMessageContainer', 'stairMessageContainerFull'].forEach(stId => {
+    const stairBox = document.getElementById(stId);
+    if (!stairBox) return;
+    if (stairTransitionNode) {
+      stairBox.style.display = 'flex';
+      stairBox.innerHTML = `
+        <span>🪜 Дойдите до узла «${stairTransitionNode.stairNode.label || 'Лестница'}» и перейдите на ${stairTransitionNode.toFloor} этаж</span>
+        <button class="btn-gold" style="padding:5px 12px; font-size:11.5px;" onclick="switchCampusFloor(${stairTransitionNode.toFloor})">
+          Переключить на ${stairTransitionNode.toFloor} этаж →
+        </button>
+      `;
+    } else if (startRoom.floor !== targetRoom.floor && floor !== startRoom.floor && floor !== targetRoom.floor) {
+      stairBox.style.display = 'flex';
+      stairBox.innerHTML = `
+        <span>🧭 Маршрут проходит между ${startRoom.floor} и ${targetRoom.floor} этажами</span>
+        <button class="btn-gold" style="padding:5px 12px; font-size:11.5px;" onclick="switchCampusFloor(${targetRoom.floor})">
+          На этаж назначения (${targetRoom.floor} эт.) →
+        </button>
+      `;
+    } else {
+      stairBox.style.display = 'none';
+    }
+  });
+
+  // 7. Обновляем нижнюю карточку #infoCard и цепочку шагов
   updateRouteStepsAndHud(routeResult, startRoom, targetRoom);
-}
-
-function truncateText(str, maxLen) {
-  if (!str) return '';
-  return str.length > maxLen ? str.slice(0, maxLen - 1) + '…' : str;
 }
 
 function updateRouteStepsAndHud(routeResult, startRoom, targetRoom) {
@@ -593,7 +994,7 @@ function updateRouteStepsAndHud(routeResult, startRoom, targetRoom) {
   if (poiDesc) poiDesc.textContent = targetRoom.desc;
   if (poiMeta) {
     poiMeta.innerHTML = `
-      <span class="badge-gold">${targetRoom.floor} этаж</span>
+      <span class="badge-gold">${targetRoom.floor} этаж • Код: ${targetRoom.code}</span>
       <span class="badge-soft">📶 ${targetRoom.wifi}</span>
       ${routeResult ? `<span class="badge-soft">🚶 ${routeResult.totalDistanceMeters} м (~${routeResult.estimatedMinutes} мин)</span>` : ''}
     `;
@@ -602,44 +1003,42 @@ function updateRouteStepsAndHud(routeResult, startRoom, targetRoom) {
   const crossesFloors = startRoom.floor !== targetRoom.floor;
   if (statusText && routeResult) {
     statusText.textContent = crossesFloors
-      ? `Маршрут: ${startRoom.code} (${startRoom.floor} эт.) → Лифт/Лестница → ${targetRoom.code} (${targetRoom.floor} эт.) • ${routeResult.totalDistanceMeters} м`
+      ? `Маршрут: ${startRoom.code} (${startRoom.floor} эт.) → Лестница → ${targetRoom.code} (${targetRoom.floor} эт.) • ${routeResult.totalDistanceMeters} м`
       : `Маршрут на ${targetRoom.floor} этаже: ${startRoom.code} → ${targetRoom.code} • ${routeResult.totalDistanceMeters} м (~${routeResult.estimatedMinutes} мин)`;
   }
 
   if (stepsBox) {
     if (crossesFloors) {
       stepsBox.innerHTML = `
-        <span style="font-size:11.5px; font-weight:800; color:var(--navy);">Пошаговый переход по этажам:</span>
+        <span style="font-size:11.5px; font-weight:800; color:var(--navy);">Маршрут между этажами:</span>
         <button class="pill-btn ${appState.currentFloor === startRoom.floor ? 'active' : ''}" style="padding:4px 12px; font-size:11.5px;" onclick="switchCampusFloor(${startRoom.floor})">
-          Шаг 1: ${startRoom.floor} этаж (${startRoom.code} → Лифт)
+          Шаг 1: ${startRoom.floor} этаж (${startRoom.code} → Лестница)
         </button>
         <span style="font-weight:800; color:var(--gold);">➔</span>
         <button class="pill-btn ${appState.currentFloor === targetRoom.floor ? 'active' : ''}" style="padding:4px 12px; font-size:11.5px;" onclick="switchCampusFloor(${targetRoom.floor})">
-          Шаг 2: ${targetRoom.floor} этаж (Лифт → ${targetRoom.code})
+          Шаг 2: ${targetRoom.floor} этаж (Лестница → ${targetRoom.code})
         </button>
       `;
     } else {
       stepsBox.innerHTML = `
-        <span style="font-size:11.5px; font-weight:800; color:var(--navy);">Прямой маршрут в пределах ${targetRoom.floor} этажа:</span>
+        <span style="font-size:11.5px; font-weight:800; color:var(--navy);">Маршрут в пределах ${targetRoom.floor} этажа:</span>
         <span class="badge-soft">${startRoom.name} ➔ ${targetRoom.name}</span>
       `;
     }
   }
 }
 
-// Переключение этажа (1, 2, 3, 4)
 function switchCampusFloor(floorNum) {
   appState.currentFloor = floorNum;
   renderInteractiveCampusMap();
 }
 
-// Клик по аудитории прямо на схеме этажа
 function selectRoomOnCanvas(roomId) {
   const room = campusRoomsDB[roomId];
   if (!room) return;
   if (roomId === 'ENTRANCE') {
     appState.routeFrom = 'ENTRANCE';
-    showToast('Точка старта установлена: Главный вход (1 этаж)');
+    showToast('Точка старта: Главный вход (1 этаж)');
   } else {
     appState.routeTo = roomId;
     appState.currentFloor = room.floor;
@@ -648,7 +1047,6 @@ function selectRoomOnCanvas(roomId) {
   renderInteractiveCampusMap();
 }
 
-// Изменение точки Откуда / Куда через выпадающие списки
 function updateCampusRouteEndpoints() {
   const selFrom = document.getElementById('map-select-from');
   const selTo = document.getElementById('map-select-to');
@@ -659,125 +1057,104 @@ function updateCampusRouteEndpoints() {
     if (target) appState.currentFloor = target.floor;
   }
   renderInteractiveCampusMap();
-  const target = campusRoomsDB[appState.routeTo];
-  if (target) {
-    showToast(`Маршрут перестроен: → ${target.name} (${target.floor} этаж)`);
-  }
 }
 
-// Клик по кнопкам быстрых категорий ("Коворкинги", "Атриум А-101", "Деканат", "Лаборатории", "Wi-Fi")
+function swapCampusRouteEndpoints() {
+  const temp = appState.routeFrom;
+  appState.routeFrom = appState.routeTo;
+  appState.routeTo = temp;
+  const target = campusRoomsDB[appState.routeTo];
+  if (target) appState.currentFloor = target.floor;
+  renderInteractiveCampusMap();
+  showToast('Точки отправления и назначения поменяны местами ⇄');
+}
+
+function handleMapRoomSearch(val) {
+  mapCamera.searchQuery = val.trim();
+  if (mapCamera.searchQuery.length >= 2) {
+    const q = mapCamera.searchQuery.toLowerCase();
+    const match = Object.values(campusRoomsDB).find(
+      r => r.code.toLowerCase().includes(q) || r.name.toLowerCase().includes(q)
+    );
+    if (match) {
+      appState.routeTo = match.id;
+      appState.currentFloor = match.floor;
+    }
+  }
+  renderInteractiveCampusMap();
+}
+
 function highlightCampusRoute(routeTitle, btn, categoryKey, targetRoomId) {
   if (btn && btn.parentElement) {
     btn.parentElement.querySelectorAll('.route-chip').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
   }
-
   appState.activeCategory = categoryKey || 'all';
 
   if (targetRoomId && campusRoomsDB[targetRoomId]) {
     appState.routeTo = targetRoomId;
     appState.currentFloor = campusRoomsDB[targetRoomId].floor;
-  } else if (categoryKey === 'coworking') {
-    appState.routeTo = 'COWORK-3';
-    appState.currentFloor = 3;
-  } else if (categoryKey === 'dean') {
-    appState.routeTo = 'I-204';
-    appState.currentFloor = 2;
-  } else if (categoryKey === 'labs') {
-    appState.routeTo = 'I-420';
-    appState.currentFloor = 4;
-  } else if (categoryKey === 'lecture') {
-    appState.routeTo = 'A-101';
-    appState.currentFloor = 1;
   }
-
   renderInteractiveCampusMap();
-  showToast(`На схеме выделена категория и построен путь: ${routeTitle}`);
-}
-
-// Переключение между встроенным интерактивным навигатором и оригинальным iframe Vercel
-function toggleMapEngineMode(mode) {
-  appState.mapMode = mode || (appState.mapMode === 'native' ? 'iframe' : 'native');
-  const nativeBox = document.getElementById('native-map-stage');
-  const iframeBox = document.getElementById('vercel-iframe-stage');
-  const modeBtn = document.getElementById('toggle-map-engine-btn');
-
-  if (appState.mapMode === 'iframe') {
-    if (nativeBox) nativeBox.style.display = 'none';
-    if (iframeBox) iframeBox.style.display = 'block';
-    if (modeBtn) modeBtn.textContent = '🧭 Вернуться к интерактивной схеме маршрутов';
-    showToast('Включен прямой просмотр виджета campusnavigator-mu.vercel.app');
-  } else {
-    if (nativeBox) nativeBox.style.display = 'block';
-    if (iframeBox) iframeBox.style.display = 'none';
-    if (modeBtn) modeBtn.textContent = '🌐 Режим: Оригинальный виджет Vercel';
-    renderInteractiveCampusMap();
-    showToast('Включена интерактивная поэтажная схема с поиском пути');
-  }
-}
-
-// Переход из карточки расписания прямо к нужной аудитории на карте
-function openRoomOnCampusMap(roomName) {
-  navigateTo('home');
-  setTimeout(() => {
-    const mapBlock = document.getElementById('main-navigator-block');
-    if (mapBlock) mapBlock.scrollIntoView({ behavior: 'smooth' });
-
-    if (appState.mapMode !== 'native') {
-      toggleMapEngineMode('native');
-    }
-
-    const lower = roomName.toLowerCase();
-    let targetId = 'A-101';
-    let cat = 'lecture';
-
-    if (lower.includes('коворкинг')) { targetId = 'COWORK-3'; cat = 'coworking'; }
-    else if (lower.includes('420')) { targetId = 'I-420'; cat = 'labs'; }
-    else if (lower.includes('308')) { targetId = 'I-308'; cat = 'labs'; }
-    else if (lower.includes('204') || lower.includes('деканат')) { targetId = 'I-204'; cat = 'dean'; }
-    else if (lower.includes('324')) { targetId = 'M-324'; cat = 'lecture'; }
-    else if (lower.includes('101') || lower.includes('атриум')) { targetId = 'A-101'; cat = 'lecture'; }
-
-    const chipBtn = document.querySelector(`.route-chip[data-map-cat="${cat}"]`);
-    highlightCampusRoute(roomName, chipBtn, cat, targetId);
-  }, 550);
-}
-
-function copyWifiCredentials(ssid, authInfo) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(`Сеть: ${ssid} | Вход: ${authInfo}`).catch(() => {});
-  }
-  showToast(`Параметры сети «${ssid}» скопированы! (${authInfo}) 📶`);
-}
-
-function setNavigatorScale(scaleFactor, btn) {
-  const stage = document.getElementById('navigator-scale-stage');
-  const pct = (100 / scaleFactor).toFixed(2) + '%';
-  stage.style.width = pct;
-  stage.style.height = pct;
-  stage.style.transform = `scale(${scaleFactor})`;
-
-  btn.parentElement.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-
-  const labelPct = Math.round(scaleFactor * 100) + '%';
-  document.getElementById('map-route-text').textContent = `Масштаб карты плавно изменен на ${labelPct} для удобного обзора корпуса`;
-}
-
-function toggleMapHeight() {
-  document.getElementById('main-map-viewport').classList.toggle('tall-map');
+  showToast(`Категория на карте: ${routeTitle}`);
 }
 
 function reloadCampusMap() {
   appState.routeFrom = 'ENTRANCE';
-  appState.routeTo = 'A-101';
+  appState.routeTo = 'G103';
   appState.currentFloor = 1;
   appState.activeCategory = 'all';
+  mapCamera.scale = 1;
+  mapCamera.x = 0;
+  mapCamera.y = 0;
+  mapCamera.searchQuery = '';
+  const searchInput = document.getElementById('map-room-search');
+  if (searchInput) searchInput.value = '';
+  applyMapCameraTransform(true);
   renderInteractiveCampusMap();
-  const iframe = document.getElementById('campus-navigator-iframe');
-  if (iframe) iframe.src = iframe.src;
-  showToast('Маршрут и схема корпуса сброшены к 1 этажу ✓');
+  showToast('Камера и маршрут сброшены к 1 этажу ✓');
 }
+
+// Инициализация перетаскивания (Drag) и зума колесиком (Wheel) на #mapArea и #mapAreaFull
+function initMapPanAndZoom() {
+  ['mapArea', 'mapAreaFull'].forEach(areaId => {
+    const area = document.getElementById(areaId);
+    if (!area) return;
+
+    area.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.18 : -0.18;
+      zoomCampusMap(delta);
+    }, { passive: false });
+
+    area.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('button')) return;
+      mapCamera.isDragging = true;
+      mapCamera.startX = e.clientX - mapCamera.x;
+      mapCamera.startY = e.clientY - mapCamera.y;
+      area.classList.add('is-dragging');
+      area.setPointerCapture(e.pointerId);
+    });
+
+    area.addEventListener('pointermove', (e) => {
+      if (!mapCamera.isDragging) return;
+      mapCamera.x = e.clientX - mapCamera.startX;
+      mapCamera.y = e.clientY - mapCamera.startY;
+      applyMapCameraTransform(false);
+    });
+
+    const stopDrag = () => {
+      mapCamera.isDragging = false;
+      area.classList.remove('is-dragging');
+    };
+    area.addEventListener('pointerup', stopDrag);
+    area.addEventListener('pointercancel', stopDrag);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initMapPanAndZoom();
+});
 
 // =========================================================================
 // 4. БАЗА ДАННЫХ НЕДЕЛЬНОГО РАСПИСАНИЯ (С ФИЛЬТРОМ ПАР ПЕДАГОГА)
@@ -993,6 +1370,34 @@ function renderWeeklySchedule() {
   });
 
   grid.innerHTML = html;
+}
+
+function openRoomOnCampusMap(roomName) {
+  navigateTo('home');
+  setTimeout(() => {
+    const mapBlock = document.getElementById('main-navigator-block');
+    if (mapBlock) mapBlock.scrollIntoView({ behavior: 'smooth' });
+
+    if (appState.mapMode !== 'native') {
+      toggleMapEngineMode('native');
+    }
+
+    const lower = roomName.toLowerCase();
+    let targetId = 'G103';
+    let cat = 'lecture';
+
+    if (lower.includes('коворкинг') || lower.includes('контур')) { targetId = 'KONTUR'; cat = 'coworking'; }
+    else if (lower.includes('naumen')) { targetId = 'NAUMEN'; cat = 'coworking'; }
+    else if (lower.includes('уцсб')) { targetId = 'UCSB'; cat = 'coworking'; }
+    else if (lower.includes('420') || lower.includes('k204') || lower.includes('лаб')) { targetId = 'K204'; cat = 'labs'; }
+    else if (lower.includes('308') || lower.includes('i306')) { targetId = 'I306'; cat = 'labs'; }
+    else if (lower.includes('204') || lower.includes('деканат')) { targetId = 'E204'; cat = 'dean'; }
+    else if (lower.includes('324') || lower.includes('актов')) { targetId = 'ACT-HALL'; cat = 'lecture'; }
+    else if (lower.includes('101') || lower.includes('атриум') || lower.includes('g103')) { targetId = 'G103'; cat = 'lecture'; }
+
+    const chipBtn = document.querySelector(`.route-chip[data-map-cat="${cat}"]`);
+    highlightCampusRoute(roomName, chipBtn, cat, targetId);
+  }, 550);
 }
 
 function formatShortTeacherName(fullFio, fallback) {

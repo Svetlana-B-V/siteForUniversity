@@ -331,96 +331,81 @@
           </div>
 
           <!-- =============================================================
-               ВСТРОЕННЫЙ ПОЭТАЖНЫЙ НАВИГАТОР КОРПУСА С ПОИСКОМ ПУТИ (1–4 ЭТАЖ)
+               ВСТРОЕННЫЙ ПОЭТАЖНЫЙ НАВИГАТОР КОРПУСА С ПОИСКОМ ПУТИ (1–3 ЭТАЖ)
                ============================================================= -->
           <div id="main-navigator-block" class="section-head parallax-layer" data-depth="2">
             <div>
-              <h2>🗺️ Интерактивный навигатор корпуса УрФУ (Этажи 1–4 и маршруты)</h2>
-              <p class="section-sub">Выбирай этаж, кликай на любую аудиторию или категорию («Коворкинги», «Лаборатории», «Деканат») — алгоритм построит маршрут по коридорам и лестницам</p>
+              <h2>🗺️ Интерактивный навигатор корпуса УрФУ (Этажи 1–3 и маршруты)</h2>
+              <p class="section-sub">Перетаскивай карту мышью, масштабируй колесиком, выбирай аудитории на реальном плане корпуса — алгоритм построит кратчайший маршрут по коридорам и лестницам</p>
             </div>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              <button class="btn-glass" id="toggle-map-engine-btn" onclick="toggleMapEngineMode()">🌐 Режим: Оригинальный виджет Vercel</button>
+              <button class="btn-glass" id="toggle-map-engine-btn" onclick="toggleMapEngineMode()">🌐 Режим: Внешний виджет Vercel</button>
               <button class="btn-glass" onclick="toggleMapHeight()">⤢ Развернуть по высоте</button>
             </div>
           </div>
 
           <div class="navigator-glass-shell parallax-layer" data-depth="3">
-            <!-- Верхняя панель управления этажами и точками маршрута Откуда -> Куда -->
-            <div class="navigator-top-hud">
-              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <!-- Верхняя панель управления этажами, поиском и точками маршрута Откуда -> Куда -->
+            <div class="navigator-top-hud top-bar">
+              <div class="floor-controls" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                 <span style="font-size:12px; font-weight:800; color:var(--navy);">ЭТАЖ:</span>
                 <div class="scale-controls">
                   <button class="scale-btn floor-switch-btn active" data-floor="1" onclick="switchCampusFloor(1)">1 этаж</button>
                   <button class="scale-btn floor-switch-btn" data-floor="2" onclick="switchCampusFloor(2)">2 этаж</button>
                   <button class="scale-btn floor-switch-btn" data-floor="3" onclick="switchCampusFloor(3)">3 этаж</button>
-                  <button class="scale-btn floor-switch-btn" data-floor="4" onclick="switchCampusFloor(4)">4 этаж</button>
                 </div>
               </div>
 
-              <!-- Выбор Откуда и Куда -->
+              <!-- Выбор Откуда и Куда + Быстрый поиск кабинета -->
               <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex:1; justify-content:center;">
                 <span style="font-size:11.5px; font-weight:800; color:var(--text-muted);">ОТКУДА:</span>
-                <select id="map-select-from" class="form-input" style="width:auto; padding:6px 10px; font-size:12px;" onchange="updateCampusRouteEndpoints()">
-                  <option value="ENTRANCE">🚪 Главный вход (1 эт.)</option>
-                  <option value="A-101">✨ Атриум А-101 (1 эт.)</option>
-                  <option value="I-104">💻 Коворкинг И-104 (1 эт.)</option>
-                  <option value="CAFE-1">☕ Столовая и кафе (1 эт.)</option>
-                  <option value="I-204">🏛️ Деканат И-204 (2 эт.)</option>
-                  <option value="I-210">💻 Коворкинг И-210 (2 эт.)</option>
-                  <option value="COWORK-3">💻 Панорамный коворкинг (3 эт.)</option>
-                  <option value="I-308">🗄️ Ауд. И-308 (3 эт.)</option>
-                  <option value="I-420">🔬 Лаборатория ИИ И-420 (4 эт.)</option>
-                </select>
+                <select id="map-select-from" class="form-input" style="width:auto; max-width:210px; padding:6px 10px; font-size:12px;" onchange="updateCampusRouteEndpoints()"></select>
 
-                <span style="font-weight:800; color:var(--gold);">➔</span>
+                <button class="pill-btn" style="padding:5px 10px; font-size:12px;" onclick="swapCampusRouteEndpoints()" title="Поменять точки местами">⇄</button>
 
                 <span style="font-size:11.5px; font-weight:800; color:var(--text-muted);">КУДА:</span>
-                <select id="map-select-to" class="form-input" style="width:auto; padding:6px 10px; font-size:12px;" onchange="updateCampusRouteEndpoints()">
-                  <option value="A-101">✨ Стеклянный атриум А-101 (1 эт.)</option>
-                  <option value="I-104">💻 Коворкинг «Атриум-Лаунж» И-104 (1 эт.)</option>
-                  <option value="I-108">🏛️ Приёмная комиссия И-108 (1 эт.)</option>
-                  <option value="CAFE-1">☕ Кампусное кафе (1 эт.)</option>
-                  <option value="I-204">🏛️ Деканат ИРИТ-РтФ И-204 (2 эт.)</option>
-                  <option value="I-210">💻 Проектный коворкинг И-210 (2 эт.)</option>
-                  <option value="I-215">🎓 Лекторий И-215 (2 эт.)</option>
-                  <option value="M-324">🛡️ Ауд. М-324 Кибербез (2 эт.)</option>
-                  <option value="COWORK-3">💻 Панорамный коворкинг 3 этаж (TeamUp)</option>
-                  <option value="COWORK-3B">🎧 Тихий коворкинг Б-304 (3 эт.)</option>
-                  <option value="I-308">🗄️ Комп. класс И-308 (3 эт.)</option>
-                  <option value="I-312">🎤 Центр менторов И-312 (3 эт.)</option>
-                  <option value="I-420">🔬 Лаборатория ИИ и ML И-420 (4 эт.)</option>
-                  <option value="I-415">🤖 Лаборатория робототехники И-415 (4 эт.)</option>
-                  <option value="COWORK-4">💻 R&D Коворкинг И-410 (4 эт.)</option>
-                </select>
+                <select id="map-select-to" class="form-input" style="width:auto; max-width:210px; padding:6px 10px; font-size:12px;" onchange="updateCampusRouteEndpoints()"></select>
+
+                <input type="text" id="map-room-search" class="form-input" style="width:165px; padding:6px 12px; font-size:12px;" placeholder="🔎 Кабинет (напр. K204)..." oninput="handleMapRoomSearch(this.value)" />
               </div>
 
-              <button class="pill-btn" style="padding:6px 12px; font-size:12px;" onclick="reloadCampusMap()">↻ Сброс</button>
+              <div style="display:flex; gap:6px; align-items:center;">
+                <button class="pill-btn" style="padding:6px 11px; font-size:13px;" onclick="zoomCampusMap(0.25)" title="Приблизить">＋</button>
+                <button class="pill-btn" style="padding:6px 11px; font-size:13px;" onclick="zoomCampusMap(-0.25)" title="Отдалить">－</button>
+                <button class="pill-btn" style="padding:6px 12px; font-size:12px;" onclick="reloadCampusMap()">↻ Сброс</button>
+              </div>
             </div>
 
-            <!-- Кнопки категорий (при клике выделяют все объекты категории на этаже и строят маршрут) -->
+            <!-- Быстрые фильтры категорий по реальным объектам корпуса -->
             <div class="navigator-route-pills">
               <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button class="route-chip active" data-map-cat="lecture" onclick="highlightCampusRoute('Стеклянный атриум А-101 (1 этаж)', this, 'lecture', 'A-101')">✨ Атриум А-101 и лектории</button>
-                <button class="route-chip" data-map-cat="coworking" onclick="highlightCampusRoute('Панорамный коворкинг (3 этаж) и зоны коворкинга', this, 'coworking', 'COWORK-3')">💻 Коворкинги (4 зоны)</button>
-                <button class="route-chip" data-map-cat="dean" onclick="highlightCampusRoute('Деканат ИРИТ-РтФ (2 этаж, ауд. И-204)', this, 'dean', 'I-204')">🏛️ Деканат И-204</button>
-                <button class="route-chip" data-map-cat="labs" onclick="highlightCampusRoute('Лаборатория Прикладного ИИ (4 этаж, ауд. И-420)', this, 'labs', 'I-420')">🔬 Лаборатория И-420</button>
-                <button class="route-chip" data-map-cat="cafe" onclick="highlightCampusRoute('Кампусная столовая и Кофе-поинт (1 этаж)', this, 'cafe', 'CAFE-1')">☕ Кафе и столовая</button>
-                <button class="route-chip" data-map-cat="wifi" onclick="highlightCampusRoute('Карта покрытия роутеров Wi-Fi 6', this, 'wifi')">📶 Точки Wi-Fi 6</button>
+                <button class="route-chip active" data-map-cat="all" onclick="highlightCampusRoute('Все помещения этажа', this, 'all')">🏛️ Все объекты</button>
+                <button class="route-chip" data-map-cat="coworking" onclick="highlightCampusRoute('Коворкинги и IT-зоны (СБЕР, УЦСБ, NAUMEN, Яндекс, Контур)', this, 'coworking', 'NAUMEN')">💻 Коворкинги партнеров</button>
+                <button class="route-chip" data-map-cat="lecture" onclick="highlightCampusRoute('Зрительный зал G103 и Актовый зал', this, 'lecture', 'G103')">🎭 Актовый и зрительные залы</button>
+                <button class="route-chip" data-map-cat="labs" onclick="highlightCampusRoute('Учебные аудитории и компьютерные классы', this, 'labs', 'K204')">🔬 Аудитории и К-крыло</button>
+                <button class="route-chip" data-map-cat="cafe" onclick="highlightCampusRoute('Столовая и комната отдыха (1 этаж)', this, 'cafe', 'CANTEEN')">☕ Столовая и отдых</button>
+                <button class="route-chip" data-map-cat="service" onclick="highlightCampusRoute('Гардеробы и санузлы (WC)', this, 'service', 'WARDROBE-MAIN')">🧥 Гардеробы и WC</button>
               </div>
-              <span class="badge-gold">Алгоритм Дейкстры 2D/3D</span>
+              <span class="badge-gold" id="map-zoom-indicator">Масштаб: 100%</span>
             </div>
 
             <!-- Пошаговая цепочка перехода между этажами -->
             <div id="map-floor-steps-bar" style="background:rgba(255,255,255,0.75); padding:8px 14px; border-radius:12px; margin-bottom:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;"></div>
 
-            <!-- Сцена карты (Нативный интерактивный чертеж этажа ИЛИ чистый iframe Vercel) -->
+            <!-- Сцена карты (структура из campusnavigator-mu.vercel.app) -->
             <div class="navigator-viewport" id="main-map-viewport">
-              <!-- Режим 1: Нативный интерактивный поэтажный план с рабочими путями -->
-              <div id="native-map-stage" style="width:100%; height:100%;">
-                <svg id="native-campus-svg" viewBox="0 0 1000 520" preserveAspectRatio="xMidYMid meet" style="width:100%; height:100%; display:block;"></svg>
+              <div id="native-map-stage" style="width:100%; height:100%; position:relative;">
+                <div id="mapArea" class="map-area">
+                  <div id="mapWrapper" class="map-wrapper" style="transform: translate3d(0px, 0px, 0px) scale(1);">
+                    <img id="floorMap" class="floor-image" src="src/floor-1.svg" alt="План 1 этажа" draggable="false" />
+                    <div id="markersContainer" class="markers-container"></div>
+                    <svg id="routeSvg" class="route-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none"></svg>
+                  </div>
+                  <div id="stairMessageContainer" class="stair-message-container" style="display: none;"></div>
+                </div>
               </div>
 
-              <!-- Режим 2: Чистый оригинальный виджет Vercel без блокирующих клики оверлеев -->
+              <!-- Режим 2: Внешний виджет Vercel -->
               <div id="vercel-iframe-stage" style="width:100%; height:100%; display:none;">
                 <div class="navigator-scale-stage" id="navigator-scale-stage">
                   <iframe
@@ -435,18 +420,18 @@
 
               <div class="map-floating-status" id="map-route-status">
                 <span>🧭</span>
-                <span id="map-route-text">Активный маршрут: Главный вход → Стеклянный атриум А-101</span>
+                <span id="map-route-text">Активный маршрут: Главный вход → Зрительный зал G103</span>
               </div>
             </div>
 
-            <!-- Информационная карточка выбранной аудитории под картой -->
-            <div style="margin-top:12px; background:rgba(255,255,255,0.82); border-radius:16px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <!-- Информационная карточка выбранной локации (#infoCard) -->
+            <div id="infoCard" class="info-card" style="margin-top:12px; background:rgba(255,255,255,0.86); border-radius:16px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; border:1px solid rgba(198,167,94,0.4);">
               <div>
-                <strong style="font-size:15px; color:var(--navy); display:block;" id="map-selected-room-title">✨ Стеклянный атриум А-101 (Главный лекторий)</strong>
-                <span style="font-size:12.5px; color:var(--text-muted);" id="map-selected-room-desc">Главный амфитеатр со световым куполом на 450 мест для потоковых лекций и форумов.</span>
+                <strong style="font-size:15px; color:var(--navy); display:block;" id="map-selected-room-title">🎭 Зрительный зал G103 (1 этаж)</strong>
+                <span style="font-size:12.5px; color:var(--text-muted);" id="map-selected-room-desc">Большой зрительный зал в секторе G на 1 этаже для потоковых лекций, конференций и мероприятий.</span>
               </div>
               <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;" id="map-selected-room-meta">
-                <span class="badge-gold">1 этаж</span>
+                <span class="badge-gold">1 этаж • Сектор G</span>
                 <span class="badge-soft">📶 UrFU-Campus (Wi-Fi 6)</span>
               </div>
             </div>
@@ -763,7 +748,14 @@
             </div>
 
             <div class="navigator-viewport tall-map">
-              <svg id="native-campus-svg-full" viewBox="0 0 1000 520" preserveAspectRatio="xMidYMid meet" style="width:100%; height:100%; display:block;"></svg>
+              <div id="mapAreaFull" class="map-area">
+                <div id="mapWrapperFull" class="map-wrapper" style="transform: translate3d(0px, 0px, 0px) scale(1);">
+                  <img id="floorMapFull" class="floor-image" src="src/floor-1.svg" alt="План 1 этажа" draggable="false" />
+                  <div id="markersContainerFull" class="markers-container"></div>
+                  <svg id="routeSvgFull" class="route-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none"></svg>
+                </div>
+                <div id="stairMessageContainerFull" class="stair-message-container" style="display: none;"></div>
+              </div>
             </div>
           </div>
         </section>
